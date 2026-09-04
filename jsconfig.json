@@ -10,9 +10,7 @@
       "@router/*": ["src/router/*"],
       "@hooks/*": ["src/hooks/*"],
       "@lib/*": ["src/lib/*"],
-      "@services/*": ["src/services/*"],
-
-      "@assets/*": ["src/assets/*"]
+      "@services/*": ["src/services/*"]
     }
   }
 }

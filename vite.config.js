@@ -15,7 +15,6 @@ export default defineConfig(({ command }) => ({
       "@hooks": path.resolve("src/hooks"),
       "@lib": path.resolve("src/lib"),
       "@services": path.resolve("src/services"),
-      "@assets": path.resolve("src/assets"),
     },
   },
 

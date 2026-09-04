@@ -16,13 +16,6 @@ export async function autoSubmitInterview(payload) {
   const response = await api.post(`/user/v1/candidate/interview/ai/auto_submit/force/`, payload);
   return response.data;
 }
-export async function submitVoiceSample(formData) {
-  const response = await api.post(`/user/v1/candidate/interview/voice_sample/`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return response.data;
-}
-
 export async function enrollVoice() {
   const response = await api.post(`/user/v1/candidate/interview/voice_enroll/`);
   return response.data;
