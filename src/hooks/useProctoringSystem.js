@@ -1,15 +1,35 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
 import { captureFrameBase64 } from "@/lib/videoCapture";
+import { createViolationStabilizer } from "@/lib/violationStabilizer";
 import { logger } from "@/lib/logger";
 
 const DETECT_INTERVAL_MS = 5_000; // capture every 5 seconds
-const IMAGE_QUALITY = 0.5;
+const IMAGE_QUALITY = 0.7;
 const TARGET_WIDTH = 640;
 const TARGET_HEIGHT = 480;
 
-// Objects that trigger a violation when detected by YOLO
-const PROHIBITED_OBJECTS = new Set(["cell phone", "laptop", "book", "tablet"]);
+// Detection is unreliable below this many consecutive failures, and hammering a
+// struggling AI service at full rate makes it worse.
+const MAX_BACKOFF_MS = 40_000;
+const DEGRADED_AFTER_FAILURES = 3;
+
+const VIOLATION_COOLDOWN_MS = 30_000;
+// Floor between strikes of ANY type, so one bad moment producing two different
+// violations can't burn two of the three allowed strikes in a few seconds.
+const MIN_STRIKE_INTERVAL_MS = 15_000;
+
+// "laptop" is deliberately absent: the candidate is sitting at one.
+const PROHIBITED_OBJECTS = new Set(["cell phone", "book", "tablet"]);
+const OBJECT_CONFIDENCE_THRESHOLD = 0.6;
+
+function isProhibitedObject(obj) {
+  if (!PROHIBITED_OBJECTS.has(obj?.label?.toLowerCase())) return false;
+  // Payloads without a score fall back to label-only matching rather than
+  // silently dropping every object detection.
+  const confidence = obj.confidence ?? obj.score;
+  return confidence === undefined || confidence >= OBJECT_CONFIDENCE_THRESHOLD;
+}
 
 /**
  * Analyses the AI detection response and returns a violation object if found.
@@ -43,10 +63,8 @@ export function detectViolation(result) {
     };
   }
 
-  // 3. Prohibited objects (phone, laptop, etc.)
-  const foundObject = (result.objects_detected || []).find((obj) =>
-    PROHIBITED_OBJECTS.has(obj.label?.toLowerCase()),
-  );
+  // 3. Prohibited objects (phone, book, tablet)
+  const foundObject = (result.objects_detected || []).find(isProhibitedObject);
   if (foundObject) {
     return {
       type: "PROHIBITED_OBJECT",
@@ -112,6 +130,11 @@ export function useProctoringSystem(
   const sessionRef = useRef({ interviewId, sessionId, proctoringToken });
   const onViolationRef = useRef(onViolation);
   const violationCooldownRef = useRef(new Map()); // prevent spamming the same warning
+  const stabilizerRef = useRef(createViolationStabilizer());
+  const consecutiveFailuresRef = useRef(0);
+  const lastStrikeAtRef = useRef(0);
+
+  const [isDegraded, setIsDegraded] = useState(false);
 
   // Keep session info in ref so the loop closure always has latest values
   useEffect(() => {
@@ -137,6 +160,31 @@ export function useProctoringSystem(
       maxHeight: TARGET_HEIGHT,
       quality: IMAGE_QUALITY,
     });
+  }
+
+  // A gap in observation breaks the consecutive-evidence chain, so a streak
+  // can't span frames we never actually saw.
+  function recordFailure(reason) {
+    stabilizerRef.current.reset();
+    consecutiveFailuresRef.current += 1;
+
+    queueRef.current.push({
+      timestamp: new Date().toISOString(),
+      source: "cv_detect",
+      event_type: "detection_failure",
+      payload: { reason, consecutive: consecutiveFailuresRef.current },
+    });
+
+    if (consecutiveFailuresRef.current >= DEGRADED_AFTER_FAILURES) {
+      logger.warn(`[Proctoring] ⚠️ Detection degraded after ${consecutiveFailuresRef.current} failures.`);
+      setIsDegraded(true);
+    }
+  }
+
+  function recordSuccess() {
+    if (consecutiveFailuresRef.current === 0) return;
+    consecutiveFailuresRef.current = 0;
+    setIsDegraded(false);
   }
 
   // ── Single detection tick ────────────────────────────────────────────
@@ -167,6 +215,14 @@ export function useProctoringSystem(
       delete cleanResult.frame;
       delete cleanResult.image;
 
+      // An unsuccessful response carries no verdict — recording it as clean
+      // would leave a stretch of log that looks observed but never was.
+      if (!cleanResult.success) {
+        recordFailure("unsuccessful_response");
+        return;
+      }
+      recordSuccess();
+
       // Queue the detection result for batch submission later
       queueRef.current.push({
         timestamp: new Date().toISOString(),
@@ -178,22 +234,33 @@ export function useProctoringSystem(
       // ── Check for violations and notify the UI ────────────────────
       // Re-check isActive after the async AI call — session may have ended
       // (auto-submit, normal submit) while we were waiting for the response.
-      const violation = detectViolation(cleanResult);
-      logger.log("[Proctoring] 🔍 detectViolation result:", violation?.type || "CLEAN");
+      const detected = detectViolation(cleanResult);
+      const violation = stabilizerRef.current.push(detected);
+      logger.log(
+        "[Proctoring] 🔍 detectViolation result:",
+        detected?.type || "CLEAN",
+        violation ? "(confirmed)" : "(unconfirmed)",
+      );
       if (violation && isActiveRef.current) {
         const now = Date.now();
+        const countsAsStrike = violation.countsAsViolation !== false && !violation.soft;
         const lastTime = violationCooldownRef.current.get(violation.type) || 0;
         const elapsed = now - lastTime;
-        // 30s cooldown per violation type to avoid spamming
-        if (elapsed > 30_000) {
-          violationCooldownRef.current.set(violation.type, now);
-          logger.warn(`[Proctoring] 🚩 Violation: ${violation.type} — calling onViolation`);
-          logger.log("[Proctoring] 📞 onViolationRef.current exists?", !!onViolationRef.current);
-          onViolationRef.current?.(violation);
-        } else {
+        const sinceStrike = now - lastStrikeAtRef.current;
+
+        if (elapsed <= VIOLATION_COOLDOWN_MS) {
           logger.log(
-            `[Proctoring] ⏳ ${violation.type} in cooldown (${Math.round((30_000 - elapsed) / 1000)}s remaining)`,
+            `[Proctoring] ⏳ ${violation.type} in cooldown (${Math.round((VIOLATION_COOLDOWN_MS - elapsed) / 1000)}s remaining)`,
           );
+        } else if (countsAsStrike && sinceStrike < MIN_STRIKE_INTERVAL_MS) {
+          logger.log(
+            `[Proctoring] ⏳ ${violation.type} held — ${Math.round((MIN_STRIKE_INTERVAL_MS - sinceStrike) / 1000)}s until the next strike is allowed`,
+          );
+        } else {
+          violationCooldownRef.current.set(violation.type, now);
+          if (countsAsStrike) lastStrikeAtRef.current = now;
+          logger.warn(`[Proctoring] 🚩 Violation: ${violation.type} — calling onViolation`);
+          onViolationRef.current?.(violation);
         }
       } else if (violation && !isActiveRef.current) {
         logger.log(
@@ -202,6 +269,7 @@ export function useProctoringSystem(
       }
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
+      recordFailure(err?.message || "request_failed");
     } finally {
       busyRef.current = false;
       scheduleNext();
@@ -209,9 +277,13 @@ export function useProctoringSystem(
   }
 
   function scheduleNext() {
-    if (isActiveRef.current) {
-      timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);
-    }
+    if (!isActiveRef.current) return;
+    const failures = consecutiveFailuresRef.current;
+    const delay =
+      failures === 0
+        ? DETECT_INTERVAL_MS
+        : Math.min(DETECT_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
+    timerRef.current = setTimeout(tick, delay);
   }
 
   // ── Batch flush (ONE call at end of interview) ───────────────────────
@@ -274,6 +346,12 @@ export function useProctoringSystem(
       logger.log("[Proctoring] ▶️ Interview active — starting detection loop.");
       hasFlushedRef.current = false;
       flushRetryCountRef.current = 0;
+      stabilizerRef.current.reset();
+      violationCooldownRef.current.clear();
+      consecutiveFailuresRef.current = 0;
+      lastStrikeAtRef.current = 0;
+      // Deferred so the setState isn't a direct synchronous call in the effect body.
+      queueMicrotask(() => setIsDegraded(false));
       // Start the first tick after a short delay
       timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);
     } else {
@@ -348,5 +426,6 @@ export function useProctoringSystem(
   return {
     flush: flushQueue,
     pendingCount: () => queueRef.current.length,
+    isDegraded,
   };
 }

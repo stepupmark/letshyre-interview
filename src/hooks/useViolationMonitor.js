@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+// Slack against OS chrome and DPI rounding when deciding whether the window is
+// still maximized, and how long a shrunk window must persist before it counts.
+const RESIZE_TOLERANCE_PX = 40;
+const RESIZE_CONFIRM_MS = 1_000;
+
 // Electron violation label helpers (pure — no component state)
 function getElectronViolationTitle(event = "") {
   const e = event.toLowerCase();
@@ -207,21 +212,40 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     };
 
     let resizeTimer = null;
+    let confirmTimer = null;
+    let lastPixelRatio = window.devicePixelRatio;
+
+    const isWindowShrunk = () => {
+      if (document.fullscreenElement) return false;
+      return !(
+        window.innerWidth >= screen.availWidth - RESIZE_TOLERANCE_PX &&
+        window.innerHeight >= screen.availHeight - RESIZE_TOLERANCE_PX
+      );
+    };
+
     const handleResize = () => {
+      // A DPI or browser-zoom change resizes the viewport without the user ever
+      // touching the window, and must not read as un-maximizing.
+      if (window.devicePixelRatio !== lastPixelRatio) {
+        lastPixelRatio = window.devicePixelRatio;
+        return;
+      }
+
       if (resizeTimer) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        const isMaximized =
-          window.innerWidth >= screen.availWidth - 20 &&
-          window.innerHeight >= screen.availHeight - 20;
-        const isFullscreenAPI = !!document.fullscreenElement;
-        if (!isFullscreenAPI && !isMaximized) {
+        if (!isWindowShrunk()) return;
+        // Monitor hotplug and OS window animations report a transient small size
+        // before settling, so only a size that persists counts.
+        if (confirmTimer) clearTimeout(confirmTimer);
+        confirmTimer = setTimeout(() => {
+          if (!isWindowShrunk()) return;
           raiseViolation({
             title: "Window Resize Detected!",
             description:
               "Resizing or un-maximizing the window is strictly prohibited. Continued violations will result in automatic termination.",
             imagePath: "/window-switch.png",
           });
-        }
+        }, RESIZE_CONFIRM_MS);
       }, 300);
     };
 
@@ -234,6 +258,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       window.removeEventListener("resize", handleResize);
       if (resizeTimer) clearTimeout(resizeTimer);
+      if (confirmTimer) clearTimeout(confirmTimer);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ↑ intentional empty deps — raiseViolation reads isActive/incrementViolation via refs

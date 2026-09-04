@@ -86,9 +86,42 @@ describe("detectViolation", () => {
     const violation = detectViolation({
       ...CLEAN_RESULT,
       face_count: 2,
-      objects_detected: [{ label: "laptop" }],
+      objects_detected: [{ label: "cell phone" }],
     });
     expect(violation.type).toBe("MULTIPLE_FACES");
+  });
+
+  it("does not flag a laptop — the candidate is sitting at one", () => {
+    const violation = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "laptop", confidence: 0.99 }],
+    });
+    expect(violation).toBeNull();
+  });
+
+  it("ignores a prohibited object below the confidence threshold", () => {
+    const violation = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "cell phone", confidence: 0.3 }],
+    });
+    expect(violation).toBeNull();
+  });
+
+  it("flags a prohibited object above the confidence threshold", () => {
+    const violation = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "cell phone", confidence: 0.9 }],
+    });
+    expect(violation.type).toBe("PROHIBITED_OBJECT");
+  });
+
+  it("accepts a score field as the confidence source", () => {
+    expect(
+      detectViolation({ ...CLEAN_RESULT, objects_detected: [{ label: "book", score: 0.2 }] }),
+    ).toBeNull();
+    expect(
+      detectViolation({ ...CLEAN_RESULT, objects_detected: [{ label: "book", score: 0.8 }] }).type,
+    ).toBe("PROHIBITED_OBJECT");
   });
 
   it("prioritizes PROHIBITED_OBJECT over NOT_LOOKING when both conditions match", () => {

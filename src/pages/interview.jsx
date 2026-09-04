@@ -107,7 +107,7 @@ export function Interview() {
   }, []);
 
   //Central Proctoring System
-  useProctoringSystem(
+  const { isDegraded: isProctoringDegraded } = useProctoringSystem(
     videoRef,
     session?.interview_id,
     session?.session_id,
@@ -115,6 +115,13 @@ export function Interview() {
     session?.proctoring_token,
     handleAiViolation,
   );
+
+  useEffect(() => {
+    if (!isProctoringDegraded) return;
+    toast.warning("Proctoring checks are temporarily unavailable.", {
+      description: "Your session is still being recorded. Stay in front of the camera.",
+    });
+  }, [isProctoringDegraded]);
 
   useElectronViolation({
     onHardBlock: handleElectronViolation,
