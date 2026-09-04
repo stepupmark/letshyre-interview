@@ -4,7 +4,7 @@ import { logger } from "@/lib/logger";
 
 // AI Detection API uses a different base URL
 const aiApi = axios.create({
-  baseURL: `${import.meta.env.VITE_AI_DETECTION_URL}/api/cv_api/api/v1`,
+  baseURL: `${import.meta.env.VITE_AI_DETECTION_URL}`,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -17,7 +17,7 @@ const aiApi = axios.create({
  */
 export async function detectFrame(frame) {
   logger.log("[AI API] 📸 Sending image to AI engine... (size:", frame?.length, "chars)");
-  const response = await aiApi.post("/detect", { frame: frame });
+  const response = await aiApi.post("/api/v1/detect", { frame: frame });
   return response.data;
 }
 
