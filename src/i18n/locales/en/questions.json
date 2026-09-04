@@ -1,0 +1,55 @@
+{
+  "mcq": {
+    "selectOption": "Please select an option to proceed.",
+    "badge": "MCQ"
+  },
+  "typing": {
+    "provideAnswer": "Please provide an answer to proceed.",
+    "badge": "Typing",
+    "placeholder": "Type here your answer...",
+    "characters": "{{count}} characters",
+    "answerTip": "Answer clearly and concisely"
+  },
+  "code": {
+    "selectOption": "Please select an option to proceed.",
+    "provideAnswer": "Please provide your code answer to proceed.",
+    "badgePseudocode": "Pseudocode MCQ",
+    "badgeCoding": "Coding",
+    "placeholder": "Type your code here..."
+  },
+  "voice": {
+    "badge": "Voice Question",
+    "verifying": "Verifying your voice identity…",
+    "verified": "Voice Verified ✓",
+    "mismatchDetected": "Voice Mismatch Detected",
+    "matchResult": "Identity confirmed. Confidence score: {{score}}%",
+    "mismatchResult": "This voice doesn't match the registered sample. Score: {{score}}%. You can still submit your answer.",
+    "enrolling": "Enrolling voice…",
+    "enrolled": "Voice enrolled",
+    "mismatchToast": "Voice mismatch detected. Please ensure you're using your registered voice.",
+    "compareFailed": "Voice comparison failed.",
+    "recordAnswer": "Please record your answer to proceed.",
+    "startRecording": "Start Recording",
+    "stopRecording": "Stop Recording",
+    "listen": "Listen",
+    "pause": "Pause",
+    "reRecord": "Re-record",
+    "recordedStatus": "Audio recorded successfully. You can listen or re-record.",
+    "recordingStatus": "Recording in progress…",
+    "readyStatus": "Ready to record when you are",
+    "tipsTitle": "Recording Tips",
+    "tip1": "Speak clearly and at a normal pace",
+    "tip2": "Ensure your microphone is not muted",
+    "tip3": "Try to minimize background noise"
+  },
+  "shell": {
+    "submittingFinal": "Submitting your final answer...",
+    "generatingNext": "Generating Your Next Interview Question...",
+    "submitting": "Submitting...",
+    "submitInterview": "Submit Interview",
+    "nextQuestion": "Next Question"
+  },
+  "loader": {
+    "preparing": "Preparing your next question…"
+  }
+}

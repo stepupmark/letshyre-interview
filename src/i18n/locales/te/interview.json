@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{total}} లో {{attempted}} ప్రశ్నలు పూర్తయ్యాయి",
+    "complianceFlags": "కంప్లయన్స్ ఫ్లాగ్‌లు: {{violations}}/{{max}}",
+    "complianceSecure": "కంప్లయన్స్: సురక్షితం",
+    "monitoringActive": "పర్యవేక్షణ యాక్టివ్‌గా ఉంది",
+    "recording": "రికార్డింగ్ జరుగుతోంది"
+  },
+  "scoreCard": {
+    "heading": "ఇంటర్వ్యూ పూర్తయింది",
+    "subheading": "అద్భుతం! మీ పనితీరు యొక్క వివరణాత్మక విశ్లేషణ ఇక్కడ ఉంది.",
+    "overallPerformance": "మొత్తం పనితీరు",
+    "overallPerformanceDesc": "సరైనతనం, కమ్యూనికేషన్ మరియు సాంకేతిక లోతు ఆధారంగా.",
+    "communicationMetrics": "కమ్యూనికేషన్ మెట్రిక్స్",
+    "metricClarity": "స్పష్టత",
+    "metricConfidence": "ఆత్మవిశ్వాసం",
+    "metricRelevance": "సంబంధిత",
+    "metricDepthOfThought": "ఆలోచన లోతు",
+    "metricKeyConcepts": "ముఖ్య భావనలు",
+    "keyStrengths": "ముఖ్య బలాలు",
+    "needsImprovement": "మెరుగుదల అవసరం",
+    "recommendations": "సిఫార్సులు",
+    "questionBreakdown": "వివరణాత్మక ప్రశ్నల విభజన",
+    "correct": "సరైనది",
+    "incorrect": "తప్పు",
+    "question": "ప్రశ్న",
+    "codeSnippet": "కోడ్ స్నిప్పెట్",
+    "yourAnswer": "మీ సమాధానం",
+    "noAnswerProvided": "సమాధానం ఇవ్వలేదు",
+    "score": "స్కోర్"
+  },
+  "terminated": {
+    "heading": "ఇంటర్వ్యూ నిలిపివేయబడింది",
+    "description": "పరీక్షా సమగ్రత నియమాల (విండో నుండి దూరంగా వెళ్లడం లేదా ఫుల్‌స్క్రీన్ నుండి నిష్క్రమించడం) బహుళ ఉల్లంఘనల కారణంగా మీ ఇంటర్వ్యూ స్వయంచాలకంగా నిలిపివేయబడింది."
+  },
+  "violationWarning": {
+    "rec": "రెక్",
+    "securityFlag": "భద్రతా ఫ్లాగ్ : {{violationCount}}",
+    "warning": "హెచ్చరిక",
+    "defaultTitle": "విండో స్విచ్ హెచ్చరిక",
+    "defaultDescription": "ఇంటర్వ్యూ స్క్రీన్ నుండి దూరంగా వెళ్లడం ఉల్లంఘనగా నమోదు చేయబడుతోంది",
+    "defaultButtonText": "అర్థమైంది, ఇంటర్వ్యూకు తిరిగి వెళ్లండి"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "ఇంటర్నెట్ కనెక్షన్ లేదు",
+    "submissionFailed": "సమర్పణ విఫలమైంది",
+    "interviewSubmitted": "ఇంటర్వ్యూ సమర్పించబడింది!",
+    "submittingInterview": "మీ ఇంటర్వ్యూ సమర్పించబడుతోంది",
+    "waitingForConnection": "కనెక్షన్ కోసం వేచి ఉంది",
+    "actionNeeded": "చర్య అవసరం",
+    "done": "పూర్తయింది",
+    "reason": "కారణం: {{reason}}",
+    "reasonAutoSubmitted": "స్వయంచాలకంగా సమర్పించబడింది",
+    "reasonTimeUp": "సమయం ముగిసింది",
+    "reasonConnectionIssues": "కనెక్షన్ సమస్యలు",
+    "reasonPolicyFlags": "పాలసీ ఫ్లాగ్‌లు చేరుకున్నాయి",
+    "messageOffline": "చింతించకండి — మీ సమాధానాలు సేవ్ చేయబడ్డాయి. మీరు తిరిగి ఆన్‌లైన్‌లోకి వచ్చినప్పుడు మేము స్వయంచాలకంగా సమర్పిస్తాము.",
+    "messageError": "{{errorText}} మీ సమాధానాలు సేవ్ చేయబడ్డాయి — దయచేసి మళ్లీ ప్రయత్నించండి.",
+    "messageErrorGenericFallback": "మీ ఇంటర్వ్యూను సమర్పించడంలో ఏదో తప్పు జరిగింది.",
+    "messageSuccess": "పూర్తయింది! మీ ఫలితాలు సిద్ధం చేయబడుతున్నాయి.",
+    "messageSubmitting": "కొద్దిసేపు వేచి ఉండండి — మేము మీ సమాధానాలను సేవ్ చేసి, మీ ఫలితాలను సిద్ధం చేస్తున్నాము. దయచేసి ఈ పేజీని మూసివేయవద్దు.",
+    "tryAgain": "మళ్లీ ప్రయత్నించండి",
+    "retrying": "మళ్లీ ప్రయత్నిస్తోంది…",
+    "waitingOffline": "మీరు తిరిగి ఆన్‌లైన్‌లోకి వచ్చినప్పుడు మేము స్వయంచాలకంగా మళ్లీ ప్రయత్నిస్తాము.",
+    "waitingError": "తిరిగి సమర్పించడానికి “మళ్లీ ప్రయత్నించండి” నొక్కండి. మీ పురోగతి సురక్షితంగా ఉంది.",
+    "waitingSuccess": "మీ ఫలితాలకు దారి మళ్లిస్తోంది…",
+    "waitingSubmitting": "దయచేసి వేచి ఉండండి, ఈ పేజీని మూసివేయవద్దు లేదా రిఫ్రెష్ చేయవద్దు."
+  }
+}

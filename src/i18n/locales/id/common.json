@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "Menyiapkan Wawancara Anda",
+    "description": "Kami sedang menyiapkan sesi wawancara pribadi Anda dan membuat pertanyaan yang disesuaikan berdasarkan profil Anda. Mohon tunggu sebentar..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "Pewawancara AI Aktif",
+    "aiInterviewerAlt": "Pewawancara AI"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "Lihat Dasbor"
+  }
+}

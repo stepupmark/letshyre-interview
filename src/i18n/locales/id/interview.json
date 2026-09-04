@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "Menjawab {{attempted}} dari {{total}} Pertanyaan",
+    "complianceFlags": "Tanda Kepatuhan: {{violations}}/{{max}}",
+    "complianceSecure": "Kepatuhan: Aman",
+    "monitoringActive": "Pemantauan Aktif",
+    "recording": "Merekam"
+  },
+  "scoreCard": {
+    "heading": "Wawancara Selesai",
+    "subheading": "Kerja bagus! Berikut rincian lengkap kinerja Anda.",
+    "overallPerformance": "Kinerja Keseluruhan",
+    "overallPerformanceDesc": "Berdasarkan ketepatan, komunikasi, dan kedalaman teknis.",
+    "communicationMetrics": "Metrik Komunikasi",
+    "metricClarity": "Kejelasan",
+    "metricConfidence": "Kepercayaan Diri",
+    "metricRelevance": "Relevansi",
+    "metricDepthOfThought": "Kedalaman Pemikiran",
+    "metricKeyConcepts": "Konsep Utama",
+    "keyStrengths": "Kekuatan Utama",
+    "needsImprovement": "Perlu Ditingkatkan",
+    "recommendations": "Rekomendasi",
+    "questionBreakdown": "Rincian Pertanyaan secara Detail",
+    "correct": "Benar",
+    "incorrect": "Salah",
+    "question": "Pertanyaan",
+    "codeSnippet": "Cuplikan Kode",
+    "yourAnswer": "Jawaban Anda",
+    "noAnswerProvided": "Tidak ada jawaban yang diberikan",
+    "score": "Skor"
+  },
+  "terminated": {
+    "heading": "Wawancara Dihentikan",
+    "description": "Wawancara Anda telah dihentikan secara otomatis karena beberapa pelanggaran terhadap aturan integritas ujian (berpindah dari jendela wawancara atau keluar dari mode layar penuh)."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "Tanda Keamanan: {{violationCount}}",
+    "warning": "Peringatan",
+    "defaultTitle": "Peringatan Perpindahan Jendela",
+    "defaultDescription": "Berpindah dari layar wawancara sedang dicatat sebagai pelanggaran",
+    "defaultButtonText": "Saya Mengerti, Kembali ke Wawancara"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "Tidak Ada Koneksi Internet",
+    "submissionFailed": "Pengiriman Gagal",
+    "interviewSubmitted": "Wawancara Terkirim!",
+    "submittingInterview": "Mengirimkan Wawancara Anda",
+    "waitingForConnection": "Menunggu koneksi",
+    "actionNeeded": "Tindakan diperlukan",
+    "done": "Selesai",
+    "reason": "Alasan: {{reason}}",
+    "reasonAutoSubmitted": "Dikirim otomatis",
+    "reasonTimeUp": "Waktu habis",
+    "reasonConnectionIssues": "Masalah koneksi",
+    "reasonPolicyFlags": "Batas tanda kebijakan tercapai",
+    "messageOffline": "Jangan khawatir — jawaban Anda telah tersimpan. Kami akan mengirimkan secara otomatis saat Anda kembali online.",
+    "messageError": "{{errorText}} Jawaban Anda telah tersimpan — silakan coba lagi.",
+    "messageErrorGenericFallback": "Terjadi kesalahan saat mengirimkan wawancara Anda.",
+    "messageSuccess": "Semua selesai! Hasil Anda sedang disiapkan sekarang.",
+    "messageSubmitting": "Mohon tunggu — kami sedang menyimpan jawaban Anda dan menyiapkan hasil Anda. Mohon jangan tutup halaman ini.",
+    "tryAgain": "Coba Lagi",
+    "retrying": "Mencoba lagi…",
+    "waitingOffline": "Kami akan mencoba lagi secara otomatis saat Anda kembali online.",
+    "waitingError": "Ketuk \"Coba Lagi\" untuk mengirim ulang. Progres Anda aman.",
+    "waitingSuccess": "Mengalihkan ke hasil Anda…",
+    "waitingSubmitting": "Mohon tunggu, jangan tutup atau muat ulang halaman ini."
+  }
+}

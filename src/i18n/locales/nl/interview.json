@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{attempted}} van {{total}} vragen beantwoord",
+    "complianceFlags": "Nalevingsmeldingen: {{violations}}/{{max}}",
+    "complianceSecure": "Naleving: Veilig",
+    "monitoringActive": "Bewaking actief",
+    "recording": "Opname"
+  },
+  "scoreCard": {
+    "heading": "Interview voltooid",
+    "subheading": "Goed gedaan! Hier vindt u een gedetailleerd overzicht van uw prestaties.",
+    "overallPerformance": "Algemene prestatie",
+    "overallPerformanceDesc": "Gebaseerd op juistheid, communicatie en technische diepgang.",
+    "communicationMetrics": "Communicatiestatistieken",
+    "metricClarity": "Duidelijkheid",
+    "metricConfidence": "Zelfvertrouwen",
+    "metricRelevance": "Relevantie",
+    "metricDepthOfThought": "Denkdiepte",
+    "metricKeyConcepts": "Kernconcepten",
+    "keyStrengths": "Belangrijkste sterke punten",
+    "needsImprovement": "Verbeterpunten",
+    "recommendations": "Aanbevelingen",
+    "questionBreakdown": "Gedetailleerd overzicht van vragen",
+    "correct": "Correct",
+    "incorrect": "Onjuist",
+    "question": "Vraag",
+    "codeSnippet": "Codefragment",
+    "yourAnswer": "Uw antwoord",
+    "noAnswerProvided": "Geen antwoord gegeven",
+    "score": "Score"
+  },
+  "terminated": {
+    "heading": "Interview beëindigd",
+    "description": "Uw interview is automatisch beëindigd vanwege meerdere overtredingen van de examenregels (het venster verlaten of het volledige scherm afsluiten)."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "Beveiligingsmelding: {{violationCount}}",
+    "warning": "Waarschuwing",
+    "defaultTitle": "Waarschuwing: venster gewisseld",
+    "defaultDescription": "Het verlaten van het interviewscherm wordt geregistreerd als een overtreding",
+    "defaultButtonText": "Ik begrijp het, terug naar interview"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "Geen internetverbinding",
+    "submissionFailed": "Indienen mislukt",
+    "interviewSubmitted": "Interview ingediend!",
+    "submittingInterview": "Uw interview wordt ingediend",
+    "waitingForConnection": "Wachten op verbinding",
+    "actionNeeded": "Actie vereist",
+    "done": "Voltooid",
+    "reason": "Reden: {{reason}}",
+    "reasonAutoSubmitted": "Automatisch ingediend",
+    "reasonTimeUp": "Tijd is om",
+    "reasonConnectionIssues": "Verbindingsproblemen",
+    "reasonPolicyFlags": "Beleidsmeldingen bereikt",
+    "messageOffline": "Geen zorgen — uw antwoorden zijn opgeslagen. We dienen automatisch in zodra u weer online bent.",
+    "messageError": "{{errorText}} Uw antwoorden zijn opgeslagen — probeer het opnieuw.",
+    "messageErrorGenericFallback": "Er is iets misgegaan bij het indienen van uw interview.",
+    "messageSuccess": "Helemaal klaar! Uw resultaten worden nu voorbereid.",
+    "messageSubmitting": "Even geduld — we slaan uw antwoorden op en bereiden uw resultaten voor. Sluit deze pagina niet.",
+    "tryAgain": "Opnieuw proberen",
+    "retrying": "Opnieuw proberen…",
+    "waitingOffline": "We proberen het automatisch opnieuw zodra u weer online bent.",
+    "waitingError": "Tik op \"Opnieuw proberen\" om opnieuw in te dienen. Uw voortgang is veilig.",
+    "waitingSuccess": "U wordt doorgestuurd naar uw resultaten…",
+    "waitingSubmitting": "Wacht alstublieft, sluit deze pagina niet en ververs deze niet."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "Preparing Your Interview",
+    "description": "We're setting up your personalized interview session and generating tailored questions based on your profile. Please hold on..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "AI Interviewer Active",
+    "aiInterviewerAlt": "AI Interviewer"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "View Dashboard"
+  }
+}

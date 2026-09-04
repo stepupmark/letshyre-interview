@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "Отвечено на {{attempted}} из {{total}} вопросов",
+    "complianceFlags": "Нарушения: {{violations}}/{{max}}",
+    "complianceSecure": "Соответствие: в норме",
+    "monitoringActive": "Мониторинг активен",
+    "recording": "Идёт запись"
+  },
+  "scoreCard": {
+    "heading": "Собеседование завершено",
+    "subheading": "Отличная работа! Вот подробный разбор ваших результатов.",
+    "overallPerformance": "Общий результат",
+    "overallPerformanceDesc": "На основе правильности ответов, коммуникации и технической глубины.",
+    "communicationMetrics": "Показатели коммуникации",
+    "metricClarity": "Ясность",
+    "metricConfidence": "Уверенность",
+    "metricRelevance": "Релевантность",
+    "metricDepthOfThought": "Глубина мышления",
+    "metricKeyConcepts": "Владение ключевыми понятиями",
+    "keyStrengths": "Ключевые сильные стороны",
+    "needsImprovement": "Требует улучшения",
+    "recommendations": "Рекомендации",
+    "questionBreakdown": "Подробный разбор по вопросам",
+    "correct": "Верно",
+    "incorrect": "Неверно",
+    "question": "Вопрос",
+    "codeSnippet": "Фрагмент кода",
+    "yourAnswer": "Ваш ответ",
+    "noAnswerProvided": "Ответ не предоставлен",
+    "score": "Балл"
+  },
+  "terminated": {
+    "heading": "Собеседование прервано",
+    "description": "Ваше собеседование было автоматически прервано из-за многократных нарушений правил проведения экзамена (переключение окна или выход из полноэкранного режима)."
+  },
+  "violationWarning": {
+    "rec": "ЗАПИСЬ",
+    "securityFlag": "Нарушение безопасности: {{violationCount}}",
+    "warning": "Предупреждение",
+    "defaultTitle": "Предупреждение о переключении окна",
+    "defaultDescription": "Переход из окна собеседования фиксируется как нарушение",
+    "defaultButtonText": "Понятно, вернуться к собеседованию"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "Нет подключения к интернету",
+    "submissionFailed": "Ошибка отправки",
+    "interviewSubmitted": "Собеседование отправлено!",
+    "submittingInterview": "Отправка вашего собеседования",
+    "waitingForConnection": "Ожидание подключения",
+    "actionNeeded": "Требуется действие",
+    "done": "Готово",
+    "reason": "Причина: {{reason}}",
+    "reasonAutoSubmitted": "Отправлено автоматически",
+    "reasonTimeUp": "Время истекло",
+    "reasonConnectionIssues": "Проблемы с подключением",
+    "reasonPolicyFlags": "Достигнут лимит нарушений",
+    "messageOffline": "Не волнуйтесь — ваши ответы сохранены. Мы отправим их автоматически, как только вы снова окажетесь в сети.",
+    "messageError": "{{errorText}} Ваши ответы сохранены — пожалуйста, попробуйте ещё раз.",
+    "messageErrorGenericFallback": "При отправке собеседования произошла ошибка.",
+    "messageSuccess": "Готово! Ваши результаты готовятся.",
+    "messageSubmitting": "Подождите немного — мы сохраняем ваши ответы и готовим результаты. Пожалуйста, не закрывайте эту страницу.",
+    "tryAgain": "Повторить попытку",
+    "retrying": "Повторная попытка…",
+    "waitingOffline": "Мы автоматически повторим попытку, как только вы снова окажетесь в сети.",
+    "waitingError": "Нажмите «Повторить попытку», чтобы отправить снова. Ваш прогресс сохранён.",
+    "waitingSuccess": "Перенаправляем к результатам…",
+    "waitingSubmitting": "Пожалуйста, подождите, не закрывайте и не обновляйте страницу."
+  }
+}

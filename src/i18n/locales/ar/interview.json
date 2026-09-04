@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "تمت الإجابة على {{attempted}} من {{total}} أسئلة",
+    "complianceFlags": "تنبيهات الامتثال: {{violations}}/{{max}}",
+    "complianceSecure": "الامتثال: آمن",
+    "monitoringActive": "المراقبة نشطة",
+    "recording": "جارٍ التسجيل"
+  },
+  "scoreCard": {
+    "heading": "اكتملت المقابلة",
+    "subheading": "عمل رائع! إليك تفصيل شامل لأدائك.",
+    "overallPerformance": "الأداء العام",
+    "overallPerformanceDesc": "بناءً على الدقة والتواصل والعمق التقني.",
+    "communicationMetrics": "مقاييس التواصل",
+    "metricClarity": "الوضوح",
+    "metricConfidence": "الثقة",
+    "metricRelevance": "الملاءمة",
+    "metricDepthOfThought": "عمق التفكير",
+    "metricKeyConcepts": "المفاهيم الأساسية",
+    "keyStrengths": "أبرز نقاط القوة",
+    "needsImprovement": "بحاجة إلى تحسين",
+    "recommendations": "التوصيات",
+    "questionBreakdown": "التفصيل الكامل للأسئلة",
+    "correct": "صحيح",
+    "incorrect": "غير صحيح",
+    "question": "السؤال",
+    "codeSnippet": "مقتطف الكود",
+    "yourAnswer": "إجابتك",
+    "noAnswerProvided": "لم يتم تقديم إجابة",
+    "score": "النتيجة"
+  },
+  "terminated": {
+    "heading": "تم إنهاء المقابلة",
+    "description": "تم إنهاء مقابلتك تلقائيًا بسبب تكرار مخالفات قواعد نزاهة الاختبار (الانتقال بعيدًا عن نافذة الاختبار أو الخروج من وضع ملء الشاشة)."
+  },
+  "violationWarning": {
+    "rec": "تسجيل",
+    "securityFlag": "تنبيه أمني : {{violationCount}}",
+    "warning": "تحذير",
+    "defaultTitle": "تحذير تبديل النافذة",
+    "defaultDescription": "يتم تسجيل الانتقال بعيدًا عن شاشة المقابلة كمخالفة",
+    "defaultButtonText": "فهمت، العودة إلى المقابلة"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "لا يوجد اتصال بالإنترنت",
+    "submissionFailed": "فشل الإرسال",
+    "interviewSubmitted": "تم إرسال المقابلة!",
+    "submittingInterview": "جارٍ إرسال مقابلتك",
+    "waitingForConnection": "في انتظار الاتصال",
+    "actionNeeded": "يلزم اتخاذ إجراء",
+    "done": "تم",
+    "reason": "السبب: {{reason}}",
+    "reasonAutoSubmitted": "تم الإرسال تلقائيًا",
+    "reasonTimeUp": "انتهى الوقت",
+    "reasonConnectionIssues": "مشاكل في الاتصال",
+    "reasonPolicyFlags": "تم بلوغ الحد الأقصى للمخالفات",
+    "messageOffline": "لا داعي للقلق — تم حفظ إجاباتك. سنرسلها تلقائيًا بمجرد عودتك للاتصال بالإنترنت.",
+    "messageError": "{{errorText}} تم حفظ إجاباتك — يرجى المحاولة مرة أخرى.",
+    "messageErrorGenericFallback": "حدث خطأ ما أثناء إرسال مقابلتك.",
+    "messageSuccess": "اكتمل الأمر! يتم الآن تجهيز نتائجك.",
+    "messageSubmitting": "يرجى الانتظار قليلاً — نقوم بحفظ إجاباتك وتجهيز نتائجك. يرجى عدم إغلاق هذه الصفحة.",
+    "tryAgain": "إعادة المحاولة",
+    "retrying": "جارٍ إعادة المحاولة…",
+    "waitingOffline": "سنعيد المحاولة تلقائيًا بمجرد عودتك للاتصال بالإنترنت.",
+    "waitingError": "اضغط على «إعادة المحاولة» لإعادة الإرسال. تقدمك محفوظ وآمن.",
+    "waitingSuccess": "جارٍ إعادة توجيهك إلى نتائجك…",
+    "waitingSubmitting": "يرجى الانتظار، وعدم إغلاق هذه الصفحة أو تحديثها."
+  }
+}

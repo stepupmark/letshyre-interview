@@ -1,0 +1,49 @@
+{
+  "errorPage": {
+    "badge": "Erreur système",
+    "statusLabel": "STATUT",
+    "active": "Actif",
+    "goBack": "Retour",
+    "returnHome": "Retour à l'accueil",
+    "reloadPage": "Recharger la page",
+    "default": {
+      "title": "Erreur d'application inattendue",
+      "description": "Un problème inattendu s'est produit lors du traitement de votre demande."
+    },
+    "unauthorized": {
+      "title": "Accès non autorisé",
+      "description": "Votre session actuelle n'est pas autorisée à accéder à cette ressource."
+    },
+    "forbidden": {
+      "title": "Accès restreint",
+      "description": "Vous n'avez actuellement pas la permission de continuer."
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "description": "La route demandée a peut-être été supprimée ou n'est plus disponible."
+    },
+    "serverError": {
+      "title": "Erreur interne du serveur",
+      "description": "Le serveur a rencontré un problème lors du traitement de votre demande."
+    }
+  },
+  "notFoundPage": {
+    "badge": "Erreur 404",
+    "headingLine1": "Page",
+    "headingLine2": "introuvable",
+    "description": "La page que vous essayez d'accéder a peut-être été supprimée, déplacée vers une autre route, ou n'est plus disponible dans la session d'entretien en cours.",
+    "goBack": "Retour",
+    "returnHome": "Retour à l'accueil",
+    "reloadPage": "Recharger la page",
+    "tagline": "Plateforme d'évaluation sécurisée"
+  },
+  "unauthorizedAccess": {
+    "heading": "Accès refusé",
+    "description": "Le lien de votre session est manquant ou a expiré. Veuillez utiliser le lien fourni dans votre e-mail d'invitation pour accéder à l'entretien."
+  },
+  "boundary": {
+    "heading": "Un problème est survenu ici",
+    "description": "Cette section n'a pas pu être chargée. Votre entretien est toujours en cours — vous pouvez réessayer sans perdre votre session.",
+    "tryAgain": "Réessayer"
+  }
+}

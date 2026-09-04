@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "Uw interview wordt voorbereid",
+    "description": "We stellen uw persoonlijke interviewsessie samen en genereren op maat gemaakte vragen op basis van uw profiel. Een ogenblik geduld..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "AI-interviewer actief",
+    "aiInterviewerAlt": "AI-interviewer"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "Dashboard bekijken"
+  }
+}

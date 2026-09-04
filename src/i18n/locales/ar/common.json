@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "جارٍ تجهيز مقابلتك",
+    "description": "نقوم بإعداد جلسة المقابلة الخاصة بك وإنشاء أسئلة مخصصة بناءً على ملفك الشخصي. يرجى الانتظار..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "المُحاوِر الذكي نشط",
+    "aiInterviewerAlt": "المُحاوِر الذكي"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "عرض لوحة التحكم"
+  }
+}

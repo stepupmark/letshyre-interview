@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{attempted}} domande su {{total}} completate",
+    "complianceFlags": "Segnalazioni di conformità: {{violations}}/{{max}}",
+    "complianceSecure": "Conformità: Sicura",
+    "monitoringActive": "Monitoraggio attivo",
+    "recording": "Registrazione"
+  },
+  "scoreCard": {
+    "heading": "Colloquio completato",
+    "subheading": "Ottimo lavoro! Ecco una panoramica dettagliata della sua performance.",
+    "overallPerformance": "Prestazione complessiva",
+    "overallPerformanceDesc": "Basata su correttezza, comunicazione e profondità tecnica.",
+    "communicationMetrics": "Metriche di comunicazione",
+    "metricClarity": "Chiarezza",
+    "metricConfidence": "Sicurezza",
+    "metricRelevance": "Pertinenza",
+    "metricDepthOfThought": "Profondità di pensiero",
+    "metricKeyConcepts": "Concetti chiave",
+    "keyStrengths": "Punti di forza principali",
+    "needsImprovement": "Aree da migliorare",
+    "recommendations": "Raccomandazioni",
+    "questionBreakdown": "Dettaglio delle domande",
+    "correct": "Corretto",
+    "incorrect": "Errato",
+    "question": "Domanda",
+    "codeSnippet": "Frammento di codice",
+    "yourAnswer": "La sua risposta",
+    "noAnswerProvided": "Nessuna risposta fornita",
+    "score": "Punteggio"
+  },
+  "terminated": {
+    "heading": "Colloquio interrotto",
+    "description": "Il colloquio è stato automaticamente interrotto a causa di più violazioni delle regole di integrità dell'esame (cambio di finestra o uscita dalla modalità a schermo intero)."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "Segnalazione di sicurezza: {{violationCount}}",
+    "warning": "Avviso",
+    "defaultTitle": "Avviso di cambio finestra",
+    "defaultDescription": "L'uscita dalla schermata del colloquio viene registrata come violazione",
+    "defaultButtonText": "Ho capito, torna al colloquio"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "Nessuna connessione Internet",
+    "submissionFailed": "Invio non riuscito",
+    "interviewSubmitted": "Colloquio inviato!",
+    "submittingInterview": "Invio del colloquio in corso",
+    "waitingForConnection": "In attesa di connessione",
+    "actionNeeded": "Azione richiesta",
+    "done": "Fatto",
+    "reason": "Motivo: {{reason}}",
+    "reasonAutoSubmitted": "Inviato automaticamente",
+    "reasonTimeUp": "Tempo scaduto",
+    "reasonConnectionIssues": "Problemi di connessione",
+    "reasonPolicyFlags": "Soglia di segnalazioni raggiunta",
+    "messageOffline": "Non si preoccupi — le sue risposte sono salvate. Invieremo automaticamente non appena tornerà online.",
+    "messageError": "{{errorText}} Le sue risposte sono salvate — la preghiamo di riprovare.",
+    "messageErrorGenericFallback": "Si è verificato un problema durante l'invio del colloquio.",
+    "messageSuccess": "Fatto! I suoi risultati sono in fase di preparazione.",
+    "messageSubmitting": "Un momento — stiamo salvando le sue risposte e preparando i risultati. La preghiamo di non chiudere questa pagina.",
+    "tryAgain": "Riprova",
+    "retrying": "Nuovo tentativo…",
+    "waitingOffline": "Riproveremo automaticamente non appena tornerà online.",
+    "waitingError": "Tocchi \"Riprova\" per inviare di nuovo. I suoi progressi sono al sicuro.",
+    "waitingSuccess": "Reindirizzamento ai suoi risultati…",
+    "waitingSubmitting": "Attenda, non chiuda né aggiorni questa pagina."
+  }
+}

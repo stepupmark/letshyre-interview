@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "Preparando su entrevista",
+    "description": "Estamos configurando su sesión de entrevista personalizada y generando preguntas adaptadas a su perfil. Por favor, espere..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "Entrevistador de IA activo",
+    "aiInterviewerAlt": "Entrevistador de IA"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "Ver panel de control"
+  }
+}

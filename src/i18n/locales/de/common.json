@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "Ihr Interview wird vorbereitet",
+    "description": "Wir richten Ihre persönliche Interviewsitzung ein und generieren passende Fragen basierend auf Ihrem Profil. Bitte haben Sie einen Moment Geduld..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "KI-Interviewer aktiv",
+    "aiInterviewerAlt": "KI-Interviewer"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "Dashboard anzeigen"
+  }
+}

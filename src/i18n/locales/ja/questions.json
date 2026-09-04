@@ -1,0 +1,55 @@
+{
+  "mcq": {
+    "selectOption": "続行するには選択肢を選んでください。",
+    "badge": "選択問題"
+  },
+  "typing": {
+    "provideAnswer": "続行するには回答を入力してください。",
+    "badge": "記述式",
+    "placeholder": "ここに回答を入力してください...",
+    "characters": "{{count}} 文字",
+    "answerTip": "簡潔かつ明確に回答してください"
+  },
+  "code": {
+    "selectOption": "続行するには選択肢を選んでください。",
+    "provideAnswer": "続行するにはコードの回答を入力してください。",
+    "badgePseudocode": "疑似コード選択問題",
+    "badgeCoding": "コーディング",
+    "placeholder": "ここにコードを入力してください..."
+  },
+  "voice": {
+    "badge": "音声問題",
+    "verifying": "音声による本人確認を行っています…",
+    "verified": "音声を確認しました ✓",
+    "mismatchDetected": "音声の不一致を検出しました",
+    "matchResult": "本人確認が完了しました。信頼スコア: {{score}}%",
+    "mismatchResult": "この音声は登録済みのサンプルと一致しません。スコア: {{score}}%。回答を送信することは可能です。",
+    "enrolling": "音声を登録しています…",
+    "enrolled": "音声を登録しました",
+    "mismatchToast": "音声の不一致を検出しました。登録済みの声で話しているかご確認ください。",
+    "compareFailed": "音声の照合に失敗しました。",
+    "recordAnswer": "続行するには回答を録音してください。",
+    "startRecording": "録音開始",
+    "stopRecording": "録音停止",
+    "listen": "再生",
+    "pause": "一時停止",
+    "reRecord": "録り直す",
+    "recordedStatus": "録音が完了しました。再生または録り直しができます。",
+    "recordingStatus": "録音中…",
+    "readyStatus": "準備ができたら録音を開始してください",
+    "tipsTitle": "録音のコツ",
+    "tip1": "はっきりと、普段どおりの速さで話してください",
+    "tip2": "マイクがミュートになっていないか確認してください",
+    "tip3": "周囲の雑音をできるだけ減らしてください"
+  },
+  "shell": {
+    "submittingFinal": "最終回答を送信しています...",
+    "generatingNext": "次の面接質問を生成しています...",
+    "submitting": "送信中...",
+    "submitInterview": "面接を提出する",
+    "nextQuestion": "次の質問"
+  },
+  "loader": {
+    "preparing": "次の質問を準備しています…"
+  }
+}

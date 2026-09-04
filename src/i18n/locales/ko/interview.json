@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "전체 {{total}}문항 중 {{attempted}}문항 응시함",
+    "complianceFlags": "규정 위반 표시: {{violations}}/{{max}}",
+    "complianceSecure": "규정 준수: 안전함",
+    "monitoringActive": "모니터링 활성화됨",
+    "recording": "녹화 중"
+  },
+  "scoreCard": {
+    "heading": "인터뷰가 완료되었습니다",
+    "subheading": "수고하셨습니다! 아래는 귀하의 성과에 대한 상세 분석입니다.",
+    "overallPerformance": "종합 성과",
+    "overallPerformanceDesc": "정확성, 의사소통 능력, 기술적 깊이를 기반으로 합니다.",
+    "communicationMetrics": "의사소통 지표",
+    "metricClarity": "명료성",
+    "metricConfidence": "자신감",
+    "metricRelevance": "관련성",
+    "metricDepthOfThought": "사고의 깊이",
+    "metricKeyConcepts": "핵심 개념",
+    "keyStrengths": "주요 강점",
+    "needsImprovement": "개선이 필요한 부분",
+    "recommendations": "권장 사항",
+    "questionBreakdown": "질문별 상세 분석",
+    "correct": "정답",
+    "incorrect": "오답",
+    "question": "질문",
+    "codeSnippet": "코드 스니펫",
+    "yourAnswer": "귀하의 답변",
+    "noAnswerProvided": "제출된 답변 없음",
+    "score": "점수"
+  },
+  "terminated": {
+    "heading": "인터뷰가 종료되었습니다",
+    "description": "시험 무결성 규칙(창 전환 또는 전체 화면 종료)을 여러 차례 위반하여 인터뷰가 자동으로 종료되었습니다."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "보안 표시: {{violationCount}}",
+    "warning": "경고",
+    "defaultTitle": "창 전환 경고",
+    "defaultDescription": "인터뷰 화면을 벗어나는 행위는 위반 사항으로 기록됩니다",
+    "defaultButtonText": "확인했습니다, 인터뷰로 돌아가기"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "인터넷 연결 없음",
+    "submissionFailed": "제출 실패",
+    "interviewSubmitted": "인터뷰가 제출되었습니다!",
+    "submittingInterview": "인터뷰를 제출하는 중입니다",
+    "waitingForConnection": "연결을 기다리는 중",
+    "actionNeeded": "조치가 필요합니다",
+    "done": "완료",
+    "reason": "사유: {{reason}}",
+    "reasonAutoSubmitted": "자동 제출됨",
+    "reasonTimeUp": "시간 종료",
+    "reasonConnectionIssues": "연결 문제",
+    "reasonPolicyFlags": "정책 위반 한도 도달",
+    "messageOffline": "걱정하지 마세요 — 답변은 저장되어 있습니다. 다시 온라인 상태가 되면 자동으로 제출됩니다.",
+    "messageError": "{{errorText}} 답변은 저장되어 있습니다 — 다시 시도해 주십시오.",
+    "messageErrorGenericFallback": "인터뷰를 제출하는 중 문제가 발생했습니다.",
+    "messageSuccess": "모두 완료되었습니다! 결과를 준비하고 있습니다.",
+    "messageSubmitting": "잠시만 기다려 주세요 — 답변을 저장하고 결과를 준비하고 있습니다. 이 페이지를 닫지 마십시오.",
+    "tryAgain": "다시 시도",
+    "retrying": "다시 시도하는 중…",
+    "waitingOffline": "다시 온라인 상태가 되면 자동으로 재시도됩니다.",
+    "waitingError": "다시 제출하려면 \"다시 시도\"를 누르세요. 진행 상황은 안전하게 보관됩니다.",
+    "waitingSuccess": "결과 페이지로 이동하는 중…",
+    "waitingSubmitting": "이 페이지를 닫거나 새로고침하지 말고 기다려 주십시오."
+  }
+}

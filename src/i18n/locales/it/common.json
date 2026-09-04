@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "Preparazione del colloquio in corso",
+    "description": "Stiamo configurando la sua sessione di colloquio personalizzata e generando domande su misura in base al suo profilo. La preghiamo di attendere..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "Intervistatore IA attivo",
+    "aiInterviewerAlt": "Intervistatore IA"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "Visualizza dashboard"
+  }
+}

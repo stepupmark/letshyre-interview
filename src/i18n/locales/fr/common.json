@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "Préparation de votre entretien",
+    "description": "Nous configurons votre session d'entretien personnalisée et générons des questions adaptées à votre profil. Veuillez patienter..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "Intervieweur IA actif",
+    "aiInterviewerAlt": "Intervieweur IA"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "Voir le tableau de bord"
+  }
+}

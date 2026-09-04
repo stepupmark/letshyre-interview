@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{attempted}} von {{total}} Fragen bearbeitet",
+    "complianceFlags": "Compliance-Meldungen: {{violations}}/{{max}}",
+    "complianceSecure": "Compliance: Sicher",
+    "monitoringActive": "Überwachung aktiv",
+    "recording": "Aufnahme"
+  },
+  "scoreCard": {
+    "heading": "Interview abgeschlossen",
+    "subheading": "Gut gemacht! Hier ist eine detaillierte Übersicht Ihrer Leistung.",
+    "overallPerformance": "Gesamtleistung",
+    "overallPerformanceDesc": "Basierend auf Korrektheit, Kommunikation und fachlicher Tiefe.",
+    "communicationMetrics": "Kommunikationskennzahlen",
+    "metricClarity": "Klarheit",
+    "metricConfidence": "Selbstvertrauen",
+    "metricRelevance": "Relevanz",
+    "metricDepthOfThought": "Gedankentiefe",
+    "metricKeyConcepts": "Schlüsselkonzepte",
+    "keyStrengths": "Wesentliche Stärken",
+    "needsImprovement": "Verbesserungsbedarf",
+    "recommendations": "Empfehlungen",
+    "questionBreakdown": "Detaillierte Fragenübersicht",
+    "correct": "Richtig",
+    "incorrect": "Falsch",
+    "question": "Frage",
+    "codeSnippet": "Code-Snippet",
+    "yourAnswer": "Ihre Antwort",
+    "noAnswerProvided": "Keine Antwort angegeben",
+    "score": "Punktzahl"
+  },
+  "terminated": {
+    "heading": "Interview beendet",
+    "description": "Ihr Interview wurde aufgrund mehrerer Verstöße gegen die Prüfungsintegritätsregeln (Wechsel des Fensters oder Verlassen des Vollbildmodus) automatisch beendet."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "Sicherheitsmeldung: {{violationCount}}",
+    "warning": "Warnung",
+    "defaultTitle": "Warnung: Fensterwechsel",
+    "defaultDescription": "Das Verlassen des Interviewbildschirms wird als Verstoß protokolliert",
+    "defaultButtonText": "Verstanden, zurück zum Interview"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "Keine Internetverbindung",
+    "submissionFailed": "Übermittlung fehlgeschlagen",
+    "interviewSubmitted": "Interview übermittelt!",
+    "submittingInterview": "Ihr Interview wird übermittelt",
+    "waitingForConnection": "Warten auf Verbindung",
+    "actionNeeded": "Aktion erforderlich",
+    "done": "Fertig",
+    "reason": "Grund: {{reason}}",
+    "reasonAutoSubmitted": "Automatisch übermittelt",
+    "reasonTimeUp": "Zeit abgelaufen",
+    "reasonConnectionIssues": "Verbindungsprobleme",
+    "reasonPolicyFlags": "Richtlinienmeldungen erreicht",
+    "messageOffline": "Keine Sorge — Ihre Antworten sind gespeichert. Wir übermitteln automatisch, sobald Sie wieder online sind.",
+    "messageError": "{{errorText}} Ihre Antworten sind gespeichert — bitte versuchen Sie es erneut.",
+    "messageErrorGenericFallback": "Bei der Übermittlung Ihres Interviews ist ein Fehler aufgetreten.",
+    "messageSuccess": "Fertig! Ihre Ergebnisse werden jetzt vorbereitet.",
+    "messageSubmitting": "Einen Moment — wir speichern Ihre Antworten und bereiten Ihre Ergebnisse vor. Bitte schließen Sie diese Seite nicht.",
+    "tryAgain": "Erneut versuchen",
+    "retrying": "Wird erneut versucht…",
+    "waitingOffline": "Wir versuchen es automatisch erneut, sobald Sie wieder online sind.",
+    "waitingError": "Tippen Sie auf „Erneut versuchen“, um erneut zu übermitteln. Ihr Fortschritt ist sicher.",
+    "waitingSuccess": "Weiterleitung zu Ihren Ergebnissen…",
+    "waitingSubmitting": "Bitte warten Sie, schließen oder aktualisieren Sie diese Seite nicht."
+  }
+}

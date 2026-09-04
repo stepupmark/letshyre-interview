@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{total}}問中{{attempted}}問に回答済み",
+    "complianceFlags": "コンプライアンス警告: {{violations}}/{{max}}",
+    "complianceSecure": "コンプライアンス: 安全",
+    "monitoringActive": "モニタリング中",
+    "recording": "録画中"
+  },
+  "scoreCard": {
+    "heading": "面接が完了しました",
+    "subheading": "お疲れさまでした！あなたのパフォーマンスの詳細な内訳です。",
+    "overallPerformance": "総合評価",
+    "overallPerformanceDesc": "正確性、コミュニケーション、専門知識の深さに基づいています。",
+    "communicationMetrics": "コミュニケーション指標",
+    "metricClarity": "明瞭さ",
+    "metricConfidence": "自信",
+    "metricRelevance": "関連性",
+    "metricDepthOfThought": "思考の深さ",
+    "metricKeyConcepts": "主要概念の理解",
+    "keyStrengths": "主な強み",
+    "needsImprovement": "改善が必要な点",
+    "recommendations": "推奨事項",
+    "questionBreakdown": "詳細な設問別内訳",
+    "correct": "正解",
+    "incorrect": "不正解",
+    "question": "設問",
+    "codeSnippet": "コードスニペット",
+    "yourAnswer": "あなたの回答",
+    "noAnswerProvided": "回答がありません",
+    "score": "スコア"
+  },
+  "terminated": {
+    "heading": "面接が終了されました",
+    "description": "試験の公正性に関する規則（ウィンドウの切り替えやフルスクリーンの終了）への複数回の違反により、面接は自動的に終了されました。"
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "セキュリティフラグ：{{violationCount}}",
+    "warning": "警告",
+    "defaultTitle": "ウィンドウ切り替え警告",
+    "defaultDescription": "面接画面から離れる操作は違反として記録されています",
+    "defaultButtonText": "理解しました。面接に戻ります"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "インターネット接続がありません",
+    "submissionFailed": "送信に失敗しました",
+    "interviewSubmitted": "面接が送信されました！",
+    "submittingInterview": "面接を送信しています",
+    "waitingForConnection": "接続を待っています",
+    "actionNeeded": "対応が必要です",
+    "done": "完了",
+    "reason": "理由：{{reason}}",
+    "reasonAutoSubmitted": "自動送信されました",
+    "reasonTimeUp": "時間切れ",
+    "reasonConnectionIssues": "接続の問題",
+    "reasonPolicyFlags": "違反フラグの上限到達",
+    "messageOffline": "ご安心ください — 回答は保存されています。オンラインに戻り次第、自動的に送信されます。",
+    "messageError": "{{errorText}} 回答は保存されています — もう一度お試しください。",
+    "messageErrorGenericFallback": "面接の送信中に問題が発生しました。",
+    "messageSuccess": "完了しました！結果を準備しています。",
+    "messageSubmitting": "少々お待ちください — 回答を保存し、結果を準備しています。このページを閉じないでください。",
+    "tryAgain": "再試行",
+    "retrying": "再試行中…",
+    "waitingOffline": "オンラインに戻り次第、自動的に再試行します。",
+    "waitingError": "再送信するには「再試行」をタップしてください。進捗は保存されています。",
+    "waitingSuccess": "結果ページへ移動しています…",
+    "waitingSubmitting": "このページを閉じたり更新したりせず、そのままお待ちください。"
+  }
+}

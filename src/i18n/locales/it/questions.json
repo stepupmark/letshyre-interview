@@ -1,0 +1,15 @@
+{
+  "mcq": { "selectOption": "Selezionare un'opzione per procedere.", "badge": "Scelta multipla" },
+  "typing": { "provideAnswer": "Fornire una risposta per procedere.", "badge": "Testo", "placeholder": "Digiti qui la sua risposta...", "characters": "{{count}} caratteri", "answerTip": "Risponda in modo chiaro e conciso" },
+  "code": { "selectOption": "Selezionare un'opzione per procedere.", "provideAnswer": "Fornire la risposta in codice per procedere.", "badgePseudocode": "Pseudocodice a scelta multipla", "badgeCoding": "Programmazione", "placeholder": "Digiti qui il suo codice..." },
+  "voice": {
+    "badge": "Domanda vocale", "verifying": "Verifica dell'identità vocale in corso…", "verified": "Voce verificata ✓", "mismatchDetected": "Discrepanza vocale rilevata",
+    "matchResult": "Identità confermata. Punteggio di confidenza: {{score}}%", "mismatchResult": "Questa voce non corrisponde al campione registrato. Punteggio: {{score}}%. Può comunque inviare la risposta.",
+    "enrolling": "Registrazione della voce in corso…", "enrolled": "Voce registrata", "mismatchToast": "Discrepanza vocale rilevata. Si assicuri di utilizzare la voce registrata.", "compareFailed": "Confronto vocale non riuscito.",
+    "recordAnswer": "Registri la sua risposta per procedere.", "startRecording": "Avvia registrazione", "stopRecording": "Interrompi registrazione", "listen": "Ascolta", "pause": "Pausa", "reRecord": "Registra di nuovo",
+    "recordedStatus": "Audio registrato correttamente. Può ascoltarlo o registrarlo di nuovo.", "recordingStatus": "Registrazione in corso…", "readyStatus": "Pronto per la registrazione quando vuole",
+    "tipsTitle": "Suggerimenti per la registrazione", "tip1": "Parli in modo chiaro e a un ritmo normale", "tip2": "Si assicuri che il microfono non sia disattivato", "tip3": "Cerchi di ridurre al minimo i rumori di fondo"
+  },
+  "shell": { "submittingFinal": "Invio della risposta finale in corso...", "generatingNext": "Generazione della prossima domanda in corso...", "submitting": "Invio in corso...", "submitInterview": "Invia colloquio", "nextQuestion": "Domanda successiva" },
+  "loader": { "preparing": "Preparazione della prossima domanda in corso…" }
+}

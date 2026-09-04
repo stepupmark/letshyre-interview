@@ -1,0 +1,13 @@
+{
+  "initialLoading": {
+    "heading": "面接を準備しています",
+    "description": "あなたのプロフィールに基づいて、パーソナライズされた面接セッションを準備し、最適な質問を生成しています。しばらくお待ちください..."
+  },
+  "leftPanel": {
+    "aiInterviewerActive": "AI面接官が起動中",
+    "aiInterviewerAlt": "AI面接官"
+  },
+  "postInterviewHeader": {
+    "viewDashboard": "ダッシュボードを見る"
+  }
+}

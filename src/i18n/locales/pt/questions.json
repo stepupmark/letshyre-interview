@@ -1,0 +1,55 @@
+{
+  "mcq": {
+    "selectOption": "Selecione uma opção para continuar.",
+    "badge": "Múltipla escolha"
+  },
+  "typing": {
+    "provideAnswer": "Forneça uma resposta para continuar.",
+    "badge": "Digitação",
+    "placeholder": "Digite sua resposta aqui...",
+    "characters": "{{count}} caracteres",
+    "answerTip": "Responda de forma clara e concisa"
+  },
+  "code": {
+    "selectOption": "Selecione uma opção para continuar.",
+    "provideAnswer": "Forneça sua resposta de código para continuar.",
+    "badgePseudocode": "Pseudocódigo (múltipla escolha)",
+    "badgeCoding": "Programação",
+    "placeholder": "Digite seu código aqui..."
+  },
+  "voice": {
+    "badge": "Pergunta de voz",
+    "verifying": "Verificando sua identidade de voz…",
+    "verified": "Voz verificada ✓",
+    "mismatchDetected": "Incompatibilidade de voz detectada",
+    "matchResult": "Identidade confirmada. Pontuação de confiança: {{score}}%",
+    "mismatchResult": "Essa voz não corresponde à amostra registrada. Pontuação: {{score}}%. Você ainda pode enviar sua resposta.",
+    "enrolling": "Registrando voz…",
+    "enrolled": "Voz registrada",
+    "mismatchToast": "Incompatibilidade de voz detectada. Certifique-se de usar sua voz registrada.",
+    "compareFailed": "Falha na comparação de voz.",
+    "recordAnswer": "Grave sua resposta para continuar.",
+    "startRecording": "Iniciar gravação",
+    "stopRecording": "Parar gravação",
+    "listen": "Ouvir",
+    "pause": "Pausar",
+    "reRecord": "Regravar",
+    "recordedStatus": "Áudio gravado com sucesso. Você pode ouvir ou regravar.",
+    "recordingStatus": "Gravação em andamento…",
+    "readyStatus": "Pronto para gravar quando você quiser",
+    "tipsTitle": "Dicas de gravação",
+    "tip1": "Fale com clareza e em ritmo normal",
+    "tip2": "Certifique-se de que o microfone não está mudo",
+    "tip3": "Tente minimizar o ruído de fundo"
+  },
+  "shell": {
+    "submittingFinal": "Enviando sua resposta final...",
+    "generatingNext": "Gerando sua próxima pergunta da entrevista...",
+    "submitting": "Enviando...",
+    "submitInterview": "Enviar entrevista",
+    "nextQuestion": "Próxima pergunta"
+  },
+  "loader": {
+    "preparing": "Preparando sua próxima pergunta…"
+  }
+}

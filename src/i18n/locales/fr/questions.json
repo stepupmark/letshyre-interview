@@ -1,0 +1,55 @@
+{
+  "mcq": {
+    "selectOption": "Veuillez sélectionner une option pour continuer.",
+    "badge": "QCM"
+  },
+  "typing": {
+    "provideAnswer": "Veuillez fournir une réponse pour continuer.",
+    "badge": "Saisie",
+    "placeholder": "Saisissez votre réponse ici...",
+    "characters": "{{count}} caractères",
+    "answerTip": "Répondez de façon claire et concise"
+  },
+  "code": {
+    "selectOption": "Veuillez sélectionner une option pour continuer.",
+    "provideAnswer": "Veuillez fournir votre réponse de code pour continuer.",
+    "badgePseudocode": "QCM de pseudocode",
+    "badgeCoding": "Codage",
+    "placeholder": "Saisissez votre code ici..."
+  },
+  "voice": {
+    "badge": "Question vocale",
+    "verifying": "Vérification de votre identité vocale…",
+    "verified": "Voix vérifiée ✓",
+    "mismatchDetected": "Incompatibilité vocale détectée",
+    "matchResult": "Identité confirmée. Score de confiance : {{score}} %",
+    "mismatchResult": "Cette voix ne correspond pas à l'échantillon enregistré. Score : {{score}} %. Vous pouvez tout de même soumettre votre réponse.",
+    "enrolling": "Enregistrement de la voix en cours…",
+    "enrolled": "Voix enregistrée",
+    "mismatchToast": "Incompatibilité vocale détectée. Veuillez utiliser votre voix enregistrée.",
+    "compareFailed": "Échec de la comparaison vocale.",
+    "recordAnswer": "Veuillez enregistrer votre réponse pour continuer.",
+    "startRecording": "Démarrer l'enregistrement",
+    "stopRecording": "Arrêter l'enregistrement",
+    "listen": "Écouter",
+    "pause": "Pause",
+    "reRecord": "Réenregistrer",
+    "recordedStatus": "Audio enregistré avec succès. Vous pouvez l'écouter ou le réenregistrer.",
+    "recordingStatus": "Enregistrement en cours…",
+    "readyStatus": "Prêt à enregistrer quand vous voulez",
+    "tipsTitle": "Conseils d'enregistrement",
+    "tip1": "Parlez clairement et à un rythme normal",
+    "tip2": "Assurez-vous que votre micro n'est pas coupé",
+    "tip3": "Essayez de minimiser le bruit de fond"
+  },
+  "shell": {
+    "submittingFinal": "Envoi de votre réponse finale...",
+    "generatingNext": "Génération de votre prochaine question d'entretien...",
+    "submitting": "Envoi en cours...",
+    "submitInterview": "Soumettre l'entretien",
+    "nextQuestion": "Question suivante"
+  },
+  "loader": {
+    "preparing": "Préparation de votre prochaine question…"
+  }
+}

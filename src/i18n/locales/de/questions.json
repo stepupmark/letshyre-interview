@@ -1,0 +1,15 @@
+{
+  "mcq": { "selectOption": "Bitte wählen Sie eine Option aus, um fortzufahren.", "badge": "MCQ" },
+  "typing": { "provideAnswer": "Bitte geben Sie eine Antwort ein, um fortzufahren.", "badge": "Texteingabe", "placeholder": "Geben Sie hier Ihre Antwort ein...", "characters": "{{count}} Zeichen", "answerTip": "Antworten Sie klar und präzise" },
+  "code": { "selectOption": "Bitte wählen Sie eine Option aus, um fortzufahren.", "provideAnswer": "Bitte geben Sie Ihre Code-Antwort ein, um fortzufahren.", "badgePseudocode": "Pseudocode MCQ", "badgeCoding": "Programmieren", "placeholder": "Geben Sie hier Ihren Code ein..." },
+  "voice": {
+    "badge": "Sprachfrage", "verifying": "Ihre Stimmidentität wird überprüft…", "verified": "Stimme verifiziert ✓", "mismatchDetected": "Stimmabweichung erkannt",
+    "matchResult": "Identität bestätigt. Konfidenzwert: {{score}}%", "mismatchResult": "Diese Stimme stimmt nicht mit der registrierten Probe überein. Wert: {{score}}%. Sie können Ihre Antwort trotzdem einreichen.",
+    "enrolling": "Stimme wird registriert…", "enrolled": "Stimme registriert", "mismatchToast": "Stimmabweichung erkannt. Bitte stellen Sie sicher, dass Sie Ihre registrierte Stimme verwenden.", "compareFailed": "Stimmvergleich fehlgeschlagen.",
+    "recordAnswer": "Bitte nehmen Sie Ihre Antwort auf, um fortzufahren.", "startRecording": "Aufnahme starten", "stopRecording": "Aufnahme stoppen", "listen": "Anhören", "pause": "Pause", "reRecord": "Neu aufnehmen",
+    "recordedStatus": "Audio erfolgreich aufgenommen. Sie können es anhören oder neu aufnehmen.", "recordingStatus": "Aufnahme läuft…", "readyStatus": "Bereit zur Aufnahme, wann immer Sie möchten",
+    "tipsTitle": "Tipps zur Aufnahme", "tip1": "Sprechen Sie deutlich und in normalem Tempo", "tip2": "Stellen Sie sicher, dass Ihr Mikrofon nicht stummgeschaltet ist", "tip3": "Versuchen Sie, Hintergrundgeräusche zu minimieren"
+  },
+  "shell": { "submittingFinal": "Ihre endgültige Antwort wird übermittelt...", "generatingNext": "Ihre nächste Interviewfrage wird generiert...", "submitting": "Wird übermittelt...", "submitInterview": "Interview einreichen", "nextQuestion": "Nächste Frage" },
+  "loader": { "preparing": "Ihre nächste Frage wird vorbereitet…" }
+}

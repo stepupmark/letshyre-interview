@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{total}} টি প্রশ্নের মধ্যে {{attempted}} টি চেষ্টা করা হয়েছে",
+    "complianceFlags": "কমপ্লায়েন্স ফ্ল্যাগ: {{violations}}/{{max}}",
+    "complianceSecure": "কমপ্লায়েন্স: নিরাপদ",
+    "monitoringActive": "পর্যবেক্ষণ সক্রিয়",
+    "recording": "রেকর্ডিং"
+  },
+  "scoreCard": {
+    "heading": "সাক্ষাৎকার সম্পন্ন হয়েছে",
+    "subheading": "দারুণ কাজ! এখানে আপনার কর্মক্ষমতার একটি বিস্তারিত বিশ্লেষণ দেওয়া হলো।",
+    "overallPerformance": "সামগ্রিক কর্মক্ষমতা",
+    "overallPerformanceDesc": "সঠিকতা, যোগাযোগ এবং প্রযুক্তিগত গভীরতার ভিত্তিতে।",
+    "communicationMetrics": "যোগাযোগ পরিমাপক",
+    "metricClarity": "স্পষ্টতা",
+    "metricConfidence": "আত্মবিশ্বাস",
+    "metricRelevance": "প্রাসঙ্গিকতা",
+    "metricDepthOfThought": "চিন্তার গভীরতা",
+    "metricKeyConcepts": "মূল ধারণা",
+    "keyStrengths": "মূল শক্তি",
+    "needsImprovement": "উন্নতির প্রয়োজন",
+    "recommendations": "সুপারিশ",
+    "questionBreakdown": "প্রশ্নের বিস্তারিত বিশ্লেষণ",
+    "correct": "সঠিক",
+    "incorrect": "ভুল",
+    "question": "প্রশ্ন",
+    "codeSnippet": "কোড স্নিপেট",
+    "yourAnswer": "আপনার উত্তর",
+    "noAnswerProvided": "কোনো উত্তর প্রদান করা হয়নি",
+    "score": "স্কোর"
+  },
+  "terminated": {
+    "heading": "সাক্ষাৎকার সমাপ্ত করা হয়েছে",
+    "description": "পরীক্ষার সততার নিয়মের একাধিক লঙ্ঘনের (উইন্ডো থেকে সরে যাওয়া বা ফুল-স্ক্রিন থেকে বের হয়ে যাওয়া) কারণে আপনার সাক্ষাৎকার স্বয়ংক্রিয়ভাবে সমাপ্ত করা হয়েছে।"
+  },
+  "violationWarning": {
+    "rec": "রেক",
+    "securityFlag": "নিরাপত্তা ফ্ল্যাগ: {{violationCount}}",
+    "warning": "সতর্কতা",
+    "defaultTitle": "উইন্ডো পরিবর্তনের সতর্কতা",
+    "defaultDescription": "সাক্ষাৎকার স্ক্রিন থেকে সরে যাওয়া লঙ্ঘন হিসেবে লগ করা হচ্ছে",
+    "defaultButtonText": "আমি বুঝেছি, সাক্ষাৎকারে ফিরে যাচ্ছি"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "কোনো ইন্টারনেট সংযোগ নেই",
+    "submissionFailed": "জমা দেওয়া ব্যর্থ হয়েছে",
+    "interviewSubmitted": "সাক্ষাৎকার জমা দেওয়া হয়েছে!",
+    "submittingInterview": "আপনার সাক্ষাৎকার জমা দেওয়া হচ্ছে",
+    "waitingForConnection": "সংযোগের জন্য অপেক্ষা করা হচ্ছে",
+    "actionNeeded": "পদক্ষেপ প্রয়োজন",
+    "done": "সম্পন্ন",
+    "reason": "কারণ: {{reason}}",
+    "reasonAutoSubmitted": "স্বয়ংক্রিয়ভাবে জমা দেওয়া হয়েছে",
+    "reasonTimeUp": "সময় শেষ",
+    "reasonConnectionIssues": "সংযোগ সমস্যা",
+    "reasonPolicyFlags": "নীতিমালার সীমা পৌঁছেছে",
+    "messageOffline": "চিন্তা করবেন না — আপনার উত্তরগুলো সংরক্ষিত আছে। আপনি অনলাইনে ফিরে এলে আমরা স্বয়ংক্রিয়ভাবে জমা দেব।",
+    "messageError": "{{errorText}} আপনার উত্তরগুলো সংরক্ষিত আছে — অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "messageErrorGenericFallback": "আপনার সাক্ষাৎকার জমা দেওয়ার সময় কিছু একটা ভুল হয়েছে।",
+    "messageSuccess": "সব সম্পন্ন! আপনার ফলাফল এখন প্রস্তুত করা হচ্ছে।",
+    "messageSubmitting": "একটু অপেক্ষা করুন — আমরা আপনার উত্তরগুলো সংরক্ষণ করছি এবং আপনার ফলাফল প্রস্তুত করছি। অনুগ্রহ করে এই পৃষ্ঠাটি বন্ধ করবেন না।",
+    "tryAgain": "আবার চেষ্টা করুন",
+    "retrying": "পুনরায় চেষ্টা করা হচ্ছে…",
+    "waitingOffline": "আপনি অনলাইনে ফিরে এলে আমরা স্বয়ংক্রিয়ভাবে আবার চেষ্টা করব।",
+    "waitingError": "পুনরায় জমা দিতে \"আবার চেষ্টা করুন\"-এ ট্যাপ করুন। আপনার অগ্রগতি নিরাপদ আছে।",
+    "waitingSuccess": "আপনার ফলাফলের দিকে পুনঃনির্দেশিত করা হচ্ছে…",
+    "waitingSubmitting": "অনুগ্রহ করে অপেক্ষা করুন, এই পৃষ্ঠাটি বন্ধ বা রিফ্রেশ করবেন না।"
+  }
+}

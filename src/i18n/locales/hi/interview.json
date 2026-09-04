@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{total}} में से {{attempted}} प्रश्न पूर्ण",
+    "complianceFlags": "अनुपालन चेतावनियाँ: {{violations}}/{{max}}",
+    "complianceSecure": "अनुपालन: सुरक्षित",
+    "monitoringActive": "निगरानी सक्रिय",
+    "recording": "रिकॉर्डिंग जारी"
+  },
+  "scoreCard": {
+    "heading": "साक्षात्कार पूर्ण हुआ",
+    "subheading": "बहुत बढ़िया! यहाँ आपके प्रदर्शन का विस्तृत विवरण है।",
+    "overallPerformance": "समग्र प्रदर्शन",
+    "overallPerformanceDesc": "सटीकता, संचार और तकनीकी गहराई के आधार पर।",
+    "communicationMetrics": "संचार मेट्रिक्स",
+    "metricClarity": "स्पष्टता",
+    "metricConfidence": "आत्मविश्वास",
+    "metricRelevance": "प्रासंगिकता",
+    "metricDepthOfThought": "विचार की गहराई",
+    "metricKeyConcepts": "मुख्य अवधारणाएँ",
+    "keyStrengths": "मुख्य शक्तियाँ",
+    "needsImprovement": "सुधार की आवश्यकता",
+    "recommendations": "सिफारिशें",
+    "questionBreakdown": "विस्तृत प्रश्न विवरण",
+    "correct": "सही",
+    "incorrect": "गलत",
+    "question": "प्रश्न",
+    "codeSnippet": "कोड स्निपेट",
+    "yourAnswer": "आपका उत्तर",
+    "noAnswerProvided": "कोई उत्तर नहीं दिया गया",
+    "score": "स्कोर"
+  },
+  "terminated": {
+    "heading": "साक्षात्कार समाप्त कर दिया गया",
+    "description": "परीक्षा अखंडता नियमों के कई उल्लंघनों (विंडो से दूर जाना या फुल-स्क्रीन से बाहर निकलना) के कारण आपका साक्षात्कार स्वतः समाप्त कर दिया गया है।"
+  },
+  "violationWarning": {
+    "rec": "रिकॉर्ड",
+    "securityFlag": "सुरक्षा फ्लैग : {{violationCount}}",
+    "warning": "चेतावनी",
+    "defaultTitle": "विंडो स्विच चेतावनी",
+    "defaultDescription": "साक्षात्कार स्क्रीन से दूर जाना एक उल्लंघन के रूप में दर्ज किया जा रहा है",
+    "defaultButtonText": "मैं समझता/समझती हूँ, साक्षात्कार पर वापस जाएँ"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "इंटरनेट कनेक्शन नहीं है",
+    "submissionFailed": "सबमिशन विफल",
+    "interviewSubmitted": "साक्षात्कार सबमिट हो गया!",
+    "submittingInterview": "आपका साक्षात्कार सबमिट किया जा रहा है",
+    "waitingForConnection": "कनेक्शन की प्रतीक्षा है",
+    "actionNeeded": "कार्रवाई आवश्यक है",
+    "done": "पूर्ण",
+    "reason": "कारण: {{reason}}",
+    "reasonAutoSubmitted": "स्वतः सबमिट किया गया",
+    "reasonTimeUp": "समय समाप्त",
+    "reasonConnectionIssues": "कनेक्शन संबंधी समस्याएँ",
+    "reasonPolicyFlags": "नीति फ्लैग सीमा तक पहुँचे",
+    "messageOffline": "चिंता न करें — आपके उत्तर सहेजे जा चुके हैं। ऑनलाइन आते ही हम स्वतः सबमिट कर देंगे।",
+    "messageError": "{{errorText}} आपके उत्तर सहेजे जा चुके हैं — कृपया पुनः प्रयास करें।",
+    "messageErrorGenericFallback": "आपका साक्षात्कार सबमिट करने में कुछ गड़बड़ी हुई।",
+    "messageSuccess": "सब हो गया! आपके परिणाम तैयार किए जा रहे हैं।",
+    "messageSubmitting": "थोड़ा इंतज़ार करें — हम आपके उत्तर सहेज रहे हैं और परिणाम तैयार कर रहे हैं। कृपया इस पेज को बंद न करें।",
+    "tryAgain": "पुनः प्रयास करें",
+    "retrying": "पुनः प्रयास हो रहा है…",
+    "waitingOffline": "ऑनलाइन आते ही हम स्वतः पुनः प्रयास करेंगे।",
+    "waitingError": "पुनः सबमिट करने के लिए “पुनः प्रयास करें” पर टैप करें। आपकी प्रगति सुरक्षित है।",
+    "waitingSuccess": "आपके परिणामों पर पुनर्निर्देशित किया जा रहा है…",
+    "waitingSubmitting": "कृपया प्रतीक्षा करें, इस पेज को बंद या रीफ्रेश न करें।"
+  }
+}

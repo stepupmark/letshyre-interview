@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{attempted}} question(s) répondue(s) sur {{total}}",
+    "complianceFlags": "Alertes de conformité : {{violations}}/{{max}}",
+    "complianceSecure": "Conformité : sécurisée",
+    "monitoringActive": "Surveillance active",
+    "recording": "Enregistrement en cours"
+  },
+  "scoreCard": {
+    "heading": "Entretien terminé",
+    "subheading": "Excellent travail ! Voici un bilan détaillé de votre performance.",
+    "overallPerformance": "Performance globale",
+    "overallPerformanceDesc": "Basé sur l'exactitude, la communication et la profondeur technique.",
+    "communicationMetrics": "Indicateurs de communication",
+    "metricClarity": "Clarté",
+    "metricConfidence": "Confiance",
+    "metricRelevance": "Pertinence",
+    "metricDepthOfThought": "Profondeur de réflexion",
+    "metricKeyConcepts": "Maîtrise des concepts clés",
+    "keyStrengths": "Points forts",
+    "needsImprovement": "Axes d'amélioration",
+    "recommendations": "Recommandations",
+    "questionBreakdown": "Détail des questions",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "question": "Question",
+    "codeSnippet": "Extrait de code",
+    "yourAnswer": "Votre réponse",
+    "noAnswerProvided": "Aucune réponse fournie",
+    "score": "Score"
+  },
+  "terminated": {
+    "heading": "Entretien interrompu",
+    "description": "Votre entretien a été automatiquement interrompu en raison de violations répétées des règles d'intégrité de l'examen (changement de fenêtre ou sortie du mode plein écran)."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "Signalement de sécurité : {{violationCount}}",
+    "warning": "Avertissement",
+    "defaultTitle": "Avertissement de changement de fenêtre",
+    "defaultDescription": "Le fait de quitter l'écran de l'entretien est enregistré comme une violation",
+    "defaultButtonText": "J'ai compris, retourner à l'entretien"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "Aucune connexion Internet",
+    "submissionFailed": "Échec de l'envoi",
+    "interviewSubmitted": "Entretien envoyé !",
+    "submittingInterview": "Envoi de votre entretien en cours",
+    "waitingForConnection": "En attente de connexion",
+    "actionNeeded": "Action requise",
+    "done": "Terminé",
+    "reason": "Motif : {{reason}}",
+    "reasonAutoSubmitted": "Envoyé automatiquement",
+    "reasonTimeUp": "Temps écoulé",
+    "reasonConnectionIssues": "Problèmes de connexion",
+    "reasonPolicyFlags": "Seuil de violations atteint",
+    "messageOffline": "Ne vous inquiétez pas — vos réponses sont enregistrées. Nous les enverrons automatiquement dès que vous serez de nouveau en ligne.",
+    "messageError": "{{errorText}} Vos réponses sont enregistrées — veuillez réessayer.",
+    "messageErrorGenericFallback": "Une erreur s'est produite lors de l'envoi de votre entretien.",
+    "messageSuccess": "Terminé ! Vos résultats sont en cours de préparation.",
+    "messageSubmitting": "Merci de patienter — nous enregistrons vos réponses et préparons vos résultats. Veuillez ne pas fermer cette page.",
+    "tryAgain": "Réessayer",
+    "retrying": "Nouvelle tentative…",
+    "waitingOffline": "Nous réessaierons automatiquement dès que vous serez de nouveau en ligne.",
+    "waitingError": "Appuyez sur « Réessayer » pour renvoyer. Votre progression est sauvegardée.",
+    "waitingSuccess": "Redirection vers vos résultats…",
+    "waitingSubmitting": "Veuillez patienter, ne fermez pas et n'actualisez pas cette page."
+  }
+}

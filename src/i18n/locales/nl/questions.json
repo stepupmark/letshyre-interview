@@ -1,0 +1,15 @@
+{
+  "mcq": { "selectOption": "Selecteer een optie om verder te gaan.", "badge": "MCQ" },
+  "typing": { "provideAnswer": "Geef een antwoord om verder te gaan.", "badge": "Typen", "placeholder": "Typ hier uw antwoord...", "characters": "{{count}} tekens", "answerTip": "Antwoord duidelijk en bondig" },
+  "code": { "selectOption": "Selecteer een optie om verder te gaan.", "provideAnswer": "Geef uw code-antwoord om verder te gaan.", "badgePseudocode": "Pseudocode MCQ", "badgeCoding": "Programmeren", "placeholder": "Typ hier uw code..." },
+  "voice": {
+    "badge": "Spraakvraag", "verifying": "Uw stemidentiteit wordt geverifieerd…", "verified": "Stem geverifieerd ✓", "mismatchDetected": "Stem komt niet overeen",
+    "matchResult": "Identiteit bevestigd. Betrouwbaarheidsscore: {{score}}%", "mismatchResult": "Deze stem komt niet overeen met het geregistreerde monster. Score: {{score}}%. U kunt uw antwoord nog steeds indienen.",
+    "enrolling": "Stem wordt geregistreerd…", "enrolled": "Stem geregistreerd", "mismatchToast": "Stem komt niet overeen. Zorg ervoor dat u uw geregistreerde stem gebruikt.", "compareFailed": "Stemvergelijking mislukt.",
+    "recordAnswer": "Neem uw antwoord op om verder te gaan.", "startRecording": "Opname starten", "stopRecording": "Opname stoppen", "listen": "Beluisteren", "pause": "Pauzeren", "reRecord": "Opnieuw opnemen",
+    "recordedStatus": "Audio succesvol opgenomen. U kunt deze beluisteren of opnieuw opnemen.", "recordingStatus": "Opname bezig…", "readyStatus": "Klaar om op te nemen wanneer u dat wilt",
+    "tipsTitle": "Opnametips", "tip1": "Spreek duidelijk en in een normaal tempo", "tip2": "Zorg dat uw microfoon niet gedempt is", "tip3": "Probeer achtergrondgeluid te minimaliseren"
+  },
+  "shell": { "submittingFinal": "Uw laatste antwoord wordt ingediend...", "generatingNext": "Uw volgende interviewvraag wordt gegenereerd...", "submitting": "Bezig met indienen...", "submitInterview": "Interview indienen", "nextQuestion": "Volgende vraag" },
+  "loader": { "preparing": "Uw volgende vraag wordt voorbereid…" }
+}

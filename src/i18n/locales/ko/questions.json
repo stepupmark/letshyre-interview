@@ -1,0 +1,15 @@
+{
+  "mcq": { "selectOption": "계속하려면 옵션을 선택해 주십시오.", "badge": "객관식" },
+  "typing": { "provideAnswer": "계속하려면 답변을 입력해 주십시오.", "badge": "타이핑", "placeholder": "여기에 답변을 입력하세요...", "characters": "{{count}}자", "answerTip": "명확하고 간결하게 답변하십시오" },
+  "code": { "selectOption": "계속하려면 옵션을 선택해 주십시오.", "provideAnswer": "계속하려면 코드 답변을 입력해 주십시오.", "badgePseudocode": "의사코드 객관식", "badgeCoding": "코딩", "placeholder": "여기에 코드를 입력하세요..." },
+  "voice": {
+    "badge": "음성 질문", "verifying": "음성 신원을 확인하는 중입니다…", "verified": "음성 확인됨 ✓", "mismatchDetected": "음성 불일치가 감지되었습니다",
+    "matchResult": "신원이 확인되었습니다. 신뢰도 점수: {{score}}%", "mismatchResult": "이 음성은 등록된 샘플과 일치하지 않습니다. 점수: {{score}}%. 그래도 답변을 제출할 수 있습니다.",
+    "enrolling": "음성을 등록하는 중…", "enrolled": "음성이 등록되었습니다", "mismatchToast": "음성 불일치가 감지되었습니다. 등록된 본인의 음성을 사용하고 있는지 확인해 주십시오.", "compareFailed": "음성 비교에 실패했습니다.",
+    "recordAnswer": "계속하려면 답변을 녹음해 주십시오.", "startRecording": "녹음 시작", "stopRecording": "녹음 중지", "listen": "듣기", "pause": "일시 정지", "reRecord": "다시 녹음",
+    "recordedStatus": "오디오가 성공적으로 녹음되었습니다. 재생하거나 다시 녹음할 수 있습니다.", "recordingStatus": "녹음 진행 중…", "readyStatus": "준비되면 녹음할 수 있습니다",
+    "tipsTitle": "녹음 팁", "tip1": "명확하고 일정한 속도로 말씀해 주세요", "tip2": "마이크가 음소거되어 있지 않은지 확인하세요", "tip3": "배경 소음을 최소화하도록 노력하세요"
+  },
+  "shell": { "submittingFinal": "최종 답변을 제출하는 중입니다...", "generatingNext": "다음 인터뷰 질문을 생성하는 중입니다...", "submitting": "제출하는 중...", "submitInterview": "인터뷰 제출", "nextQuestion": "다음 질문" },
+  "loader": { "preparing": "다음 질문을 준비하는 중입니다…" }
+}

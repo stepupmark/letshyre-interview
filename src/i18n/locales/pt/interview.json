@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{attempted}} de {{total}} perguntas respondidas",
+    "complianceFlags": "Alertas de conformidade: {{violations}}/{{max}}",
+    "complianceSecure": "Conformidade: segura",
+    "monitoringActive": "Monitoramento ativo",
+    "recording": "Gravando"
+  },
+  "scoreCard": {
+    "heading": "Entrevista concluída",
+    "subheading": "Muito bem! Aqui está um resumo detalhado do seu desempenho.",
+    "overallPerformance": "Desempenho geral",
+    "overallPerformanceDesc": "Com base na precisão, comunicação e profundidade técnica.",
+    "communicationMetrics": "Métricas de comunicação",
+    "metricClarity": "Clareza",
+    "metricConfidence": "Confiança",
+    "metricRelevance": "Relevância",
+    "metricDepthOfThought": "Profundidade de pensamento",
+    "metricKeyConcepts": "Domínio dos conceitos-chave",
+    "keyStrengths": "Principais pontos fortes",
+    "needsImprovement": "Pontos a melhorar",
+    "recommendations": "Recomendações",
+    "questionBreakdown": "Resumo detalhado das perguntas",
+    "correct": "Correto",
+    "incorrect": "Incorreto",
+    "question": "Pergunta",
+    "codeSnippet": "Trecho de código",
+    "yourAnswer": "Sua resposta",
+    "noAnswerProvided": "Nenhuma resposta fornecida",
+    "score": "Pontuação"
+  },
+  "terminated": {
+    "heading": "Entrevista encerrada",
+    "description": "Sua entrevista foi encerrada automaticamente devido a múltiplas violações das regras de integridade do exame (mudar de janela ou sair da tela cheia)."
+  },
+  "violationWarning": {
+    "rec": "GRAV",
+    "securityFlag": "Alerta de segurança : {{violationCount}}",
+    "warning": "Aviso",
+    "defaultTitle": "Aviso de troca de janela",
+    "defaultDescription": "Sair da tela da entrevista está sendo registrado como uma violação",
+    "defaultButtonText": "Entendi, voltar à entrevista"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "Sem conexão com a internet",
+    "submissionFailed": "Falha no envio",
+    "interviewSubmitted": "Entrevista enviada!",
+    "submittingInterview": "Enviando sua entrevista",
+    "waitingForConnection": "Aguardando conexão",
+    "actionNeeded": "Ação necessária",
+    "done": "Concluído",
+    "reason": "Motivo: {{reason}}",
+    "reasonAutoSubmitted": "Enviado automaticamente",
+    "reasonTimeUp": "Tempo esgotado",
+    "reasonConnectionIssues": "Problemas de conexão",
+    "reasonPolicyFlags": "Limite de violações atingido",
+    "messageOffline": "Não se preocupe — suas respostas estão salvas. Enviaremos automaticamente assim que você estiver online novamente.",
+    "messageError": "{{errorText}} Suas respostas estão salvas — por favor, tente novamente.",
+    "messageErrorGenericFallback": "Ocorreu um erro ao enviar sua entrevista.",
+    "messageSuccess": "Concluído! Seus resultados estão sendo preparados.",
+    "messageSubmitting": "Aguarde um momento — estamos salvando suas respostas e preparando seus resultados. Por favor, não feche esta página.",
+    "tryAgain": "Tentar novamente",
+    "retrying": "Tentando novamente…",
+    "waitingOffline": "Tentaremos novamente automaticamente assim que você estiver online.",
+    "waitingError": "Toque em “Tentar novamente” para reenviar. Seu progresso está salvo.",
+    "waitingSuccess": "Redirecionando para seus resultados…",
+    "waitingSubmitting": "Aguarde, não feche nem atualize esta página."
+  }
+}

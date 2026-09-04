@@ -1,0 +1,34 @@
+{
+  "errorPage": {
+    "badge": "Kesalahan Sistem",
+    "statusLabel": "STATUS",
+    "active": "Aktif",
+    "goBack": "Kembali",
+    "returnHome": "Kembali ke Beranda",
+    "reloadPage": "Muat ulang halaman",
+    "default": { "title": "Kesalahan aplikasi tak terduga", "description": "Terjadi masalah tak terduga saat memproses permintaan Anda." },
+    "unauthorized": { "title": "Akses tidak sah", "description": "Sesi Anda saat ini tidak berwenang untuk mengakses sumber daya ini." },
+    "forbidden": { "title": "Akses dibatasi", "description": "Anda saat ini tidak memiliki izin untuk melanjutkan." },
+    "notFound": { "title": "Halaman tidak ditemukan", "description": "Rute yang diminta mungkin telah dihapus atau tidak tersedia." },
+    "serverError": { "title": "Kesalahan server internal", "description": "Server mengalami masalah saat menangani permintaan Anda." }
+  },
+  "notFoundPage": {
+    "badge": "Kesalahan 404",
+    "headingLine1": "Halaman tidak",
+    "headingLine2": "ditemukan",
+    "description": "Halaman yang Anda coba akses mungkin telah dihapus, dipindahkan ke rute lain, atau tidak lagi tersedia dalam sesi wawancara saat ini.",
+    "goBack": "Kembali",
+    "returnHome": "Kembali ke Beranda",
+    "reloadPage": "Muat ulang halaman",
+    "tagline": "Platform penilaian yang aman"
+  },
+  "unauthorizedAccess": {
+    "heading": "Akses Ditolak",
+    "description": "Tautan sesi Anda tidak ada atau telah kedaluwarsa. Silakan gunakan tautan yang diberikan dalam email undangan Anda untuk mengakses wawancara."
+  },
+  "boundary": {
+    "heading": "Terjadi kesalahan di sini",
+    "description": "Bagian ini gagal dimuat. Wawancara Anda masih berjalan — Anda dapat mencoba lagi tanpa kehilangan sesi Anda.",
+    "tryAgain": "Coba lagi"
+  }
+}

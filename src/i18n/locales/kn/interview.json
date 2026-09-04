@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{total}} ಪ್ರಶ್ನೆಗಳಲ್ಲಿ {{attempted}} ಪ್ರಯತ್ನಿಸಲಾಗಿದೆ",
+    "complianceFlags": "ಅನುಸರಣೆ ಫ್ಲ್ಯಾಗ್‌ಗಳು: {{violations}}/{{max}}",
+    "complianceSecure": "ಅನುಸರಣೆ: ಸುರಕ್ಷಿತ",
+    "monitoringActive": "ಮೇಲ್ವಿಚಾರಣೆ ಸಕ್ರಿಯವಾಗಿದೆ",
+    "recording": "ರೆಕಾರ್ಡಿಂಗ್"
+  },
+  "scoreCard": {
+    "heading": "ಸಂದರ್ಶನ ಪೂರ್ಣಗೊಂಡಿದೆ",
+    "subheading": "ಅಭಿನಂದನೆಗಳು! ಇಲ್ಲಿ ನಿಮ್ಮ ಸಾಧನೆಯ ವಿವರವಾದ ವಿಶ್ಲೇಷಣೆ ಇದೆ.",
+    "overallPerformance": "ಒಟ್ಟಾರೆ ಸಾಧನೆ",
+    "overallPerformanceDesc": "ನಿಖರತೆ, ಸಂವಹನ ಮತ್ತು ತಾಂತ್ರಿಕ ಆಳದ ಆಧಾರದ ಮೇಲೆ.",
+    "communicationMetrics": "ಸಂವಹನ ಮಾಪನಗಳು",
+    "metricClarity": "ಸ್ಪಷ್ಟತೆ",
+    "metricConfidence": "ಆತ್ಮವಿಶ್ವಾಸ",
+    "metricRelevance": "ಪ್ರಸ್ತುತತೆ",
+    "metricDepthOfThought": "ಚಿಂತನೆಯ ಆಳ",
+    "metricKeyConcepts": "ಪ್ರಮುಖ ಪರಿಕಲ್ಪನೆಗಳು",
+    "keyStrengths": "ಪ್ರಮುಖ ಸಾಮರ್ಥ್ಯಗಳು",
+    "needsImprovement": "ಸುಧಾರಣೆ ಅಗತ್ಯವಿದೆ",
+    "recommendations": "ಶಿಫಾರಸುಗಳು",
+    "questionBreakdown": "ವಿವರವಾದ ಪ್ರಶ್ನೆ ವಿಶ್ಲೇಷಣೆ",
+    "correct": "ಸರಿಯಾದ",
+    "incorrect": "ತಪ್ಪಾದ",
+    "question": "ಪ್ರಶ್ನೆ",
+    "codeSnippet": "ಕೋಡ್ ತುಣುಕು",
+    "yourAnswer": "ನಿಮ್ಮ ಉತ್ತರ",
+    "noAnswerProvided": "ಯಾವುದೇ ಉತ್ತರ ನೀಡಲಾಗಿಲ್ಲ",
+    "score": "ಸ್ಕೋರ್"
+  },
+  "terminated": {
+    "heading": "ಸಂದರ್ಶನ ಕೊನೆಗೊಳಿಸಲಾಗಿದೆ",
+    "description": "ಪರೀಕ್ಷಾ ಸಮಗ್ರತೆಯ ನಿಯಮಗಳ ಬಹು ಉಲ್ಲಂಘನೆಗಳಿಂದಾಗಿ (ವಿಂಡೋದಿಂದ ದೂರ ಹೋಗುವುದು ಅಥವಾ ಪೂರ್ಣ ಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸುವುದು) ನಿಮ್ಮ ಸಂದರ್ಶನವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕೊನೆಗೊಳಿಸಲಾಗಿದೆ."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "ಭದ್ರತಾ ಫ್ಲ್ಯಾಗ್ : {{violationCount}}",
+    "warning": "ಎಚ್ಚರಿಕೆ",
+    "defaultTitle": "ವಿಂಡೋ ಸ್ವಿಚ್ ಎಚ್ಚರಿಕೆ",
+    "defaultDescription": "ಸಂದರ್ಶನ ಪರದೆಯಿಂದ ದೂರ ಹೋಗುವುದನ್ನು ಉಲ್ಲಂಘನೆಯಾಗಿ ದಾಖಲಿಸಲಾಗುತ್ತಿದೆ",
+    "defaultButtonText": "ನಾನು ಅರ್ಥಮಾಡಿಕೊಂಡಿದ್ದೇನೆ, ಸಂದರ್ಶನಕ್ಕೆ ಹಿಂತಿರುಗಿ"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವಿಲ್ಲ",
+    "submissionFailed": "ಸಲ್ಲಿಕೆ ವಿಫಲವಾಗಿದೆ",
+    "interviewSubmitted": "ಸಂದರ್ಶನ ಸಲ್ಲಿಸಲಾಗಿದೆ!",
+    "submittingInterview": "ನಿಮ್ಮ ಸಂದರ್ಶನವನ್ನು ಸಲ್ಲಿಸಲಾಗುತ್ತಿದೆ",
+    "waitingForConnection": "ಸಂಪರ್ಕಕ್ಕಾಗಿ ಕಾಯಲಾಗುತ್ತಿದೆ",
+    "actionNeeded": "ಕ್ರಮ ಅಗತ್ಯವಿದೆ",
+    "done": "ಮುಗಿದಿದೆ",
+    "reason": "ಕಾರಣ: {{reason}}",
+    "reasonAutoSubmitted": "ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ",
+    "reasonTimeUp": "ಸಮಯ ಮುಗಿದಿದೆ",
+    "reasonConnectionIssues": "ಸಂಪರ್ಕ ಸಮಸ್ಯೆಗಳು",
+    "reasonPolicyFlags": "ನೀತಿ ಫ್ಲ್ಯಾಗ್‌ಗಳು ತಲುಪಿವೆ",
+    "messageOffline": "ಚಿಂತಿಸಬೇಡಿ — ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ. ನೀವು ಮತ್ತೆ ಆನ್‌ಲೈನ್‌ಗೆ ಬಂದ ತಕ್ಷಣ ನಾವು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಲ್ಲಿಸುತ್ತೇವೆ.",
+    "messageError": "{{errorText}} ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ — ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "messageErrorGenericFallback": "ನಿಮ್ಮ ಸಂದರ್ಶನವನ್ನು ಸಲ್ಲಿಸುವಾಗ ಏನೋ ತಪ್ಪಾಗಿದೆ.",
+    "messageSuccess": "ಎಲ್ಲಾ ಪೂರ್ಣಗೊಂಡಿದೆ! ನಿಮ್ಮ ಫಲಿತಾಂಶಗಳನ್ನು ಈಗ ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ.",
+    "messageSubmitting": "ದಯವಿಟ್ಟು ನಿರೀಕ್ಷಿಸಿ — ನಾವು ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಉಳಿಸುತ್ತಿದ್ದೇವೆ ಮತ್ತು ನಿಮ್ಮ ಫಲಿತಾಂಶಗಳನ್ನು ಸಿದ್ಧಪಡಿಸುತ್ತಿದ್ದೇವೆ. ದಯವಿಟ್ಟು ಈ ಪುಟವನ್ನು ಮುಚ್ಚಬೇಡಿ.",
+    "tryAgain": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+    "retrying": "ಮರುಪ್ರಯತ್ನಿಸಲಾಗುತ್ತಿದೆ…",
+    "waitingOffline": "ನೀವು ಮತ್ತೆ ಆನ್‌ಲೈನ್‌ಗೆ ಬಂದಾಗ ನಾವು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮರುಪ್ರಯತ್ನಿಸುತ್ತೇವೆ.",
+    "waitingError": "ಮರುಸಲ್ಲಿಸಲು “ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ” ಟ್ಯಾಪ್ ಮಾಡಿ. ನಿಮ್ಮ ಪ್ರಗತಿ ಸುರಕ್ಷಿತವಾಗಿದೆ.",
+    "waitingSuccess": "ನಿಮ್ಮ ಫಲಿತಾಂಶಗಳಿಗೆ ಮರುನಿರ್ದೇಶಿಸಲಾಗುತ್ತಿದೆ…",
+    "waitingSubmitting": "ದಯವಿಟ್ಟು ನಿರೀಕ್ಷಿಸಿ, ಈ ಪುಟವನ್ನು ಮುಚ್ಚಬೇಡಿ ಅಥವಾ ರಿಫ್ರೆಶ್ ಮಾಡಬೇಡಿ."
+  }
+}

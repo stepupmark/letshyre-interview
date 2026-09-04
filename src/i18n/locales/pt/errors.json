@@ -1,0 +1,49 @@
+{
+  "errorPage": {
+    "badge": "Erro do sistema",
+    "statusLabel": "STATUS",
+    "active": "Ativo",
+    "goBack": "Voltar",
+    "returnHome": "Voltar ao início",
+    "reloadPage": "Recarregar página",
+    "default": {
+      "title": "Erro inesperado da aplicação",
+      "description": "Ocorreu um problema inesperado ao processar sua solicitação."
+    },
+    "unauthorized": {
+      "title": "Acesso não autorizado",
+      "description": "Sua sessão atual não está autorizada a acessar este recurso."
+    },
+    "forbidden": {
+      "title": "Acesso restrito",
+      "description": "No momento, você não tem permissão para continuar."
+    },
+    "notFound": {
+      "title": "Página não encontrada",
+      "description": "A rota solicitada pode ter sido removida ou não está disponível."
+    },
+    "serverError": {
+      "title": "Erro interno do servidor",
+      "description": "O servidor encontrou um problema ao processar sua solicitação."
+    }
+  },
+  "notFoundPage": {
+    "badge": "Erro 404",
+    "headingLine1": "Página não",
+    "headingLine2": "encontrada",
+    "description": "A página que você está tentando acessar pode ter sido removida, movida para outra rota ou não está mais disponível na sessão de entrevista atual.",
+    "goBack": "Voltar",
+    "returnHome": "Voltar ao início",
+    "reloadPage": "Recarregar página",
+    "tagline": "Plataforma de avaliação segura"
+  },
+  "unauthorizedAccess": {
+    "heading": "Acesso negado",
+    "description": "O link da sua sessão está ausente ou expirou. Use o link fornecido no seu e-mail de convite para acessar a entrevista."
+  },
+  "boundary": {
+    "heading": "Algo deu errado aqui",
+    "description": "Não foi possível carregar esta seção. Sua entrevista ainda está em andamento — você pode tentar novamente sem perder sua sessão.",
+    "tryAgain": "Tentar novamente"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "errorPage": {
+    "badge": "システムエラー",
+    "statusLabel": "ステータス",
+    "active": "アクティブ",
+    "goBack": "戻る",
+    "returnHome": "ホームに戻る",
+    "reloadPage": "ページを再読み込み",
+    "default": {
+      "title": "予期しないアプリケーションエラー",
+      "description": "リクエストの処理中に予期しない問題が発生しました。"
+    },
+    "unauthorized": {
+      "title": "不正なアクセス",
+      "description": "現在のセッションはこのリソースへのアクセスを許可されていません。"
+    },
+    "forbidden": {
+      "title": "アクセスが制限されています",
+      "description": "現在、続行する権限がありません。"
+    },
+    "notFound": {
+      "title": "ページが見つかりません",
+      "description": "リクエストされたルートは削除されたか、利用できない可能性があります。"
+    },
+    "serverError": {
+      "title": "内部サーバーエラー",
+      "description": "リクエストの処理中にサーバーで問題が発生しました。"
+    }
+  },
+  "notFoundPage": {
+    "badge": "エラー 404",
+    "headingLine1": "ページが",
+    "headingLine2": "見つかりません",
+    "description": "アクセスしようとしているページは削除されたか、別のルートに移動したか、現在の面接セッションでは利用できない可能性があります。",
+    "goBack": "戻る",
+    "returnHome": "ホームに戻る",
+    "reloadPage": "ページを再読み込み",
+    "tagline": "安全な評価プラットフォーム"
+  },
+  "unauthorizedAccess": {
+    "heading": "アクセスが拒否されました",
+    "description": "セッションリンクが見つからないか、期限切れです。面接にアクセスするには、招待メールに記載されているリンクをご利用ください。"
+  },
+  "boundary": {
+    "heading": "問題が発生しました",
+    "description": "このセクションを読み込めませんでした。面接は引き続き進行中です — セッションを失うことなく再試行できます。",
+    "tryAgain": "再試行"
+  }
+}

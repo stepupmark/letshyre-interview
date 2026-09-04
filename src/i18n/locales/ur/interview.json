@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "{{total}} میں سے {{attempted}} سوالات کی کوشش کی گئی",
+    "complianceFlags": "تعمیل کی نشاندہی: {{violations}}/{{max}}",
+    "complianceSecure": "تعمیل: محفوظ",
+    "monitoringActive": "نگرانی فعال ہے",
+    "recording": "ریکارڈنگ"
+  },
+  "scoreCard": {
+    "heading": "انٹرویو مکمل ہو گیا",
+    "subheading": "شاندار کارکردگی! یہاں آپ کی کارکردگی کی تفصیلی رپورٹ ہے۔",
+    "overallPerformance": "مجموعی کارکردگی",
+    "overallPerformanceDesc": "درستگی، ابلاغ اور تکنیکی گہرائی کی بنیاد پر۔",
+    "communicationMetrics": "ابلاغ کے پیمانے",
+    "metricClarity": "وضاحت",
+    "metricConfidence": "اعتماد",
+    "metricRelevance": "مطابقت",
+    "metricDepthOfThought": "فکر کی گہرائی",
+    "metricKeyConcepts": "اہم تصورات",
+    "keyStrengths": "اہم خوبیاں",
+    "needsImprovement": "بہتری کی ضرورت ہے",
+    "recommendations": "سفارشات",
+    "questionBreakdown": "سوالات کی تفصیلی رپورٹ",
+    "correct": "درست",
+    "incorrect": "غلط",
+    "question": "سوال",
+    "codeSnippet": "کوڈ کا ٹکڑا",
+    "yourAnswer": "آپ کا جواب",
+    "noAnswerProvided": "کوئی جواب فراہم نہیں کیا گیا",
+    "score": "اسکور"
+  },
+  "terminated": {
+    "heading": "انٹرویو ختم کر دیا گیا",
+    "description": "امتحانی دیانتداری کے اصولوں کی متعدد خلاف ورزیوں (ونڈو سے باہر جانا یا فل اسکرین سے باہر نکلنا) کی وجہ سے آپ کا انٹرویو خود بخود ختم کر دیا گیا ہے۔"
+  },
+  "violationWarning": {
+    "rec": "ریک",
+    "securityFlag": "سیکیورٹی نشان: {{violationCount}}",
+    "warning": "انتباہ",
+    "defaultTitle": "ونڈو تبدیل کرنے کا انتباہ",
+    "defaultDescription": "انٹرویو اسکرین سے باہر جانا خلاف ورزی کے طور پر درج کیا جا رہا ہے",
+    "defaultButtonText": "میں سمجھ گیا، انٹرویو پر واپس جائیں"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "انٹرنیٹ کنکشن دستیاب نہیں",
+    "submissionFailed": "جمع کرانا ناکام ہوا",
+    "interviewSubmitted": "انٹرویو جمع کر دیا گیا!",
+    "submittingInterview": "آپ کا انٹرویو جمع کیا جا رہا ہے",
+    "waitingForConnection": "کنکشن کا انتظار ہے",
+    "actionNeeded": "کارروائی درکار ہے",
+    "done": "مکمل",
+    "reason": "وجہ: {{reason}}",
+    "reasonAutoSubmitted": "خودکار طور پر جمع کیا گیا",
+    "reasonTimeUp": "وقت ختم ہو گیا",
+    "reasonConnectionIssues": "کنکشن کے مسائل",
+    "reasonPolicyFlags": "پالیسی کی حد تک نشانات پہنچ گئے",
+    "messageOffline": "فکر نہ کریں — آپ کے جوابات محفوظ ہیں۔ آپ کے دوبارہ آن لائن آتے ہی ہم خود بخود جمع کر دیں گے۔",
+    "messageError": "{{errorText}} آپ کے جوابات محفوظ ہیں — براہ کرم دوبارہ کوشش کریں۔",
+    "messageErrorGenericFallback": "آپ کا انٹرویو جمع کراتے وقت کچھ غلط ہو گیا۔",
+    "messageSuccess": "سب کچھ مکمل! آپ کے نتائج اب تیار کیے جا رہے ہیں۔",
+    "messageSubmitting": "ذرا رکیں — ہم آپ کے جوابات محفوظ کر رہے ہیں اور آپ کے نتائج تیار کر رہے ہیں۔ براہ کرم اس صفحے کو بند نہ کریں۔",
+    "tryAgain": "دوبارہ کوشش کریں",
+    "retrying": "دوبارہ کوشش کی جا رہی ہے…",
+    "waitingOffline": "آپ کے دوبارہ آن لائن آتے ہی ہم خود بخود دوبارہ کوشش کریں گے۔",
+    "waitingError": "دوبارہ جمع کرانے کے لیے \"دوبارہ کوشش کریں\" پر ٹیپ کریں۔ آپ کی پیش رفت محفوظ ہے۔",
+    "waitingSuccess": "آپ کے نتائج کی طرف بھیجا جا رہا ہے…",
+    "waitingSubmitting": "براہ کرم انتظار کریں، اس صفحے کو بند یا ریفریش نہ کریں۔"
+  }
+}

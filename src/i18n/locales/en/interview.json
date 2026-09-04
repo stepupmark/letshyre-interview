@@ -1,0 +1,69 @@
+{
+  "header": {
+    "attempted": "Attempted {{attempted}} out of {{total}} Questions",
+    "complianceFlags": "Compliance Flags: {{violations}}/{{max}}",
+    "complianceSecure": "Compliance: Secure",
+    "monitoringActive": "Monitoring Active",
+    "recording": "Recording"
+  },
+  "scoreCard": {
+    "heading": "Interview Completed",
+    "subheading": "Great job! Here is a detailed breakdown of your performance.",
+    "overallPerformance": "Overall Performance",
+    "overallPerformanceDesc": "Based on correctness, communication, and technical depth.",
+    "communicationMetrics": "Communication Metrics",
+    "metricClarity": "Clarity",
+    "metricConfidence": "Confidence",
+    "metricRelevance": "Relevance",
+    "metricDepthOfThought": "Depth of Thought",
+    "metricKeyConcepts": "Key Concepts",
+    "keyStrengths": "Key Strengths",
+    "needsImprovement": "Needs Improvement",
+    "recommendations": "Recommendations",
+    "questionBreakdown": "Detailed Question Breakdown",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "question": "Question",
+    "codeSnippet": "Code Snippet",
+    "yourAnswer": "Your Answer",
+    "noAnswerProvided": "No answer provided",
+    "score": "Score"
+  },
+  "terminated": {
+    "heading": "Interview Terminated",
+    "description": "Your interview has been automatically terminated due to multiple violations of the exam integrity rules (navigating away from the window or exiting full-screen)."
+  },
+  "violationWarning": {
+    "rec": "REC",
+    "securityFlag": "Security Flag : {{violationCount}}",
+    "warning": "Warning",
+    "defaultTitle": "Window Switch Warning",
+    "defaultDescription": "Navigating away from the interview screen is being logged as a violation",
+    "defaultButtonText": "I Understand, Return to Interview"
+  },
+  "autoSubmitLoader": {
+    "noInternet": "No Internet Connection",
+    "submissionFailed": "Submission Failed",
+    "interviewSubmitted": "Interview Submitted!",
+    "submittingInterview": "Submitting Your Interview",
+    "waitingForConnection": "Waiting for connection",
+    "actionNeeded": "Action needed",
+    "done": "Done",
+    "reason": "Reason: {{reason}}",
+    "reasonAutoSubmitted": "Auto-submitted",
+    "reasonTimeUp": "Time's up",
+    "reasonConnectionIssues": "Connection issues",
+    "reasonPolicyFlags": "Policy flags reached",
+    "messageOffline": "Don't worry — your answers are saved. We'll submit automatically when you're back online.",
+    "messageError": "{{errorText}} Your answers are saved — please try again.",
+    "messageErrorGenericFallback": "Something went wrong submitting your interview.",
+    "messageSuccess": "All done! Your results are being prepared now.",
+    "messageSubmitting": "Hang tight — we're saving your answers and preparing your results. Please don't close this page.",
+    "tryAgain": "Try Again",
+    "retrying": "Retrying…",
+    "waitingOffline": "We'll retry automatically when you're back online.",
+    "waitingError": "Tap “Try Again” to resubmit. Your progress is safe.",
+    "waitingSuccess": "Redirecting to your results…",
+    "waitingSubmitting": "Please wait, do not close or refresh this page."
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "errorPage": {
+    "badge": "Systemfehler",
+    "statusLabel": "STATUS",
+    "active": "Aktiv",
+    "goBack": "Zurück",
+    "returnHome": "Zur Startseite",
+    "reloadPage": "Seite neu laden",
+    "default": { "title": "Unerwarteter Anwendungsfehler", "description": "Bei der Verarbeitung Ihrer Anfrage ist ein unerwarteter Fehler aufgetreten." },
+    "unauthorized": { "title": "Nicht autorisierter Zugriff", "description": "Ihre aktuelle Sitzung ist nicht berechtigt, auf diese Ressource zuzugreifen." },
+    "forbidden": { "title": "Zugriff eingeschränkt", "description": "Sie haben derzeit keine Berechtigung, fortzufahren." },
+    "notFound": { "title": "Seite nicht gefunden", "description": "Die angeforderte Route wurde möglicherweise entfernt oder ist nicht verfügbar." },
+    "serverError": { "title": "Interner Serverfehler", "description": "Beim Server ist bei der Bearbeitung Ihrer Anfrage ein Fehler aufgetreten." }
+  },
+  "notFoundPage": {
+    "badge": "Fehler 404",
+    "headingLine1": "Seite nicht",
+    "headingLine2": "gefunden",
+    "description": "Die von Ihnen aufgerufene Seite wurde möglicherweise entfernt, auf eine andere Route verschoben oder ist in der aktuellen Interviewsitzung nicht mehr verfügbar.",
+    "goBack": "Zurück",
+    "returnHome": "Zur Startseite",
+    "reloadPage": "Seite neu laden",
+    "tagline": "Sichere Bewertungsplattform"
+  },
+  "unauthorizedAccess": {
+    "heading": "Zugriff verweigert",
+    "description": "Ihr Sitzungslink fehlt oder ist abgelaufen. Bitte verwenden Sie den Link aus Ihrer Einladungs-E-Mail, um auf das Interview zuzugreifen."
+  },
+  "boundary": {
+    "heading": "Hier ist etwas schiefgelaufen",
+    "description": "Dieser Abschnitt konnte nicht geladen werden. Ihr Interview läuft weiterhin — Sie können es erneut versuchen, ohne Ihre Sitzung zu verlieren.",
+    "tryAgain": "Erneut versuchen"
+  }
+}

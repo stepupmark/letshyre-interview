@@ -1,0 +1,49 @@
+{
+  "errorPage": {
+    "badge": "System Error",
+    "statusLabel": "STATUS",
+    "active": "Active",
+    "goBack": "Go Back",
+    "returnHome": "Return Home",
+    "reloadPage": "Reload page",
+    "default": {
+      "title": "Unexpected application error",
+      "description": "An unexpected issue occurred while processing your request."
+    },
+    "unauthorized": {
+      "title": "Unauthorized access",
+      "description": "Your current session is not authorized to access this resource."
+    },
+    "forbidden": {
+      "title": "Access restricted",
+      "description": "You do not currently have permission to continue."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "description": "The requested route may have been removed or is unavailable."
+    },
+    "serverError": {
+      "title": "Internal server error",
+      "description": "The server encountered an issue while handling your request."
+    }
+  },
+  "notFoundPage": {
+    "badge": "Error 404",
+    "headingLine1": "Page not",
+    "headingLine2": "found",
+    "description": "The page you are trying to access may have been removed, moved to another route, or is no longer available in the current interview session.",
+    "goBack": "Go Back",
+    "returnHome": "Return Home",
+    "reloadPage": "Reload page",
+    "tagline": "Secure assessment platform"
+  },
+  "unauthorizedAccess": {
+    "heading": "Access Denied",
+    "description": "Your session link is missing or has expired. Please use the link provided in your invitation email to access the interview."
+  },
+  "boundary": {
+    "heading": "Something went wrong here",
+    "description": "This section failed to load. Your interview is still running — you can retry without losing your session.",
+    "tryAgain": "Try again"
+  }
+}
