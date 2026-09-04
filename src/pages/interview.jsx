@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 // Heavy result view — only needed once at the very end, so load it on demand.
 const ScoreCard = lazy(() => import("@components/interview/ScoreCard"));
 import AutoSubmitLoader from "@components/interview/AutoSubmitLoader";
+import TerminationNotice from "@components/interview/TerminationNotice";
 import { InitialLoadingUi } from "@/components/interview/InitialLoadingUi";
 import { TerminatedUi } from "@/components/interview/TerminatedUi";
 
@@ -22,6 +23,7 @@ import { useInterviewComplete } from "@/hooks/electron/useInterviewComplete";
 import { useElectronScreenRecording } from "@/hooks/electron/useElectronScreenRecording";
 import { useRegisterFace } from "@/hooks/useRegisterFace";
 import { useFaceMatchMonitoring } from "@/hooks/useFaceMatchMonitoring";
+import { useTerminationNotice } from "@/hooks/useTerminationNotice";
 import { captureFrameFile, dataUrlToFile } from "@/lib/videoCapture";
 import { logger } from "@/lib/logger";
 
@@ -116,6 +118,12 @@ export function Interview() {
     handleAiViolation,
   );
 
+  const {
+    visible: showTermination,
+    secondsLeft: terminationSecondsLeft,
+    acknowledge: acknowledgeTermination,
+  } = useTerminationNotice(autoSubmitReason);
+
   useEffect(() => {
     if (!isProctoringDegraded) return;
     toast.warning("Proctoring checks are temporarily unavailable.", {
@@ -152,6 +160,18 @@ export function Interview() {
     },
     [submit],
   );
+
+  // Sits above the loader: submission is already running underneath, so this
+  // only holds the explanation on screen long enough to be read.
+  if (showTermination) {
+    return (
+      <TerminationNotice
+        reason={autoSubmitReason}
+        secondsLeft={terminationSecondsLeft}
+        onAcknowledge={acknowledgeTermination}
+      />
+    );
+  }
 
   if (autoSubmitting) {
     return (
@@ -261,8 +281,8 @@ export function Interview() {
         onClose={dismissWarning}
         violationCount={violationInfo.violationCount}
         counts={violationInfo.counts}
-        title={violationInfo.title}
-        description={violationInfo.description}
+        titleKey={violationInfo.titleKey}
+        descriptionKey={violationInfo.descriptionKey}
         imagePath={violationInfo.imagePath}
       />
     </div>

@@ -19,6 +19,49 @@ const VIOLATION_COOLDOWN_MS = 30_000;
 // violations can't burn two of the three allowed strikes in a few seconds.
 const MIN_STRIKE_INTERVAL_MS = 15_000;
 
+// fetch(keepalive) caps the body at 64KB. Oldest records are dropped first so a
+// too-large tail degrades to a partial log instead of no log at all.
+const KEEPALIVE_BODY_LIMIT = 60_000;
+
+/**
+ * Last-chance delivery during page unload.
+ *
+ * navigator.sendBeacon cannot set an Authorization header, so the endpoint
+ * rejects it — fetch with keepalive survives unload AND keeps the header, and
+ * sendBeacon remains only as a fallback where keepalive is unsupported.
+ */
+export function sendUnloadFlush(url, payload) {
+  const accessToken = sessionStorage.getItem("ac");
+
+  let body = JSON.stringify(payload);
+  if (body.length > KEEPALIVE_BODY_LIMIT) {
+    const records = payload.payload.records;
+    let kept = records;
+    while (kept.length > 1 && body.length > KEEPALIVE_BODY_LIMIT) {
+      kept = kept.slice(Math.ceil(kept.length / 10));
+      body = JSON.stringify({
+        ...payload,
+        payload: { total_records: kept.length, records: kept, truncated: true },
+      });
+    }
+    logger.warn(`[Proctoring] ✂️ Unload payload trimmed to ${kept.length}/${records.length} records.`);
+  }
+
+  try {
+    void fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body,
+      keepalive: true,
+    });
+  } catch {
+    navigator.sendBeacon?.(url, body);
+  }
+}
+
 // "laptop" is deliberately absent: the candidate is sitting at one.
 const PROHIBITED_OBJECTS = new Set(["cell phone", "book", "tablet"]);
 const OBJECT_CONFIDENCE_THRESHOLD = 0.6;
@@ -44,9 +87,8 @@ export function detectViolation(result) {
   if (!result.face_detected) {
     return {
       type: "NO_FACE",
-      title: "Candidate Not Detected",
-      description:
-        "Ensure you are properly positioned in front of the camera to avoid automatic termination.",
+      titleKey: "violations.noFace.title",
+      descriptionKey: "violations.noFace.description",
       imagePath: "/no-candidate.png",
     };
   }
@@ -55,9 +97,8 @@ export function detectViolation(result) {
   if (result.face_count > 1) {
     return {
       type: "MULTIPLE_FACES",
-      title: "Multiple People Detected",
-      description:
-        "Only you should be visible on the interview screen. Please ensure no one else is in view.",
+      titleKey: "violations.multipleFaces.title",
+      descriptionKey: "violations.multipleFaces.description",
       imagePath: "/multi-people.png",
       countsAsViolation: false,
     };
@@ -68,8 +109,9 @@ export function detectViolation(result) {
   if (foundObject) {
     return {
       type: "PROHIBITED_OBJECT",
-      title: `${foundObject.label} Detected`,
-      description: `Please put away all prohibited devices to continue the interview.`,
+      titleKey: "violations.prohibitedObject.title",
+      descriptionKey: "violations.prohibitedObject.description",
+      label: foundObject.label,
       imagePath: "/laptop.png",
     };
   }
@@ -78,9 +120,8 @@ export function detectViolation(result) {
   if (result.looking_at_camera === false) {
     return {
       type: "NOT_LOOKING",
-      title: "Look at the Camera",
-      description:
-        "Please keep your eyes on the screen. Looking away repeatedly will be flagged as a violation.",
+      titleKey: "violations.notLooking.title",
+      descriptionKey: "violations.notLooking.description",
       imagePath: "/window-switch.png",
       soft: true,
     };
@@ -90,8 +131,8 @@ export function detectViolation(result) {
   if (result.eyes_open === false) {
     return {
       type: "EYES_CLOSED",
-      title: "Eyes Closed Detected",
-      description: "Please keep your eyes open and stay focused during the interview.",
+      titleKey: "violations.eyesClosed.title",
+      descriptionKey: "violations.eyesClosed.description",
       imagePath: "/window-switch.png",
       soft: true,
     };
@@ -125,7 +166,8 @@ export function useProctoringSystem(
   const queueRef = useRef([]); // collected AI detection results
   const timerRef = useRef(null); // setTimeout id
   const busyRef = useRef(false); // prevent overlapping detections
-  const hasFlushedRef = useRef(false); // ensure we only flush once
+  const hasFlushedRef = useRef(false); // set only on a CONFIRMED delivery
+  const flushInFlightRef = useRef(false);
   const isActiveRef = useRef(false); // mirror of isActive for use inside setTimeout
   const sessionRef = useRef({ interviewId, sessionId, proctoringToken });
   const onViolationRef = useRef(onViolation);
@@ -290,10 +332,27 @@ export function useProctoringSystem(
   const flushRetryCountRef = useRef(0);
   const MAX_FLUSH_RETRIES = 3;
 
+  function buildFlushPayload() {
+    const { interviewId: iid, sessionId: sid, proctoringToken: token } = sessionRef.current;
+    if (!iid || !sid) return null;
+
+    return {
+      interview_id: iid,
+      session_id: sid,
+      proctoring_token: token,
+      source: "cv_detect",
+      event_type: "batch_proctoring_logs",
+      payload: {
+        total_records: queueRef.current.length,
+        records: [...queueRef.current],
+      },
+    };
+  }
+
   async function flushQueue() {
     const { interviewId: iid, sessionId: sid, proctoringToken: token } = sessionRef.current;
 
-    if (hasFlushedRef.current) return;
+    if (hasFlushedRef.current || flushInFlightRef.current) return;
     if (queueRef.current.length === 0) {
       logger.log("[Proctoring] 📭 No detection results to flush.");
       return;
@@ -303,7 +362,10 @@ export function useProctoringSystem(
       return;
     }
 
-    hasFlushedRef.current = true; // Lock immediately to prevent double-flush
+    // Only guards against a concurrent flush. hasFlushedRef is set on a
+    // CONFIRMED delivery, so an exhausted retry budget still leaves the unload
+    // path free to make a final attempt.
+    flushInFlightRef.current = true;
 
     const payload = {
       interview_id: iid,
@@ -322,21 +384,22 @@ export function useProctoringSystem(
       await submitProctoringLogs(payload);
       queueRef.current = [];
       flushRetryCountRef.current = 0;
+      hasFlushedRef.current = true;
       logger.log("[Proctoring] ✅ Batch proctoring logs submitted successfully.");
     } catch (err) {
       logger.error("[Proctoring] ❌ Batch submission failed:", err?.response?.status, err?.message);
       flushRetryCountRef.current += 1;
-      // Allow retry if we haven't exceeded max retries (e.g. user was offline)
       if (flushRetryCountRef.current < MAX_FLUSH_RETRIES) {
-        hasFlushedRef.current = false;
         logger.log(
           `[Proctoring] 🔄 Will retry flush when online (attempt ${flushRetryCountRef.current}/${MAX_FLUSH_RETRIES}).`,
         );
       } else {
         logger.warn(
-          "[Proctoring] ⛔ Max flush retries reached. Logs will be sent via sendBeacon on page unload.",
+          "[Proctoring] ⛔ Max flush retries reached. Logs will be retried on page unload.",
         );
       }
+    } finally {
+      flushInFlightRef.current = false;
     }
   }
 
@@ -395,28 +458,15 @@ export function useProctoringSystem(
   // ── Safety net: flush on page unload ─────────────────────────────────
   useEffect(() => {
     const onUnload = () => {
-      if (queueRef.current.length > 0 && !hasFlushedRef.current) {
-        // Use sendBeacon for reliability on unload
-        const { interviewId: iid, sessionId: sid, proctoringToken: token } = sessionRef.current;
-        if (!iid || !sid) return;
+      if (queueRef.current.length === 0 || hasFlushedRef.current) return;
 
-        const payload = {
-          interview_id: iid,
-          session_id: sid,
-          proctoring_token: token,
-          source: "cv_detect",
-          event_type: "batch_proctoring_logs",
-          payload: {
-            total_records: queueRef.current.length,
-            records: [...queueRef.current],
-          },
-        };
+      const payload = buildFlushPayload();
+      if (!payload) return;
 
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
-        const url = `${baseUrl}/user/v1/candidate/interview/proctoring/log/`;
-        navigator.sendBeacon(url, JSON.stringify(payload));
-        hasFlushedRef.current = true;
-      }
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+      sendUnloadFlush(`${baseUrl}/user/v1/candidate/interview/proctoring/log/`, payload);
+      // Deliberately NOT marking flushed: an unload send cannot be confirmed,
+      // so a surviving page must still be free to retry.
     };
 
     window.addEventListener("beforeunload", onUnload);

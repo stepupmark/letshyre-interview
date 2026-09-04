@@ -1,32 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { MAX_VIOLATIONS } from "@/config/interview";
 
 // Slack against OS chrome and DPI rounding when deciding whether the window is
 // still maximized, and how long a shrunk window must persist before it counts.
 const RESIZE_TOLERANCE_PX = 40;
 const RESIZE_CONFIRM_MS = 1_000;
 
-// Electron violation label helpers (pure — no component state)
-function getElectronViolationTitle(event = "") {
+export function getElectronViolationKey(event = "") {
   const e = event.toLowerCase();
-  if (e.includes("hdmi") || e.includes("display")) return "External Display Detected!";
-  if (e.includes("mirror") || e.includes("sharing")) return "Screen Sharing Detected!";
-  if (e.includes("agent") || e.includes("tamper")) return "Security Monitor Interrupted!";
-  if (e.includes("minimize") || e.includes("close")) return "Window Action Detected!";
-  return "Security Violation Detected!";
+  if (e.includes("hdmi") || e.includes("display")) return "externalDisplay";
+  if (e.includes("mirror") || e.includes("sharing")) return "screenSharing";
+  if (e.includes("agent") || e.includes("tamper")) return "securityMonitor";
+  if (e.includes("minimize") || e.includes("close")) return "windowAction";
+  return "generic";
 }
 
-function getElectronViolationDescription(event = "") {
-  const e = event.toLowerCase();
-  if (e.includes("hdmi") || e.includes("display"))
-    return "An external display was detected. Disconnect all external monitors to continue.";
-  if (e.includes("mirror") || e.includes("sharing"))
-    return "Screen sharing or mirroring was detected. Close all sharing apps immediately.";
-  if (e.includes("agent") || e.includes("tamper"))
-    return "The security monitor was interrupted. This may indicate a tamper attempt.";
-  if (e.includes("minimize") || e.includes("close"))
-    return "The interview window was minimized or closed. Please keep it in focus at all times.";
-  return "A security policy violation was detected. Please resolve it immediately.";
+function electronViolationCopy(event) {
+  const key = getElectronViolationKey(event);
+  return {
+    titleKey: `violations.electron.${key}.title`,
+    descriptionKey: `violations.electron.${key}.description`,
+    imagePath: "/window-switch.png",
+  };
 }
 
 /**
@@ -38,12 +35,15 @@ function getElectronViolationDescription(event = "") {
 export function useViolationMonitor({ isActive, incrementViolation, sessionViolations }) {
   const [showTabWarning, setShowTabWarning] = useState(false);
   const [violationInfo, setViolationInfo] = useState({
-    title: "",
-    description: "",
+    titleKey: "",
+    descriptionKey: "",
     imagePath: "",
     violationCount: 1,
     counts: true,
   });
+
+  const { t } = useTranslation("interview");
+  const tRef = useRef(t);
 
   const isWarningOpenRef = useRef(false);
 
@@ -63,6 +63,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     isActiveRef.current = isActive;
     incrementViolationRef.current = incrementViolation;
     sessionViolationsRef.current = sessionViolations;
+    tRef.current = t;
   });
 
   // Single entry point for raising a violation modal. Stable identity (reads live
@@ -72,15 +73,30 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   // countsAsViolation=false → show the modal but DON'T add a strike (e.g. bottle,
   // multiple people): the displayed tally stays unchanged and it can't push the
   // candidate toward auto-termination.
-  const raiseViolation = useCallback(({ title, description, imagePath, countsAsViolation = true }) => {
-    if (!isActiveRef.current || isWarningOpenRef.current) return;
-    isWarningOpenRef.current = true;
-    const violationCount = countsAsViolation
-      ? incrementViolationRef.current()
-      : sessionViolationsRef.current;
-    setViolationInfo({ title, description, imagePath, violationCount, counts: countsAsViolation });
-    setShowTabWarning(true);
-  }, []);
+  const raiseViolation = useCallback(
+    ({ titleKey, descriptionKey, imagePath, countsAsViolation = true }) => {
+      if (!isActiveRef.current || isWarningOpenRef.current) return;
+      isWarningOpenRef.current = true;
+      const violationCount = countsAsViolation
+        ? incrementViolationRef.current()
+        : sessionViolationsRef.current;
+
+      // At the limit the session is already terminating, and TerminationNotice
+      // owns the screen — showing a dismissible "return to interview" modal on
+      // top of it would promise a way back that no longer exists.
+      if (countsAsViolation && violationCount >= MAX_VIOLATIONS) return;
+
+      setViolationInfo({
+        titleKey,
+        descriptionKey,
+        imagePath,
+        violationCount,
+        counts: countsAsViolation,
+      });
+      setShowTabWarning(true);
+    },
+    [],
+  );
 
   // Auto-dismiss any open violation warning when session ends
   // (e.g., auto-submit triggered while a warning dialog was open)
@@ -116,12 +132,14 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       // and must NOT count toward the strike-based auto-termination. Surface a
       // non-blocking nudge instead of the modal + strike.
       if (violation.soft) {
-        toast.warning(violation.title, { description: violation.description });
+        toast.warning(tRef.current(violation.titleKey), {
+          description: tRef.current(violation.descriptionKey),
+        });
         return;
       }
       raiseViolation({
-        title: violation.title,
-        description: violation.description,
+        titleKey: violation.titleKey,
+        descriptionKey: violation.descriptionKey,
         imagePath: violation.imagePath,
         // bottle / multiple people → modal only, no strike
         countsAsViolation: violation.countsAsViolation !== false,
@@ -138,11 +156,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         pendingElectronViolationRef.current = violation;
         return;
       }
-      raiseViolation({
-        title: getElectronViolationTitle(violation.event),
-        description: getElectronViolationDescription(violation.event),
-        imagePath: "/window-switch.png",
-      });
+      raiseViolation(electronViolationCopy(violation.event));
     },
     [raiseViolation],
   );
@@ -152,11 +166,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     if (isActive && pendingElectronViolationRef.current) {
       const v = pendingElectronViolationRef.current;
       pendingElectronViolationRef.current = null;
-      raiseViolation({
-        title: getElectronViolationTitle(v.event),
-        description: getElectronViolationDescription(v.event),
-        imagePath: "/window-switch.png",
-      });
+      raiseViolation(electronViolationCopy(v.event));
     }
   }, [isActive, raiseViolation]);
 
@@ -192,9 +202,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     const handleVisibilityChange = () => {
       if (document.hidden) {
         raiseViolation({
-          title: "Tab Switch Detected!",
-          description:
-            "Navigating away from the interview screen is strictly prohibited. Continued violations will result in automatic termination.",
+          titleKey: "violations.tabSwitch.title",
+          descriptionKey: "violations.tabSwitch.description",
           imagePath: "/window-switch.png",
         });
       }
@@ -203,9 +212,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
         raiseViolation({
-          title: "Fullscreen Exit Detected!",
-          description:
-            "Exiting fullscreen mode is strictly prohibited. Continued violations will result in automatic termination.",
+          titleKey: "violations.fullscreenExit.title",
+          descriptionKey: "violations.fullscreenExit.description",
           imagePath: "/window-switch.png",
         });
       }
@@ -240,9 +248,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         confirmTimer = setTimeout(() => {
           if (!isWindowShrunk()) return;
           raiseViolation({
-            title: "Window Resize Detected!",
-            description:
-              "Resizing or un-maximizing the window is strictly prohibited. Continued violations will result in automatic termination.",
+            titleKey: "violations.windowResize.title",
+            descriptionKey: "violations.windowResize.description",
             imagePath: "/window-switch.png",
           });
         }, RESIZE_CONFIRM_MS);

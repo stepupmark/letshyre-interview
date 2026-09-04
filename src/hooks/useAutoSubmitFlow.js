@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAutoSubmitMutation } from "./useAutoSubmitMutation";
-import { SESSION_STATUS } from "@/config/interview";
+import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
+import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { logger } from "@/lib/logger";
 
 /**
@@ -109,7 +110,7 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
       return;
     }
 
-    queueMicrotask(() => autoSubmit("15-minute timer expired"));
+    queueMicrotask(() => autoSubmit(TERMINATION_REASONS.TIME_EXPIRED));
   }, [timeLeft, session?.status]);
 
   /**
@@ -123,21 +124,23 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
     if (session.status !== SESSION_STATUS.ACTIVE) return;
 
     if ((session.violations || 0) >= violationsAllowed) {
-      queueMicrotask(() => autoSubmit("3 compliance violations detected"));
+      queueMicrotask(() => autoSubmit(TERMINATION_REASONS.VIOLATION_LIMIT));
     }
   }, [session?.violations, session?.status]);
 
   /**
-   * Auto-submit when internet disconnect count reaches 3.
+   * Auto-submit when the internet disconnect count reaches its limit.
    * This is a SEPARATE category from proctoring violations.
    */
   useEffect(() => {
     if (!session) return;
     if (session.status !== SESSION_STATUS.ACTIVE) return;
 
-    if ((session.internet_disconnect_count || 0) >= 3) {
-      logger.log("[Network] 🚨 3 internet disconnects reached — triggering auto-submit.");
-      queueMicrotask(() => autoSubmit("3 internet disconnections detected"));
+    if ((session.internet_disconnect_count || 0) >= MAX_INTERNET_DISCONNECTS) {
+      logger.log(
+        `[Network] 🚨 ${MAX_INTERNET_DISCONNECTS} internet disconnects reached — triggering auto-submit.`,
+      );
+      queueMicrotask(() => autoSubmit(TERMINATION_REASONS.NETWORK_DISCONNECTS));
     }
   }, [session?.internet_disconnect_count, session?.status]);
 

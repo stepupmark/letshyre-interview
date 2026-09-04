@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useContinuousVerify } from "./useContinuousVerify";
 import { FACE_MISMATCH_LIMIT } from "@/config/interview";
+import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 
 export const useFaceMatchMonitoring = ({ sessionId, captureImage, autoSubmit, isReady = true }) => {
   const [mismatchCount, setMismatchCount] = useState(0);
@@ -49,9 +50,9 @@ export const useFaceMatchMonitoring = ({ sessionId, captureImage, autoSubmit, is
 
       setIsMonitoringStopped(true);
 
-      toast.error(`${FACE_MISMATCH_LIMIT} consecutive face mismatches detected`);
-
-      autoSubmit(`${FACE_MISMATCH_LIMIT} consecutive face mismatches detected`);
+      // The termination notice explains this one; a toast underneath it would
+      // just be noise.
+      autoSubmit(TERMINATION_REASONS.FACE_MISMATCH);
 
       setMismatchCount(0);
 

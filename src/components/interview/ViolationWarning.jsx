@@ -1,21 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
+import { MAX_VIOLATIONS } from "@/config/interview";
 
 export default function ViolationWarning({
   isOpen = false,
   onClose,
   violationCount = 1,
   counts = true,
-  title,
+  titleKey,
   imagePath = "/multi-people.png",
-  description,
+  descriptionKey,
   buttonText,
 }) {
   const { t } = useTranslation("interview");
-  const resolvedTitle = title ?? t("violationWarning.defaultTitle");
-  const resolvedDescription = description ?? t("violationWarning.defaultDescription");
+  const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
+  const resolvedDescription = descriptionKey
+    ? t(descriptionKey)
+    : t("violationWarning.defaultDescription");
   const resolvedButtonText = buttonText ?? t("violationWarning.defaultButtonText");
+
+  // The strike before the last one says so outright — a candidate should never
+  // be surprised by the termination that follows.
+  const isFinalWarning = counts && violationCount === MAX_VIOLATIONS - 1;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -34,7 +41,7 @@ export default function ViolationWarning({
 
             {counts ? (
               <div className="rounded-lg border border-orange-200 bg-orange-50 px-2 py-1 text-sm font-semibold text-orange-500">
-                {t("violationWarning.securityFlag", { violationCount })}
+                {t("violationWarning.securityFlag", { violationCount, total: MAX_VIOLATIONS })}
               </div>
             ) : (
               <div className="rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-600">
@@ -56,6 +63,12 @@ export default function ViolationWarning({
             <p className="mx-auto mt-1.5 text-md leading-6 text-slate-500 font-medium">
               {resolvedDescription}
             </p>
+
+            {isFinalWarning && (
+              <p className="mx-auto mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600">
+                {t("violationWarning.finalWarning")}
+              </p>
+            )}
           </div>
 
           {/* Button */}

@@ -17,6 +17,14 @@ export const MAX_VIOLATIONS = num(import.meta.env.VITE_AI_MAX_VIOLATIONS_ALLOWED
 // Consecutive face mismatches allowed before auto-submit.
 export const FACE_MISMATCH_LIMIT = num(import.meta.env.VITE_AI_FACE_MISMATCH_LIMIT, 2);
 
+// Internet disconnects allowed before auto-submit. Tracked separately from
+// proctoring violations — a dropped connection is not misconduct.
+export const MAX_INTERNET_DISCONNECTS = num(import.meta.env.VITE_AI_MAX_INTERNET_DISCONNECTS, 3);
+
+// How long the final termination notice stays on screen before it proceeds on
+// its own. The candidate can acknowledge sooner; they can never delay past it.
+export const TERMINATION_NOTICE_SECONDS = num(import.meta.env.VITE_AI_TERMINATION_NOTICE_SECONDS, 8);
+
 // Interview length in minutes.
 export const INTERVIEW_DURATION_MINUTES = num(import.meta.env.VITE_AI_INTERVIEW_DURATION_MINUTES, 15);
 

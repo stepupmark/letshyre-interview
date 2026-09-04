@@ -35,11 +35,12 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "Security Flag : {{violationCount}}",
+    "securityFlag": "Violation {{violationCount}} of {{total}}",
     "warning": "Warning",
     "defaultTitle": "Window Switch Warning",
     "defaultDescription": "Navigating away from the interview screen is being logged as a violation",
-    "defaultButtonText": "I Understand, Return to Interview"
+    "defaultButtonText": "I Understand, Return to Interview",
+    "finalWarning": "This is your final warning. One more violation will end your interview."
   },
   "autoSubmitLoader": {
     "noInternet": "No Internet Connection",
@@ -65,5 +66,95 @@
     "waitingError": "Tap “Try Again” to resubmit. Your progress is safe.",
     "waitingSuccess": "Redirecting to your results…",
     "waitingSubmitting": "Please wait, do not close or refresh this page."
+  },
+  "violations": {
+    "tabSwitch": {
+      "title": "Tab Switch Detected",
+      "description": "Navigating away from the interview screen is not allowed. Continued violations will end your interview."
+    },
+    "fullscreenExit": {
+      "title": "Fullscreen Exit Detected",
+      "description": "Exiting fullscreen is not allowed. Continued violations will end your interview."
+    },
+    "windowResize": {
+      "title": "Window Resize Detected",
+      "description": "Resizing or un-maximizing the window is not allowed. Continued violations will end your interview."
+    },
+    "noFace": {
+      "title": "Candidate Not Detected",
+      "description": "Ensure you are properly positioned in front of the camera."
+    },
+    "multipleFaces": {
+      "title": "Multiple People Detected",
+      "description": "Only you should be visible on the interview screen. Please ensure no one else is in view."
+    },
+    "prohibitedObject": {
+      "title": "Prohibited Device Detected",
+      "description": "Please put away all prohibited devices to continue the interview."
+    },
+    "notLooking": {
+      "title": "Look at the Camera",
+      "description": "Please keep your eyes on the screen. Looking away repeatedly will be flagged."
+    },
+    "eyesClosed": {
+      "title": "Eyes Closed Detected",
+      "description": "Please keep your eyes open and stay focused during the interview."
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "External Display Detected",
+        "description": "An external display was detected. Disconnect all external monitors to continue."
+      },
+      "screenSharing": {
+        "title": "Screen Sharing Detected",
+        "description": "Screen sharing or mirroring was detected. Close all sharing apps immediately."
+      },
+      "securityMonitor": {
+        "title": "Security Monitor Interrupted",
+        "description": "The security monitor was interrupted. This may indicate a tamper attempt."
+      },
+      "windowAction": {
+        "title": "Window Action Detected",
+        "description": "The interview window was minimized or closed. Please keep it in focus at all times."
+      },
+      "generic": {
+        "title": "Security Violation Detected",
+        "description": "A security policy violation was detected. Please resolve it immediately."
+      }
+    }
+  },
+  "termination": {
+    "acknowledge": "I Understand",
+    "countdown": "Continuing automatically in {{count}}s",
+    "violationLimit": {
+      "title": "Interview Ended",
+      "pill": "Policy violations",
+      "description": "You reached {{violations}} compliance violations. Your interview has been submitted with the answers you completed."
+    },
+    "faceMismatch": {
+      "title": "Interview Ended",
+      "pill": "Identity check failed",
+      "description": "We could not confirm it was still you on camera. Your interview has been submitted with the answers you completed."
+    },
+    "networkDisconnects": {
+      "title": "Interview Ended",
+      "pill": "Connection lost",
+      "description": "Your connection dropped {{disconnects}} times. Your interview has been submitted with the answers you completed."
+    },
+    "timeExpired": {
+      "title": "Time's Up",
+      "pill": "Time limit reached",
+      "description": "Your interview time has ended. Your answers have been submitted."
+    },
+    "electronSecurity": {
+      "title": "Interview Ended",
+      "pill": "Security violation",
+      "description": "A security policy violation ended your interview. It has been submitted with the answers you completed."
+    },
+    "generic": {
+      "title": "Interview Ended",
+      "pill": "Auto-submitted",
+      "description": "Your interview has been submitted with the answers you completed."
+    }
   }
 }

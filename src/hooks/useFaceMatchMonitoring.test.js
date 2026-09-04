@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { useFaceMatchMonitoring } from "./useFaceMatchMonitoring";
+import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 
 const mockUseContinuousVerify = vi.fn();
 
@@ -43,9 +44,7 @@ describe("useFaceMatchMonitoring", () => {
 
     await waitFor(() => expect(autoSubmit).toHaveBeenCalledTimes(1));
 
-    expect(autoSubmit).toHaveBeenCalledWith(
-      expect.stringContaining("2 consecutive face mismatches"),
-    );
+    expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
   });
 
   it("resets the mismatch count on a same_person:true result", async () => {

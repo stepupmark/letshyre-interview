@@ -1,4 +1,4 @@
-import { detectViolation } from "./useProctoringSystem";
+import { detectViolation, sendUnloadFlush } from "./useProctoringSystem";
 
 const CLEAN_RESULT = {
   success: true,
@@ -140,5 +140,66 @@ describe("detectViolation", () => {
       eyes_open: false,
     });
     expect(violation.type).toBe("NOT_LOOKING");
+  });
+});
+
+describe("sendUnloadFlush", () => {
+  const url = "https://api.test/proctoring/log/";
+
+  const payloadWith = (n) => ({
+    interview_id: "i1",
+    session_id: "s1",
+    source: "cv_detect",
+    event_type: "batch_proctoring_logs",
+    payload: {
+      total_records: n,
+      records: Array.from({ length: n }, (_, i) => ({
+        timestamp: new Date().toISOString(),
+        payload: { i, filler: "x".repeat(200) },
+      })),
+    },
+  });
+
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true })));
+    sessionStorage.clear();
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("attaches the bearer token sendBeacon cannot carry", () => {
+    sessionStorage.setItem("ac", "tok123");
+    sendUnloadFlush(url, payloadWith(1));
+
+    const [, init] = fetch.mock.calls[0];
+    expect(init.headers.Authorization).toBe("Bearer tok123");
+    expect(init.keepalive).toBe(true);
+  });
+
+  it("omits the header when there is no token rather than sending a bad one", () => {
+    sendUnloadFlush(url, payloadWith(1));
+    expect(fetch.mock.calls[0][1].headers.Authorization).toBeUndefined();
+  });
+
+  it("sends a small payload untrimmed", () => {
+    sendUnloadFlush(url, payloadWith(3));
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(body.payload.records).toHaveLength(3);
+    expect(body.payload.truncated).toBeUndefined();
+  });
+
+  it("drops the oldest records instead of the whole batch when oversized", () => {
+    const original = payloadWith(2000);
+    sendUnloadFlush(url, original);
+
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(body.payload.truncated).toBe(true);
+    expect(body.payload.records.length).toBeGreaterThan(0);
+    expect(body.payload.records.length).toBeLessThan(2000);
+    expect(fetch.mock.calls[0][1].body.length).toBeLessThanOrEqual(60_000);
+
+    // the tail is what survives
+    const lastKept = body.payload.records.at(-1).payload.i;
+    expect(lastKept).toBe(1999);
   });
 });

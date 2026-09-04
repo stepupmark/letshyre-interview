@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertCircle, RotateCw, Check, WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { getTerminationCopy, isTerminationReason } from "@/lib/terminationReasons";
 
 export default function AutoSubmitLoader({ reason, isSuccess = false, error = null, onRetry }) {
   const { t } = useTranslation("interview");
@@ -61,12 +62,8 @@ export default function AutoSubmitLoader({ reason, isSuccess = false, error = nu
 
   const formatReason = (rawReason) => {
     if (!rawReason) return t("autoSubmitLoader.reasonAutoSubmitted");
-    if (rawReason.toLowerCase().includes("timer")) return t("autoSubmitLoader.reasonTimeUp");
-    if (rawReason.toLowerCase().includes("internet"))
-      return t("autoSubmitLoader.reasonConnectionIssues");
-    if (rawReason.toLowerCase().includes("violation"))
-      return t("autoSubmitLoader.reasonPolicyFlags");
-    return rawReason;
+    if (!isTerminationReason(rawReason)) return rawReason;
+    return t(getTerminationCopy(rawReason).pillKey);
   };
 
   const gradientId = error
