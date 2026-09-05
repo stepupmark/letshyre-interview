@@ -15,15 +15,15 @@ import TerminationNotice from "@components/interview/TerminationNotice";
 import { InitialLoadingUi } from "@/components/interview/InitialLoadingUi";
 import { TerminatedUi } from "@/components/interview/TerminatedUi";
 
-import { useInterviewSession } from "@hooks/useInterviewSession";
-import { useProctoringSystem } from "@hooks/useProctoringSystem";
-import { useViolationMonitor } from "@/hooks/useViolationMonitor";
-import { useElectronViolation } from "@/hooks/electron/useElectronViolation";
-import { useInterviewComplete } from "@/hooks/electron/useInterviewComplete";
-import { useElectronScreenRecording } from "@/hooks/electron/useElectronScreenRecording";
+import { useInterviewSession } from "@hooks/interview/useInterviewSession";
+import { useTerminationNotice } from "@hooks/interview/useTerminationNotice";
+import { useProctoringSystem } from "@hooks/proctoring/useProctoringSystem";
+import { useViolationMonitor } from "@hooks/proctoring/useViolationMonitor";
+import { useFaceMatchMonitoring } from "@hooks/proctoring/useFaceMatchMonitoring";
+import { useElectronViolation } from "@hooks/electron/useElectronViolation";
+import { useInterviewComplete } from "@hooks/electron/useInterviewComplete";
+import { useElectronScreenRecording } from "@hooks/electron/useElectronScreenRecording";
 import { useRegisterFace } from "@mutations/useRegisterFace";
-import { useFaceMatchMonitoring } from "@/hooks/useFaceMatchMonitoring";
-import { useTerminationNotice } from "@/hooks/useTerminationNotice";
 import { captureFrameFile, dataUrlToFile } from "@/lib/videoCapture";
 import { logger } from "@/lib/logger";
 

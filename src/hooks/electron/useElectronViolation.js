@@ -1,5 +1,5 @@
-// hooks/electron/useElectronViolation.js
 import { useEffect, useRef } from "react";
+import { logger } from "@/lib/logger";
 
 /**
  * @typedef {Object} ViolationPayload
@@ -65,7 +65,7 @@ export function useElectronViolation({ onHardBlock, onSoftBlock }) {
         }
       } catch (err) {
         // Never let a callback error break the IPC channel
-        console.error("[useElectronViolation] callback threw:", err);
+        logger.error("[useElectronViolation] callback threw:", err);
       }
     }
 

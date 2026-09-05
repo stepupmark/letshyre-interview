@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-export function ErrorBoundary() {
+export function RouteErrorBoundary() {
   const error = useRouteError();
   const navigate = useNavigate();
   const { t } = useTranslation("errors");

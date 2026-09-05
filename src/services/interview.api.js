@@ -1,4 +1,4 @@
-import { api } from "./axiosClient.api";
+import { api } from "./clients/backend";
 
 export async function fetchQuestion(payload) {
   const response = await api.post(`/user/v1/candidate/interview/ai/start/`, payload || {}, {

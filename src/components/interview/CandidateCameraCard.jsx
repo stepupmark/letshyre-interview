@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { logger } from "@/lib/logger";
 
 export default function CandidateCameraCard({ videoRef, onStatusChange }) {
   const streamRef = useRef(null);
@@ -30,13 +31,13 @@ export default function CandidateCameraCard({ videoRef, onStatusChange }) {
                 onStatusChange?.("ok");
               })
               .catch((err) => {
-                console.error("[Camera] play() rejected:", err);
+                logger.error("[Camera] play() rejected:", err);
                 onStatusChange?.("engine-error");
               });
           };
         }
       } catch (err) {
-        console.error("[Camera] Boot failed:", err);
+        logger.error("[Camera] Boot failed:", err);
         onStatusChange?.("engine-error");
       }
     }

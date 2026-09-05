@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import CandidateCameraCard from "./video";
+import CandidateCameraCard from "./CandidateCameraCard";
 
 export default function LeftPanel({ videoRef, onCameraStatus }) {
   const { t } = useTranslation("common");

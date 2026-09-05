@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { registerFace } from "@/services/faceApi";
+import { registerFace } from "@/services/face.api";
 
 export const useRegisterFace = (sessionId, onSuccess, onError) => {
   return useMutation({

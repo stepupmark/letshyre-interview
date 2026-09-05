@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAutoSubmitMutation } from "@mutations/useAutoSubmitMutation";
 import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
@@ -18,17 +18,25 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
   const [autoSubmitSuccess, setAutoSubmitSuccess] = useState(false);
   const [autoSubmitError, setAutoSubmitError] = useState(null);
 
+  // Guards against a double submit, and has to be a ref rather than the
+  // autoSubmitting state: when several triggers fire in the same commit their
+  // queued microtasks all run before React flushes setAutoSubmitting, so each
+  // one would still read `false` and submit. Cleared on failure so a retry can
+  // get through.
+  const submitInFlightRef = useRef(false);
+
   /**
    * Auto-submit interview session when trigger conditions are met
    */
   const autoSubmit = async (reason) => {
-    // Allow retry if there was an error
     if (
       !session ||
       (session.status !== SESSION_STATUS.ACTIVE && session.status !== SESSION_STATUS.EXPIRED) ||
-      (autoSubmitting && !autoSubmitError)
+      submitInFlightRef.current
     )
       return;
+
+    submitInFlightRef.current = true;
 
     try {
       setAutoSubmitting(true);
@@ -82,6 +90,7 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
       });
       setAutoSubmitting(false);
     } catch (error) {
+      submitInFlightRef.current = false;
       logger.error("[AutoSubmit] ❌ Auto submit failed:", error);
       // Surface the real reason. Only attribute it to connectivity when the
       // browser is actually offline; otherwise pass the server/error message

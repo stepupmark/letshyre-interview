@@ -6,27 +6,27 @@
  */
 
 import { EntryPoint } from "@/pages/EntryPoint";
-import { privateLoader } from "./PrivateRoute";
+import { privateLoader } from "./privateLoader";
 import NotFoundPage from "@/pages/PageNotFound";
-import { ErrorBoundary } from "@/pages/Error";
+import { RouteErrorBoundary } from "@/pages/RouteError";
 import { InterviewFlowGuard } from "./InterviewFlowGuard";
 
 export const routeDefinitions = [
   {
     path: "/",
     Component: EntryPoint,
-    ErrorBoundary: ErrorBoundary,
+    ErrorBoundary: RouteErrorBoundary,
   },
 
   {
     loader: privateLoader,
     element: <InterviewFlowGuard />,
-    ErrorBoundary: ErrorBoundary,
+    ErrorBoundary: RouteErrorBoundary,
     children: [
       {
         path: "/interview",
         lazy: async () => {
-          const { Interview } = await import("@/pages/interview");
+          const { Interview } = await import("@/pages/Interview");
           return { Component: Interview };
         },
       },
@@ -39,12 +39,12 @@ export const routeDefinitions = [
       const { UnauthorizedAccess } = await import("@/pages/UnauthorizedAccess");
       return { Component: UnauthorizedAccess };
     },
-    ErrorBoundary: ErrorBoundary,
+    ErrorBoundary: RouteErrorBoundary,
   },
 
   {
     path: "*",
     Component: NotFoundPage,
-    ErrorBoundary: ErrorBoundary,
+    ErrorBoundary: RouteErrorBoundary,
   },
 ];

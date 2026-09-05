@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { continuousVerify } from "@/services/faceApi";
+import { continuousVerify } from "@/services/face.api";
 
 export const useContinuousVerify = (sessionId, getImageFile, isMonitoringStopped, isReady = true) => {
   return useQuery({
