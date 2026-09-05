@@ -6,6 +6,8 @@
       "@pages/*": ["./src/pages/*"],
       "@router/*": ["./src/router/*"],
       "@hooks/*": ["./src/hooks/*"],
+      "@queries/*": ["./src/queries/*"],
+      "@mutations/*": ["./src/mutations/*"],
       "@lib/*": ["./src/lib/*"],
       "@services/*": ["./src/services/*"]
     }

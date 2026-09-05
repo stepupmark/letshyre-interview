@@ -18,8 +18,8 @@ import QuestionShell from "../QuestionShell";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
-import { useVoiceEnrollment } from "@/hooks/useVoiceEnrollment";
-import { useVoiceCompare } from "@/hooks/useVoiceCompare";
+import { useVoiceEnrollment } from "@mutations/useVoiceEnrollment";
+import { useVoiceCompare } from "@mutations/useVoiceCompare";
 
 // ─── Voice Comparison Result Banner ──────────────────────────────────────────
 

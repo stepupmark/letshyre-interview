@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useContinuousVerify } from "./useContinuousVerify";
+import { useContinuousVerify } from "@queries/useContinuousVerify";
 import { FACE_MISMATCH_LIMIT } from "@/config/interview";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 

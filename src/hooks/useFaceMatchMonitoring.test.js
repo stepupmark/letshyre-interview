@@ -4,7 +4,7 @@ import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 
 const mockUseContinuousVerify = vi.fn();
 
-vi.mock("./useContinuousVerify", () => ({
+vi.mock("@queries/useContinuousVerify", () => ({
   useContinuousVerify: (...args) => mockUseContinuousVerify(...args),
 }));
 

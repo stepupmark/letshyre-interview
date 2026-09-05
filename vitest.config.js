@@ -12,9 +12,10 @@ export default defineConfig({
       "@pages": path.resolve("src/pages"),
       "@router": path.resolve("src/router"),
       "@hooks": path.resolve("src/hooks"),
+      "@queries": path.resolve("src/queries"),
+      "@mutations": path.resolve("src/mutations"),
       "@lib": path.resolve("src/lib"),
       "@services": path.resolve("src/services"),
-      "@assets": path.resolve("src/assets"),
     },
   },
 

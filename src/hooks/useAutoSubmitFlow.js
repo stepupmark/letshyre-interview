@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAutoSubmitMutation } from "./useAutoSubmitMutation";
+import { useAutoSubmitMutation } from "@mutations/useAutoSubmitMutation";
 import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { logger } from "@/lib/logger";

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useStartInterviewMutation } from "./useStartInterviewMutation";
-import { useSubmitAnswerMutation } from "./useSubmitAnswerMutation";
+import { useStartInterviewMutation } from "@mutations/useStartInterviewMutation";
+import { useSubmitAnswerMutation } from "@mutations/useSubmitAnswerMutation";
 import { useAutoSubmitFlow } from "./useAutoSubmitFlow";
 import {
   MAX_VIOLATIONS,

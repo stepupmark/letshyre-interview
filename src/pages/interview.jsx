@@ -21,7 +21,7 @@ import { useViolationMonitor } from "@/hooks/useViolationMonitor";
 import { useElectronViolation } from "@/hooks/electron/useElectronViolation";
 import { useInterviewComplete } from "@/hooks/electron/useInterviewComplete";
 import { useElectronScreenRecording } from "@/hooks/electron/useElectronScreenRecording";
-import { useRegisterFace } from "@/hooks/useRegisterFace";
+import { useRegisterFace } from "@mutations/useRegisterFace";
 import { useFaceMatchMonitoring } from "@/hooks/useFaceMatchMonitoring";
 import { useTerminationNotice } from "@/hooks/useTerminationNotice";
 import { captureFrameFile, dataUrlToFile } from "@/lib/videoCapture";

@@ -5,21 +5,21 @@ const startMutateAsync = vi.fn();
 const submitMutateAsync = vi.fn();
 const autoSubmitMutateAsync = vi.fn();
 
-vi.mock("./useStartInterviewMutation", () => ({
+vi.mock("@mutations/useStartInterviewMutation", () => ({
   useStartInterviewMutation: () => ({
     mutateAsync: startMutateAsync,
     isPending: false,
   }),
 }));
 
-vi.mock("./useSubmitAnswerMutation", () => ({
+vi.mock("@mutations/useSubmitAnswerMutation", () => ({
   useSubmitAnswerMutation: () => ({
     mutateAsync: submitMutateAsync,
     isPending: false,
   }),
 }));
 
-vi.mock("./useAutoSubmitMutation", () => ({
+vi.mock("@mutations/useAutoSubmitMutation", () => ({
   useAutoSubmitMutation: () => ({
     mutateAsync: autoSubmitMutateAsync,
     isPending: false,
