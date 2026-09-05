@@ -1,0 +1,50 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_AI_DETECTION_URL: ${{ vars.VITE_AI_DETECTION_URL }}
+          VITE_MAIN_WEBSITE_URL: ${{ vars.VITE_MAIN_WEBSITE_URL }}
+          VITE_AI_MAX_VIOLATIONS_ALLOWED: ${{ vars.VITE_AI_MAX_VIOLATIONS_ALLOWED }}
+          VITE_AI_FACE_MISMATCH_LIMIT: ${{ vars.VITE_AI_FACE_MISMATCH_LIMIT }}
+          VITE_AI_INTERVIEW_DURATION_MINUTES: ${{ vars.VITE_AI_INTERVIEW_DURATION_MINUTES }}
+          VITE_AI_MAX_INTERNET_DISCONNECTS: ${{ vars.VITE_AI_MAX_INTERNET_DISCONNECTS }}
+          VITE_AI_TERMINATION_NOTICE_SECONDS: ${{ vars.VITE_AI_TERMINATION_NOTICE_SECONDS }}
+          VITE_DEBUG_LOGS: ${{ vars.VITE_DEBUG_LOGS }}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
