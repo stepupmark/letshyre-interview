@@ -3,13 +3,19 @@ import { toast } from "sonner";
 import { useContinuousVerify } from "@queries/useContinuousVerify";
 import { FACE_MISMATCH_LIMIT } from "@/config/interview";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
+import { createViolationStabilizer } from "@/lib/violationStabilizer";
+import { recordViolationEvent } from "@/lib/violationLog";
+
+// A verdict returned on a frame this poor is not evidence either way.
+const MIN_FRAME_QUALITY = 0.25;
 
 export const useFaceMatchMonitoring = ({ sessionId, captureImage, autoSubmit, isReady = true }) => {
   const [mismatchCount, setMismatchCount] = useState(0);
-
   const [isMonitoringStopped, setIsMonitoringStopped] = useState(false);
 
   const hasSubmittedRef = useRef(false);
+  const mismatchRef = useRef(0);
+  const stabilizerRef = useRef(createViolationStabilizer());
 
   const continuousVerifyQuery = useContinuousVerify(
     sessionId,
@@ -18,27 +24,56 @@ export const useFaceMatchMonitoring = ({ sessionId, captureImage, autoSubmit, is
     isReady,
   );
 
-  const samePerson = continuousVerifyQuery.data?.same_person;
+  const { data, dataUpdatedAt } = continuousVerifyQuery;
 
+  // Keyed on dataUpdatedAt, not on the response object: React Query hands back
+  // the same reference when two polls agree, so identical consecutive
+  // mismatches would otherwise never be counted.
   useEffect(() => {
-    if (isMonitoringStopped) return;
+    if (isMonitoringStopped || !dataUpdatedAt || !data) return;
 
-    // "No sample" (camera warming up, frame not captured) is a technical gap,
-    // NOT an identity mismatch — skip the tick so it can't trigger a violation.
-    if (continuousVerifyQuery.data?.no_sample) return;
+    const report = (outcome, extra) =>
+      recordViolationEvent({
+        source: "face_match",
+        type: "FACE_MISMATCH",
+        outcome,
+        frame_quality: data.frame_quality,
+        ...extra,
+      });
 
-    if (samePerson === false) {
-      // Increment only on an explicit "different person" result from the backend.
-      // Deferred so the setState isn't a direct synchronous call in the effect body.
-      queueMicrotask(() => setMismatchCount((prev) => prev + 1));
-    } else if (samePerson === true) {
-      // Reset count on successful verification
-      queueMicrotask(() => setMismatchCount(0));
-      // Allow auto-submit again for future mismatches
-      hasSubmittedRef.current = false;
+    // Camera still warming up or no frame captured — a technical gap, not an
+    // identity mismatch.
+    if (data.no_sample) {
+      report("no_sample");
+      return;
     }
-    // ignore undefined (initial) and other values
-  }, [continuousVerifyQuery.data, samePerson, isMonitoringStopped]);
+
+    if (typeof data.frame_quality === "number" && data.frame_quality < MIN_FRAME_QUALITY) {
+      report("inconclusive");
+      return;
+    }
+
+    if (data.same_person === true) {
+      stabilizerRef.current.reset();
+      mismatchRef.current = 0;
+      hasSubmittedRef.current = false;
+      // Deferred so the setState isn't a direct synchronous call in the effect.
+      queueMicrotask(() => setMismatchCount(0));
+      return;
+    }
+
+    if (data.same_person !== false) return;
+
+    if (!stabilizerRef.current.push({ type: "FACE_MISMATCH" })) {
+      report("unconfirmed", { window: stabilizerRef.current.peek().FACE_MISMATCH ?? null });
+      return;
+    }
+
+    stabilizerRef.current.commit("FACE_MISMATCH");
+    mismatchRef.current += 1;
+    queueMicrotask(() => setMismatchCount(mismatchRef.current));
+    report("raised", { violation_count: mismatchRef.current });
+  }, [data, dataUpdatedAt, isMonitoringStopped]);
 
   useEffect(() => {
     if (mismatchCount === 0) return;
@@ -47,18 +82,20 @@ export const useFaceMatchMonitoring = ({ sessionId, captureImage, autoSubmit, is
 
     if (mismatchCount >= FACE_MISMATCH_LIMIT && !hasSubmittedRef.current) {
       hasSubmittedRef.current = true;
-
       setIsMonitoringStopped(true);
+
+      recordViolationEvent({
+        source: "face_match",
+        type: "FACE_MISMATCH",
+        outcome: "terminated",
+        violation_count: mismatchCount,
+      });
 
       // The termination notice explains this one; a toast underneath it would
       // just be noise.
       autoSubmit(TERMINATION_REASONS.FACE_MISMATCH);
-
-      setMismatchCount(0);
-
-      hasSubmittedRef.current = false;
     }
-  }, [mismatchCount]);
+  }, [mismatchCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     mismatchCount,

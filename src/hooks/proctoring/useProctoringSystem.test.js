@@ -164,7 +164,8 @@ describe("detectViolation", () => {
     const violation = detectViolation({ ...CLEAN_RESULT, objects_detected: [object] }, [
       { object, state: "baseline" },
     ]);
-    expect(violation.type).toBe("PROHIBITED_OBJECT_BASELINE");
+    expect(violation.type).toBe("PROHIBITED_OBJECT");
+    expect(violation.state).toBe("baseline");
     expect(violation.countsAsViolation).toBe(false);
   });
 

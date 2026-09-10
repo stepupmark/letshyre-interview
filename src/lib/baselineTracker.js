@@ -89,6 +89,7 @@ export function createBaselineTracker(options = {}) {
         if (record) {
           record.last = point;
           record.lastSeenAt = now;
+          record.seen += 1;
         } else {
           record = {
             label: object?.label,
@@ -97,6 +98,7 @@ export function createBaselineTracker(options = {}) {
             firstSeenTick: tick,
             firstSeenAt: now,
             lastSeenAt: now,
+            seen: 1,
           };
           tracked.push(record);
         }
@@ -107,6 +109,10 @@ export function createBaselineTracker(options = {}) {
         const isEnvironment = settledEarly && distance(record.origin, point) <= staticDriftPx;
 
         if (!isEnvironment) return { object, state: "introduced" };
+        // Furniture has to prove it holds still before it earns the grace; on a
+        // first sighting there is nothing yet to tell a desk lamp from a phone
+        // someone just picked up.
+        if (record.seen < baselineTicks) return { object, state: "pending" };
         if (now - record.firstSeenAt > graceMs) return { object, state: "expired" };
         return { object, state: "baseline" };
       });

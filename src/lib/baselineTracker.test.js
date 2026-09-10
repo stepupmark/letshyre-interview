@@ -15,10 +15,16 @@ function setup() {
 }
 
 describe("createBaselineTracker", () => {
-  it("treats an object that is static from the start as environment", () => {
+  it("holds a first sighting as pending until it proves it is standing still", () => {
     const tracker = setup();
-    expect(tracker.classify([laptop], 0)[0].state).toBe("baseline");
+    expect(tracker.classify([laptop], 0)[0].state).toBe("pending");
     expect(tracker.classify([laptop], 5000)[0].state).toBe("baseline");
+  });
+
+  it("never promotes an object that moved between the opening observations", () => {
+    const tracker = setup();
+    expect(tracker.classify([laptop], 0)[0].state).toBe("pending");
+    expect(tracker.classify([shifted(laptop, 20)], 5000)[0].state).toBe("introduced");
   });
 
   it("treats an object that appears mid-session as introduced", () => {
@@ -62,10 +68,11 @@ describe("createBaselineTracker", () => {
     expect(tracker.classify([laptop, impostor], 20000)[1].state).toBe("introduced");
   });
 
-  it("still baselines an object present on the second observation", () => {
+  it("still baselines an object first seen on the second observation", () => {
     const tracker = setup();
     tracker.classify([laptop], 0);
-    expect(tracker.classify([laptop, phone], 5000)[1].state).toBe("baseline");
+    expect(tracker.classify([laptop, phone], 5000)[1].state).toBe("pending");
+    expect(tracker.classify([laptop, phone], 10000)[1].state).toBe("baseline");
   });
 
   it("treats anything first seen after the opening observations as introduced", () => {
@@ -89,7 +96,8 @@ describe("createBaselineTracker", () => {
     tracker.classify([laptop], 0);
     tracker.classify([laptop], 5000);
     tracker.start(60000);
-    expect(tracker.classify([laptop], 60000)[0].state).toBe("baseline");
+    tracker.classify([laptop], 60000);
+    expect(tracker.classify([laptop], 65000)[0].state).toBe("baseline");
   });
 
   it("clears everything on reset", () => {
@@ -97,6 +105,7 @@ describe("createBaselineTracker", () => {
     tracker.classify([laptop], 0);
     tracker.reset();
     tracker.start(60000);
-    expect(tracker.classify([laptop], 60000)[0].state).toBe("baseline");
+    tracker.classify([laptop], 60000);
+    expect(tracker.classify([laptop], 65000)[0].state).toBe("baseline");
   });
 });

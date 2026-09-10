@@ -1,5 +1,5 @@
 import frames from "./__fixtures__/detectionLog.json";
-import { detectViolation, findProhibitedObjects } from "./useProctoringSystem";
+import { applyBaselineRules, detectViolation, findProhibitedObjects } from "./useProctoringSystem";
 import { createBaselineTracker } from "@/lib/baselineTracker";
 import { createViolationStabilizer } from "@/lib/violationStabilizer";
 
@@ -30,10 +30,10 @@ function replay(sequence) {
   const outcomes = [];
   for (const { frame, at } of sequence) {
     const result = frameResult(frame);
-    const classified = tracker.classify(findProhibitedObjects(result), at);
+    const classified = applyBaselineRules(tracker.classify(findProhibitedObjects(result), at));
     const detected = detectViolation(result, classified);
     const confirmed = stabilizer.push(detected);
-    if (confirmed) stabilizer.commit(confirmed.type);
+    if (confirmed) stabilizer.commit(confirmed.key ?? confirmed.type);
     outcomes.push({ at, detected, confirmed });
   }
   return outcomes;
@@ -44,14 +44,14 @@ const atFiveSeconds = frames.map((frame, i) => ({ frame, at: i * TICK_MS }));
 describe("detection log regression", () => {
   it("never strikes the two laptops that were there the whole time", () => {
     const strikes = replay(atFiveSeconds).filter(
-      (o) => o.confirmed && o.confirmed.type === "PROHIBITED_OBJECT",
+      (o) => o.confirmed?.label === "laptop" && o.confirmed.countsAsViolation !== false,
     );
     expect(strikes).toHaveLength(0);
   });
 
   it("treats those laptops as environment rather than ignoring them", () => {
     const warnings = replay(atFiveSeconds).filter(
-      (o) => o.detected && o.detected.type === "PROHIBITED_OBJECT_BASELINE",
+      (o) => o.detected?.type === "PROHIBITED_OBJECT" && o.detected.countsAsViolation === false,
     );
     expect(warnings.length).toBeGreaterThan(0);
     expect(warnings[0].detected.label).toBe("laptop");
@@ -86,5 +86,76 @@ describe("detection log regression", () => {
     expect(confirmed.length).toBeGreaterThan(0);
     expect(confirmed[0].confirmed.type).toBe("PROHIBITED_OBJECT");
     expect(confirmed[0].at).toBeLessThanOrEqual(phoneIndex * TICK_MS + 2_000);
+  });
+});
+
+/**
+ * A session where the phone was already in shot on the first observation. It
+ * was baselined as furniture, then only reclassified once it drifted, so the
+ * warning arrived six seconds and three detections late.
+ */
+const phoneFromFirstFrame = [
+  {
+    objects_detected: [
+      {
+        label: "cell phone",
+        class_id: 67,
+        confidence: 0.854,
+        area_ratio: 0.0939,
+        bbox: [209.4, 132.9, 326.9, 317.1],
+      },
+    ],
+  },
+  {
+    objects_detected: [
+      {
+        label: "cell phone",
+        class_id: 67,
+        confidence: 0.576,
+        area_ratio: 0.0924,
+        bbox: [199.8, 157.1, 311.9, 347.1],
+      },
+    ],
+  },
+  {
+    objects_detected: [
+      {
+        label: "cell phone",
+        class_id: 67,
+        confidence: 0.832,
+        area_ratio: 0.092,
+        bbox: [197.5, 159.8, 310.0, 348.1],
+      },
+    ],
+  },
+];
+
+describe("phone present on the first observation", () => {
+  const outcomes = () =>
+    replay(phoneFromFirstFrame.map((frame, i) => ({ frame, at: i * TICK_MS })));
+
+  it("never treats it as part of the room", () => {
+    const states = outcomes().map((o) => o.detected?.state);
+    expect(states).not.toContain("baseline");
+    expect(states).not.toContain("pending");
+  });
+
+  it("strikes it from the very first frame", () => {
+    expect(outcomes()[0].detected).toMatchObject({
+      type: "PROHIBITED_OBJECT",
+      state: "introduced",
+      label: "cell phone",
+    });
+    expect(outcomes()[0].detected.countsAsViolation).toBeUndefined();
+  });
+
+  it("confirms by the second observation instead of the fourth", () => {
+    const raisedAt = outcomes().findIndex((o) => o.confirmed);
+    expect(raisedAt).toBe(1);
+  });
+
+  it("keeps one evidence window rather than splitting on the state flip", () => {
+    const keys = new Set(outcomes().map((o) => o.detected?.key));
+    expect(keys).toEqual(new Set(["PROHIBITED_OBJECT:cell phone"]));
   });
 });

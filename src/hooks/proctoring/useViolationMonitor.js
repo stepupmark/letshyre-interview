@@ -31,12 +31,19 @@ export function getElectronViolationKey(event = "") {
   return "generic";
 }
 
+// A second display or a mirrored screen is the same concern as a detected
+// laptop; the rest are window-level actions.
+const ELECTRON_IMAGES = {
+  externalDisplay: "/laptop.png",
+  screenSharing: "/laptop.png",
+};
+
 function electronViolationCopy(event) {
   const key = getElectronViolationKey(event);
   return {
     titleKey: `violations.electron.${key}.title`,
     descriptionKey: `violations.electron.${key}.description`,
-    imagePath: "/window-switch.png",
+    imagePath: ELECTRON_IMAGES[key] ?? "/window-switch.png",
   };
 }
 

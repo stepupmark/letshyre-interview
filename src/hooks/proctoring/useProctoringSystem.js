@@ -84,7 +84,9 @@ export function sendUnloadFlush(url, payload) {
 // Per class, because YOLO confidence is not comparable across labels or object
 // sizes. The area floor drops sub-pixel boxes without touching real detections.
 const PROHIBITED_OBJECTS = {
-  "cell phone": { classId: 67, minConfidence: 0.5, minAreaRatio: 0.004 },
+  // A phone is never part of the room, so it can't earn furniture status the
+  // way a monitor or a bookshelf can.
+  "cell phone": { classId: 67, canBaseline: false, minConfidence: 0.5, minAreaRatio: 0.004 },
   laptop: { classId: 63, minConfidence: 0.6, minAreaRatio: 0.005 },
   tv: { classId: 62, minConfidence: 0.6, minAreaRatio: 0.01 },
   book: { classId: 84, minConfidence: 0.55, minAreaRatio: 0.01 },
@@ -119,6 +121,16 @@ export function confidenceFloorFor(rule, object, frameQuality) {
 
   const deficit = Math.max(0, QUALITY_REFERENCE - frameQuality);
   return Math.min(0.95, rule.minConfidence + deficit * QUALITY_PENALTY);
+}
+
+const ENVIRONMENT_STATES = new Set(["baseline", "pending"]);
+
+export function applyBaselineRules(classified) {
+  return classified.map((entry) =>
+    ENVIRONMENT_STATES.has(entry.state) && ruleFor(entry.object)?.canBaseline === false
+      ? { ...entry, state: "introduced" }
+      : entry,
+  );
 }
 
 export function findProhibitedObjects(result) {
@@ -174,17 +186,20 @@ export function detectViolation(result, classified) {
 
   const objects =
     classified ?? findProhibitedObjects(result).map((object) => ({ object, state: "introduced" }));
-  const strikeable = objects.find((entry) => entry.state !== "baseline");
-  const environment = objects.find((entry) => entry.state === "baseline");
+  const strikeable = objects.find((entry) => !ENVIRONMENT_STATES.has(entry.state));
+  const environment = objects.find((entry) => ENVIRONMENT_STATES.has(entry.state));
   const hit = strikeable || environment;
 
   if (hit) {
+    const label = canonicalLabel(hit.object);
     return {
-      type: strikeable ? "PROHIBITED_OBJECT" : "PROHIBITED_OBJECT_BASELINE",
+      type: "PROHIBITED_OBJECT",
+      key: `PROHIBITED_OBJECT:${label}`,
+      state: hit.state,
       titleKey: "violations.prohibitedObject.title",
       descriptionKey: "violations.prohibitedObject.description",
       imagePath: "/laptop.png",
-      label: canonicalLabel(hit.object),
+      label,
       detection: hit.object,
       ...(strikeable ? {} : { countsAsViolation: false }),
     };
@@ -196,7 +211,6 @@ export function detectViolation(result, classified) {
       type: "NOT_LOOKING",
       titleKey: "violations.notLooking.title",
       descriptionKey: "violations.notLooking.description",
-      imagePath: "/window-switch.png",
       soft: true,
     };
   }
@@ -206,7 +220,6 @@ export function detectViolation(result, classified) {
       type: "EYES_CLOSED",
       titleKey: "violations.eyesClosed.title",
       descriptionKey: "violations.eyesClosed.description",
-      imagePath: "/window-switch.png",
       soft: true,
     };
   }
@@ -334,7 +347,8 @@ export function useProctoringSystem(
       source: "ai",
       type: violation.type,
       outcome,
-      window: stabilizerRef.current.peek()[violation.type] ?? null,
+      window: stabilizerRef.current.peek()[violation.key ?? violation.type] ?? null,
+      ...(violation.state ? { state: violation.state } : {}),
       ...detectionDetail(violation, frameQuality),
     });
   }
@@ -361,7 +375,7 @@ export function useProctoringSystem(
   function dispatchViolation(violation, frameQuality) {
     const label = canonicalLabel(violation.detection);
     if (label && SHADOW_LABELS.has(label)) {
-      stabilizerRef.current.commit(violation.type);
+      stabilizerRef.current.commit(violation.key ?? violation.type);
       recordDecision(violation, "shadow", frameQuality);
       return;
     }
@@ -374,7 +388,7 @@ export function useProctoringSystem(
     });
 
     if (outcome === "raised" || outcome === "at_limit") {
-      stabilizerRef.current.commit(violation.type);
+      stabilizerRef.current.commit(violation.key ?? violation.type);
       logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
     }
   }
@@ -433,7 +447,9 @@ export function useProctoringSystem(
       }
       lastSuccessAtRef.current = now;
 
-      const classified = baselineRef.current.classify(findProhibitedObjects(cleanResult), now);
+      const classified = applyBaselineRules(
+        baselineRef.current.classify(findProhibitedObjects(cleanResult), now),
+      );
       recordClassification(classified, cleanResult.frame_quality);
 
       const detected = detectViolation(cleanResult, classified);

@@ -1,6 +1,7 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { useFaceMatchMonitoring } from "./useFaceMatchMonitoring";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
+import { subscribeToViolationLog } from "@/lib/violationLog";
 
 const mockUseContinuousVerify = vi.fn();
 
@@ -9,14 +10,34 @@ vi.mock("@queries/useContinuousVerify", () => ({
 }));
 
 vi.mock("sonner", () => ({
-  toast: {
-    error: vi.fn(),
-    success: vi.fn(),
-  },
+  toast: { error: vi.fn(), success: vi.fn() },
 }));
 
-function setVerifyData(data) {
-  mockUseContinuousVerify.mockReturnValue({ data });
+const MATCH = { same_person: true };
+const MISMATCH = { same_person: false };
+
+function setup() {
+  const autoSubmit = vi.fn();
+  let clock = 0;
+
+  mockUseContinuousVerify.mockReturnValue({ data: undefined, dataUpdatedAt: 0 });
+
+  const { rerender, result } = renderHook(() =>
+    useFaceMatchMonitoring({ sessionId: "s1", captureImage: () => null, autoSubmit }),
+  );
+
+  // The same object reference on purpose: React Query hands back the previous
+  // one when two polls agree, so only dataUpdatedAt moves.
+  const poll = async (data, times = 1) => {
+    for (let i = 0; i < times; i += 1) {
+      clock += 5000;
+      mockUseContinuousVerify.mockReturnValue({ data, dataUpdatedAt: clock });
+      rerender();
+      await waitFor(() => {});
+    }
+  };
+
+  return { autoSubmit, poll, result };
 }
 
 describe("useFaceMatchMonitoring", () => {
@@ -24,73 +45,85 @@ describe("useFaceMatchMonitoring", () => {
     mockUseContinuousVerify.mockReset();
   });
 
-  it("auto-submits after 2 consecutive face mismatches", async () => {
-    const autoSubmit = vi.fn();
-    setVerifyData(undefined);
+  it("does not end the interview on two mismatched frames", async () => {
+    const { autoSubmit, poll, result } = setup();
 
-    const { rerender } = renderHook(() =>
-      useFaceMatchMonitoring({ sessionId: "s1", captureImage: () => null, autoSubmit }),
-    );
+    await poll(MISMATCH, 2);
 
-    setVerifyData({ same_person: false });
-    rerender();
+    expect(autoSubmit).not.toHaveBeenCalled();
+    expect(result.current.mismatchCount).toBe(0);
+  });
 
-    await waitFor(() => {
-      // wait for first mismatch to register
-    });
+  it("counts one mismatch once the window confirms it", async () => {
+    const { autoSubmit, poll, result } = setup();
 
-    setVerifyData({ same_person: false, marker: 2 });
-    rerender();
+    await poll(MISMATCH, 3);
+
+    await waitFor(() => expect(result.current.mismatchCount).toBe(1));
+    expect(autoSubmit).not.toHaveBeenCalled();
+  });
+
+  it("ends the interview after the configured number of confirmed mismatches", async () => {
+    const { autoSubmit, poll } = setup();
+
+    await poll(MISMATCH, 6);
 
     await waitFor(() => expect(autoSubmit).toHaveBeenCalledTimes(1));
-
     expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
   });
 
-  it("resets the mismatch count on a same_person:true result", async () => {
-    const autoSubmit = vi.fn();
-    setVerifyData(undefined);
+  it("submits once even as further results arrive", async () => {
+    const { autoSubmit, poll } = setup();
 
-    const { result, rerender } = renderHook(() =>
-      useFaceMatchMonitoring({ sessionId: "s1", captureImage: () => null, autoSubmit }),
-    );
+    await poll(MISMATCH, 10);
 
-    // One mismatch
-    setVerifyData({ same_person: false });
-    rerender();
-    await waitFor(() => expect(result.current.mismatchCount).toBe(1));
-
-    // Successful verification resets the count
-    setVerifyData({ same_person: true });
-    rerender();
-    await waitFor(() => expect(result.current.mismatchCount).toBe(0));
-
-    // A single mismatch after reset should not trigger auto-submit
-    setVerifyData({ same_person: false, marker: "after-reset" });
-    rerender();
-    await waitFor(() => expect(result.current.mismatchCount).toBe(1));
-
-    expect(autoSubmit).not.toHaveBeenCalled();
+    expect(autoSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it("does not count no_sample results as mismatches", async () => {
-    const autoSubmit = vi.fn();
-    setVerifyData(undefined);
+  it("clears the evidence on a successful verification", async () => {
+    const { autoSubmit, poll, result } = setup();
 
-    const { result, rerender } = renderHook(() =>
-      useFaceMatchMonitoring({ sessionId: "s1", captureImage: () => null, autoSubmit }),
-    );
-
-    setVerifyData({ no_sample: true });
-    rerender();
-
-    setVerifyData({ no_sample: true, marker: 2 });
-    rerender();
-
-    // Give any pending microtasks a chance to run.
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await poll(MISMATCH, 2);
+    await poll(MATCH, 1);
+    await poll(MISMATCH, 2);
 
     expect(result.current.mismatchCount).toBe(0);
     expect(autoSubmit).not.toHaveBeenCalled();
+  });
+
+  it("does not count a tick with no captured frame", async () => {
+    const { autoSubmit, poll, result } = setup();
+
+    await poll({ no_sample: true }, 6);
+
+    expect(result.current.mismatchCount).toBe(0);
+    expect(autoSubmit).not.toHaveBeenCalled();
+  });
+
+  it("does not count a frame too poor to judge", async () => {
+    const { autoSubmit, poll, result } = setup();
+
+    await poll({ same_person: false, frame_quality: 0.1 }, 6);
+
+    expect(result.current.mismatchCount).toBe(0);
+    expect(autoSubmit).not.toHaveBeenCalled();
+  });
+
+  it("records every decision, including the termination", async () => {
+    const events = [];
+    const unsubscribe = subscribeToViolationLog((event) => events.push(event));
+
+    const { poll } = setup();
+    await poll(MISMATCH, 6);
+    await waitFor(() => expect(events.some((e) => e.outcome === "terminated")).toBe(true));
+    unsubscribe();
+
+    expect(events.filter((e) => e.outcome === "unconfirmed").length).toBeGreaterThan(0);
+    expect(events.filter((e) => e.outcome === "raised")).toHaveLength(2);
+    expect(events.find((e) => e.outcome === "terminated")).toMatchObject({
+      source: "face_match",
+      type: "FACE_MISMATCH",
+      violation_count: 2,
+    });
   });
 });
