@@ -11,15 +11,15 @@ export default function Header({ attempted, total, violations = 0 }) {
     violations >= MAX_VIOLATIONS
       ? "border-rose-200 bg-rose-50 text-rose-700 animate-pulse"
       : violations > 0
-      ? "border-amber-200 bg-amber-50 text-amber-700"
-      : "border-emerald-200 bg-emerald-50/60 text-emerald-700";
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : "border-emerald-200 bg-emerald-50/60 text-emerald-700";
 
   const BadgeIcon = violations > 0 ? AlertTriangle : ShieldCheck;
 
   return (
     <header className="sticky top-0 z-20 h-20 bg-white border-b px-8 shadow-sm">
       <div className="mx-auto flex h-full w-full items-center justify-between">
-        <img src="/letshyre.png" alt="Logo" className="w-32" />
+        <img src="/letshyre.webp" alt="Logo" className="w-32" />
         <p className="text-xl font-semibold text-blue-500">
           {t("header.attempted", { attempted, total })}
         </p>
@@ -27,8 +27,12 @@ export default function Header({ attempted, total, violations = 0 }) {
           <LanguageSelector />
 
           {/* Violations / Compliance Badge */}
-          <div className={`flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[15px] font-bold shadow-sm transition-all duration-300 ${badgeStyle}`}>
-            <BadgeIcon className={`h-[18px] w-[18px] ${violations > 0 ? "text-amber-500" : "text-emerald-500"}`} />
+          <div
+            className={`flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[15px] font-bold shadow-sm transition-all duration-300 ${badgeStyle}`}
+          >
+            <BadgeIcon
+              className={`h-[18px] w-[18px] ${violations > 0 ? "text-amber-500" : "text-emerald-500"}`}
+            />
             <span>
               {violations > 0
                 ? t("header.complianceFlags", { violations, max: MAX_VIOLATIONS })

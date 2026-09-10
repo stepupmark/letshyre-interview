@@ -18,7 +18,7 @@ export default function PostInterviewHeader() {
   return (
     <header className="sticky top-0 z-20 h-20 bg-white border-b px-8 shadow-sm">
       <div className="mx-auto flex h-full w-full items-center justify-between">
-        <img src="/letshyre.png" alt="Logo" className="w-32" />
+        <img src="/letshyre.webp" alt="Logo" className="w-32" />
         {isElectron && (
           <Button
             variant="default"

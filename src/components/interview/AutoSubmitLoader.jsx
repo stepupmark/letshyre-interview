@@ -84,7 +84,7 @@ export default function AutoSubmitLoader({ reason, isSuccess = false, error = nu
         <div className="rounded-3xl bg-white border border-slate-200/80 p-8 shadow-lg shadow-blue-900/5">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <img src="/letshyre.png" alt="Let's Hyre" className="w-28 opacity-80" />
+            <img src="/letshyre.webp" alt="Let's Hyre" className="w-28 opacity-80" />
           </div>
 
           {/* Progress ring */}
