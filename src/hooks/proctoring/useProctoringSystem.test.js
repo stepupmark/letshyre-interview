@@ -22,11 +22,21 @@ describe("detectViolation", () => {
     expect(violation.type).toBe("NO_FACE");
   });
 
-  it("returns a MULTIPLE_FACES violation that does not count as a strike", () => {
+  it("returns a MULTIPLE_FACES violation that counts as a strike", () => {
     const violation = detectViolation({ ...CLEAN_RESULT, face_count: 2 });
     expect(violation).not.toBeNull();
     expect(violation.type).toBe("MULTIPLE_FACES");
-    expect(violation.countsAsViolation).toBe(false);
+    expect(violation.countsAsViolation).toBeUndefined();
+  });
+
+  it("catches a second person the face model missed but YOLO counted", () => {
+    const violation = detectViolation({ ...CLEAN_RESULT, yolo_person_count: 2 });
+    expect(violation?.type).toBe("MULTIPLE_FACES");
+  });
+
+  it("leaves a single person alone when YOLO reports nobody", () => {
+    const violation = detectViolation({ ...CLEAN_RESULT, yolo_person_count: 0 });
+    expect(violation).toBeNull();
   });
 
   it("returns a PROHIBITED_OBJECT violation for a known prohibited object", () => {
@@ -127,6 +137,26 @@ describe("detectViolation", () => {
       objects_detected: [{ label: "bottle", confidence: 0.99, area_ratio: 0.5 }],
     });
     expect(violation).toBeNull();
+  });
+
+  it("flags a tv, the label a second monitor usually lands on", () => {
+    const violation = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "tv", confidence: 0.8, area_ratio: 0.05 }],
+    });
+    expect(violation?.type).toBe("PROHIBITED_OBJECT");
+    expect(violation.label).toBe("tv");
+  });
+
+  it("identifies an object by class_id when the label has been renamed", () => {
+    const violation = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [
+        { label: "mobile_phone", class_id: 67, confidence: 0.8, area_ratio: 0.05 },
+      ],
+    });
+    expect(violation?.type).toBe("PROHIBITED_OBJECT");
+    expect(violation.label).toBe("cell phone");
   });
 
   it("marks a baseline-only object as a warning rather than a strike", () => {

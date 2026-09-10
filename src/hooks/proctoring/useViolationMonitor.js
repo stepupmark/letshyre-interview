@@ -222,7 +222,6 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         titleKey: violation.titleKey,
         descriptionKey: violation.descriptionKey,
         imagePath: violation.imagePath,
-        // bottle / multiple people → modal only, no strike
         countsAsViolation: violation.countsAsViolation !== false,
       });
     },

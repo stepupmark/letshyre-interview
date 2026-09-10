@@ -16,12 +16,25 @@ const TARGET_HEIGHT = 480;
 const MAX_BACKOFF_MS = 40_000;
 const DEGRADED_AFTER_FAILURES = 3;
 
-// A hard violation pulls the next couple of samples in close so it resolves in
-// about a second instead of waiting out the full interval. At 5s spacing a phone
-// held for five seconds lands in one frame and never reaches a second.
+// A held object can appear and vanish between two 5s samples, so a candidate
+// detection pulls the next couple in close. Faces don't need this — a person
+// who left or joined the frame is still there at the next regular sample.
 const BURST_INTERVAL_MS = 1_000;
 const BURST_SAMPLES = 2;
-const BURST_TYPES = new Set(["PROHIBITED_OBJECT", "NO_FACE", "MULTIPLE_FACES"]);
+const BURST_TYPES = new Set(["PROHIBITED_OBJECT"]);
+
+// Without a cap a phone left on the desk holds the loop at 1s for the rest of
+// the interview, at five times the request rate.
+const MAX_BURSTS = 3;
+
+// The camera is usually a second or two behind the session starting, so the
+// first few misses retry fast before falling back to the normal backoff.
+const CAMERA_RETRY_MS = 1_000;
+const CAMERA_GRACE_TICKS = 3;
+
+// Past this much unobserved time the room may have been rearranged, and the
+// tracker's own records have expired, so the baseline is seeded again.
+const RESEED_AFTER_GAP_MS = 20_000;
 
 // fetch(keepalive) caps the body at 64KB. Oldest records are dropped first so a
 // too-large tail degrades to a partial log instead of no log at all.
@@ -71,11 +84,20 @@ export function sendUnloadFlush(url, payload) {
 // Per class, because YOLO confidence is not comparable across labels or object
 // sizes. The area floor drops sub-pixel boxes without touching real detections.
 const PROHIBITED_OBJECTS = {
-  "cell phone": { minConfidence: 0.5, minAreaRatio: 0.004 },
-  laptop: { minConfidence: 0.6, minAreaRatio: 0.005 },
-  book: { minConfidence: 0.55, minAreaRatio: 0.01 },
-  tablet: { minConfidence: 0.5, minAreaRatio: 0.01 },
+  "cell phone": { classId: 67, minConfidence: 0.5, minAreaRatio: 0.004 },
+  laptop: { classId: 63, minConfidence: 0.6, minAreaRatio: 0.005 },
+  tv: { classId: 62, minConfidence: 0.6, minAreaRatio: 0.01 },
+  book: { classId: 84, minConfidence: 0.55, minAreaRatio: 0.01 },
 };
+
+// class_id survives a model relabelling; the label string doesn't.
+const LABEL_BY_CLASS_ID = new Map(
+  Object.entries(PROHIBITED_OBJECTS).map(([label, rule]) => [rule.classId, label]),
+);
+
+export function canonicalLabel(object) {
+  return LABEL_BY_CLASS_ID.get(object?.class_id) ?? object?.label?.toLowerCase() ?? null;
+}
 
 // Confidence on a murky frame is worth less than the same number on a clean
 // one, so the floor rises as quality drops. A box covering a good chunk of the
@@ -84,7 +106,9 @@ const QUALITY_REFERENCE = 0.5;
 const QUALITY_PENALTY = 0.3;
 const AREA_OVERRIDE_RATIO = 0.05;
 
-function ruleFor(label) {
+function ruleFor(object) {
+  const label = canonicalLabel(object);
+  if (!label) return null;
   if (label === "laptop" && !PROHIBIT_LAPTOP) return null;
   return PROHIBITED_OBJECTS[label] ?? null;
 }
@@ -99,7 +123,7 @@ export function confidenceFloorFor(rule, object, frameQuality) {
 
 export function findProhibitedObjects(result) {
   return (result?.objects_detected || []).filter((object) => {
-    const rule = ruleFor(object?.label?.toLowerCase());
+    const rule = ruleFor(object);
     if (!rule) return false;
 
     // Payloads without a score fall back to label-only matching rather than
@@ -137,14 +161,14 @@ export function detectViolation(result, classified) {
     };
   }
 
-  // Show the warning modal but DON'T count it as a strike.
-  if (result.face_count > 1) {
+  // The face model misses people who are turned away or half out of frame, so
+  // YOLO's person count gets a say too.
+  if (result.face_count > 1 || result.yolo_person_count > 1) {
     return {
       type: "MULTIPLE_FACES",
       titleKey: "violations.multipleFaces.title",
       descriptionKey: "violations.multipleFaces.description",
       imagePath: "/multi-people.png",
-      countsAsViolation: false,
     };
   }
 
@@ -160,7 +184,7 @@ export function detectViolation(result, classified) {
       titleKey: "violations.prohibitedObject.title",
       descriptionKey: "violations.prohibitedObject.description",
       imagePath: "/laptop.png",
-      label: hit.object.label,
+      label: canonicalLabel(hit.object),
       detection: hit.object,
       ...(strikeable ? {} : { countsAsViolation: false }),
     };
@@ -223,6 +247,8 @@ export function useProctoringSystem(
   const baselineRef = useRef(createBaselineTracker());
   const consecutiveFailuresRef = useRef(0);
   const burstRemainingRef = useRef(0);
+  const burstsUsedRef = useRef(0);
+  const lastSuccessAtRef = useRef(0);
 
   const [isDegraded, setIsDegraded] = useState(false);
 
@@ -295,7 +321,7 @@ export function useProctoringSystem(
     if (!detection) return { frame_quality: frameQuality };
 
     return {
-      label: detection.label,
+      label: canonicalLabel(detection),
       confidence: detection.confidence ?? detection.score,
       area_ratio: detection.area_ratio,
       frame_quality: frameQuality,
@@ -313,8 +339,27 @@ export function useProctoringSystem(
     });
   }
 
+  // Only one object per frame becomes a violation, so without this the
+  // baseline/introduced verdict on the rest is never recorded anywhere.
+  function recordClassification(classified, frameQuality) {
+    if (!classified.length) return;
+
+    recordViolationEvent({
+      source: "ai",
+      type: "OBJECT_CLASSIFICATION",
+      outcome: "observed",
+      frame_quality: frameQuality,
+      objects: classified.map((entry) => ({
+        label: canonicalLabel(entry.object),
+        state: entry.state,
+        confidence: entry.object.confidence ?? entry.object.score,
+        area_ratio: entry.object.area_ratio,
+      })),
+    });
+  }
+
   function dispatchViolation(violation, frameQuality) {
-    const label = violation.detection?.label?.toLowerCase();
+    const label = canonicalLabel(violation.detection);
     if (label && SHADOW_LABELS.has(label)) {
       stabilizerRef.current.commit(violation.type);
       recordDecision(violation, "shadow", frameQuality);
@@ -342,8 +387,12 @@ export function useProctoringSystem(
 
     const frame = captureFrame();
     if (!frame) {
-      logger.log("[Proctoring] 📸 Camera not ready, retrying in 1s…");
-      timerRef.current = setTimeout(tick, 1000);
+      recordFailure("camera_unavailable");
+      if (consecutiveFailuresRef.current <= CAMERA_GRACE_TICKS) {
+        timerRef.current = setTimeout(tick, CAMERA_RETRY_MS);
+      } else {
+        scheduleNext();
+      }
       return;
     }
 
@@ -374,17 +423,30 @@ export function useProctoringSystem(
         payload: cleanResult,
       });
 
-      // Re-check isActive after the async AI call — session may have ended
-      // (auto-submit, normal submit) while we were waiting for the response.
       const now = Date.now();
+
+      // Coming back from a long blind stretch the tracker's records have
+      // expired and the room may have changed, so the baseline is seeded again
+      // rather than reading the candidate's own furniture as newly introduced.
+      if (now - lastSuccessAtRef.current > RESEED_AFTER_GAP_MS) {
+        baselineRef.current.start(now);
+      }
+      lastSuccessAtRef.current = now;
+
       const classified = baselineRef.current.classify(findProhibitedObjects(cleanResult), now);
+      recordClassification(classified, cleanResult.frame_quality);
+
       const detected = detectViolation(cleanResult, classified);
       const violation = stabilizerRef.current.push(detected);
 
       if (detected && BURST_TYPES.has(detected.type) && consecutiveFailuresRef.current === 0) {
-        burstRemainingRef.current = BURST_SAMPLES;
-      } else if (!detected) {
+        if (burstsUsedRef.current < MAX_BURSTS) {
+          burstRemainingRef.current = BURST_SAMPLES;
+          burstsUsedRef.current += 1;
+        }
+      } else {
         burstRemainingRef.current = 0;
+        if (!detected) burstsUsedRef.current = 0;
       }
 
       // Re-check isActive after the async call — the session may have ended
@@ -503,8 +565,10 @@ export function useProctoringSystem(
       flushRetryCountRef.current = 0;
       stabilizerRef.current.reset();
       baselineRef.current.start(Date.now());
+      lastSuccessAtRef.current = Date.now();
       consecutiveFailuresRef.current = 0;
       burstRemainingRef.current = 0;
+      burstsUsedRef.current = 0;
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
       timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);

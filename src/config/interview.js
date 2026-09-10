@@ -42,7 +42,7 @@ export const PROHIBIT_LAPTOP = import.meta.env.VITE_AI_PROHIBIT_LAPTOP !== "fals
 // Labels detected and logged but never surfaced to the candidate, so a new rule
 // can be measured against real interviews before it starts ending them.
 export const SHADOW_LABELS = new Set(
-  (import.meta.env.VITE_AI_SHADOW_LABELS ?? "laptop")
+  (import.meta.env.VITE_AI_SHADOW_LABELS ?? "laptop,tv")
     .split(",")
     .map((label) => label.trim().toLowerCase())
     .filter(Boolean),

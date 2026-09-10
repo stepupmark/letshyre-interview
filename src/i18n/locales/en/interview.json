@@ -130,8 +130,8 @@
     "objects": {
       "cellPhone": "phone",
       "laptop": "second screen",
+      "tv": "screen",
       "book": "book",
-      "tablet": "tablet",
       "unknown": "prohibited device"
     }
   },
