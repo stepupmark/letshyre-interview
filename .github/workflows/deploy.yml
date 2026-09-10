@@ -42,6 +42,8 @@ jobs:
           VITE_AI_MAX_INTERNET_DISCONNECTS: ${{ vars.VITE_AI_MAX_INTERNET_DISCONNECTS }}
           VITE_AI_TERMINATION_NOTICE_SECONDS: ${{ vars.VITE_AI_TERMINATION_NOTICE_SECONDS }}
           VITE_DEBUG_LOGS: ${{ vars.VITE_DEBUG_LOGS }}
+          VITE_AI_PROHIBIT_LAPTOP: ${{ vars.VITE_AI_PROHIBIT_LAPTOP }}
+          VITE_AI_SHADOW_LABELS: ${{ vars.VITE_AI_SHADOW_LABELS }}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
