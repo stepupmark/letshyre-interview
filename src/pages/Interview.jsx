@@ -6,6 +6,7 @@ import PostInterviewHeader from "@components/interview/PostInterviewHeader";
 import LeftPanel from "@components/interview/LeftPanel";
 import QuestionRenderer from "@components/interview/QuestionRenderer";
 import ViolationWarning from "@components/interview/ViolationWarning";
+import FullscreenPrompt from "@components/interview/FullscreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Heavy result view — only needed once at the very end, so load it on demand.
@@ -48,12 +49,19 @@ export function Interview() {
   // No-op when running in a regular browser (window.electronAPI absent).
   useInterviewComplete({ isCompleted, isTerminated, isExpired, autoSubmitSuccess });
 
-  const { showTabWarning, violationInfo, dismissWarning, handleAiViolation, handleElectronViolation } =
-    useViolationMonitor({
-      isActive,
-      incrementViolation,
-      sessionViolations: session?.violations ?? 0,
-    });
+  const {
+    showTabWarning,
+    violationInfo,
+    dismissWarning,
+    needsFullscreen,
+    restoreFullscreen,
+    handleAiViolation,
+    handleElectronViolation,
+  } = useViolationMonitor({
+    isActive,
+    incrementViolation,
+    sessionViolations: session?.violations ?? 0,
+  });
 
   // videoRef declared before captureImage to avoid TDZ risk.
   const videoRef = useRef(null);
@@ -124,6 +132,26 @@ export function Interview() {
     acknowledge: acknowledgeTermination,
   } = useTerminationNotice(autoSubmitReason);
 
+  // requestFullscreen only works from a user gesture, so when the warning closes
+  // itself the candidate has to be given something to click.
+  useEffect(() => {
+    if (!needsFullscreen) return;
+
+    const id = toast.custom(
+      (toastId) => (
+        <FullscreenPrompt
+          onRestore={() => {
+            toast.dismiss(toastId);
+            restoreFullscreen();
+          }}
+        />
+      ),
+      { duration: Infinity },
+    );
+
+    return () => toast.dismiss(id);
+  }, [needsFullscreen, restoreFullscreen]);
+
   useEffect(() => {
     if (!isProctoringDegraded) return;
     toast.warning("Proctoring checks are temporarily unavailable.", {
@@ -137,8 +165,8 @@ export function Interview() {
   });
 
   useElectronScreenRecording({
-    sessionId:         session?.session_id,
-    interviewId:       session?.interview_id,
+    sessionId: session?.session_id,
+    interviewId: session?.interview_id,
     isActive,
     isCompleted,
     isTerminated,
@@ -284,6 +312,7 @@ export function Interview() {
         titleKey={violationInfo.titleKey}
         descriptionKey={violationInfo.descriptionKey}
         imagePath={violationInfo.imagePath}
+        label={violationInfo.label}
       />
     </div>
   );

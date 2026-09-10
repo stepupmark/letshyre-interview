@@ -1,4 +1,4 @@
-import { confirmTicksFor, createViolationStabilizer } from "./violationStabilizer";
+import { confirmRuleFor, createViolationStabilizer } from "./violationStabilizer";
 
 const noFace = { type: "NO_FACE" };
 const phone = { type: "PROHIBITED_OBJECT" };
@@ -10,56 +10,71 @@ describe("createViolationStabilizer", () => {
     expect(s.push(noFace)).toBeNull();
   });
 
-  it("confirms a hard violation on the second consecutive tick", () => {
+  it("confirms a hard violation on the second tick", () => {
     const s = createViolationStabilizer();
     expect(s.push(noFace)).toBeNull();
     expect(s.push(noFace)).toBe(noFace);
   });
 
-  it("requires three consecutive ticks for a soft violation", () => {
+  it("requires three hits for a soft violation", () => {
     const s = createViolationStabilizer();
     expect(s.push(notLooking)).toBeNull();
     expect(s.push(notLooking)).toBeNull();
     expect(s.push(notLooking)).toBe(notLooking);
   });
 
-  it("breaks the streak on a clean tick", () => {
+  it("confirms across a dropped frame instead of restarting", () => {
     const s = createViolationStabilizer();
-    s.push(noFace);
-    expect(s.push(null)).toBeNull();
-    expect(s.push(noFace)).toBeNull();
-  });
-
-  it("breaks the streak when a different violation type arrives", () => {
-    const s = createViolationStabilizer();
-    s.push(noFace);
     expect(s.push(phone)).toBeNull();
+    expect(s.push(null)).toBeNull();
     expect(s.push(phone)).toBe(phone);
   });
 
-  it("requires a fresh streak after a confirmation", () => {
+  it("advances each type independently when they alternate", () => {
     const s = createViolationStabilizer();
-    s.push(noFace);
-    expect(s.push(noFace)).toBe(noFace);
     expect(s.push(noFace)).toBeNull();
+    expect(s.push(phone)).toBeNull();
     expect(s.push(noFace)).toBe(noFace);
   });
 
-  it("forgets the streak on reset", () => {
+  it("forgets evidence older than the window", () => {
+    const s = createViolationStabilizer();
+    s.push(phone);
+    expect(s.push(null)).toBeNull();
+    expect(s.push(null)).toBeNull();
+    expect(s.push(phone)).toBeNull();
+  });
+
+  it("keeps the window until the violation is committed", () => {
+    const s = createViolationStabilizer();
+    s.push(phone);
+    expect(s.push(phone)).toBe(phone);
+    expect(s.push(phone)).toBe(phone);
+  });
+
+  it("starts over once committed", () => {
+    const s = createViolationStabilizer();
+    s.push(phone);
+    expect(s.push(phone)).toBe(phone);
+    s.commit("PROHIBITED_OBJECT");
+    expect(s.push(phone)).toBeNull();
+  });
+
+  it("forgets everything on reset", () => {
     const s = createViolationStabilizer();
     s.push(noFace);
     s.reset();
     expect(s.push(noFace)).toBeNull();
   });
 
-  it("reports the in-progress streak", () => {
+  it("reports the in-progress window", () => {
     const s = createViolationStabilizer();
-    expect(s.peek()).toEqual({ type: null, streak: 0 });
+    expect(s.peek()).toEqual({});
     s.push(noFace);
-    expect(s.peek()).toEqual({ type: "NO_FACE", streak: 1 });
+    expect(s.peek().NO_FACE).toEqual({ hits: 1, size: 1 });
   });
 
-  it("falls back to the default threshold for an unknown type", () => {
-    expect(confirmTicksFor("SOMETHING_NEW")).toBe(2);
+  it("falls back to the default rule for an unknown type", () => {
+    expect(confirmRuleFor("SOMETHING_NEW")).toEqual({ needed: 2, window: 3 });
   });
 });

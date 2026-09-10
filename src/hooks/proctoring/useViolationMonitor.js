@@ -2,11 +2,25 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
+import { createStrikePolicy } from "@/lib/strikePolicy";
+import { recordViolationEvent } from "@/lib/violationLog";
 
 // Slack against OS chrome and DPI rounding when deciding whether the window is
 // still maximized, and how long a shrunk window must persist before it counts.
 const RESIZE_TOLERANCE_PX = 40;
 const RESIZE_CONFIRM_MS = 1_000;
+
+// The modal blocks every further violation while it is open, so leaving it up
+// would mute proctoring for as long as the candidate likes.
+const AUTO_DISMISS_MS = 20_000;
+// Closing it on a timer gives back the guard that was holding the next strike,
+// so leave a gap rather than letting the next event land immediately.
+const AUTO_DISMISS_GRACE_MS = 10_000;
+
+// Leaving fullscreen resizes the window, so the resize handler fires right
+// behind fullscreenchange. Without this the candidate is struck twice for one
+// action.
+const CASCADE_WINDOW_MS = 2_000;
 
 export function getElectronViolationKey(event = "") {
   const e = event.toLowerCase();
@@ -33,6 +47,9 @@ function electronViolationCopy(event) {
  * of the interview page so that component stays focused on layout/rendering.
  */
 export function useViolationMonitor({ isActive, incrementViolation, sessionViolations }) {
+  const policyRef = useRef(createStrikePolicy());
+  const lastFullscreenChangeRef = useRef(0);
+  const [needsFullscreen, setNeedsFullscreen] = useState(false);
   const [showTabWarning, setShowTabWarning] = useState(false);
   const [violationInfo, setViolationInfo] = useState({
     titleKey: "",
@@ -73,9 +90,39 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   // countsAsViolation=false → show the modal but DON'T add a strike (e.g. bottle,
   // multiple people): the displayed tally stays unchanged and it can't push the
   // candidate toward auto-termination.
+  // Single gate for every violation, whatever raised it. Returns the outcome so
+  // the AI loop knows whether its evidence was actually spent.
   const raiseViolation = useCallback(
-    ({ titleKey, descriptionKey, imagePath, countsAsViolation = true }) => {
-      if (!isActiveRef.current || isWarningOpenRef.current) return;
+    ({
+      type,
+      source,
+      label,
+      detail,
+      titleKey,
+      descriptionKey,
+      imagePath,
+      countsAsViolation = true,
+    }) => {
+      const key = type ?? titleKey;
+
+      const report = (outcome, violationCount) => {
+        recordViolationEvent({
+          source,
+          type: key,
+          outcome,
+          ...(label ? { label } : {}),
+          ...(detail ?? {}),
+          ...(violationCount === undefined ? {} : { violation_count: violationCount }),
+        });
+        return outcome;
+      };
+
+      if (!isActiveRef.current) return report("inactive");
+      if (isWarningOpenRef.current) return report("modal_open");
+
+      const outcome = policyRef.current.admit(key, { countsAsStrike: countsAsViolation });
+      if (outcome !== "raised") return report(outcome);
+
       isWarningOpenRef.current = true;
       const violationCount = countsAsViolation
         ? incrementViolationRef.current()
@@ -83,17 +130,23 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
 
       // At the limit the session is already terminating, and TerminationNotice
       // owns the screen — showing a dismissible "return to interview" modal on
-      // top of it would promise a way back that no longer exists.
-      if (countsAsViolation && violationCount >= MAX_VIOLATIONS) return;
+      // top of it would promise a way back that no longer exists. The ref has to
+      // be released here or nothing ever clears it.
+      if (countsAsViolation && violationCount >= MAX_VIOLATIONS) {
+        isWarningOpenRef.current = false;
+        return report("at_limit", violationCount);
+      }
 
       setViolationInfo({
         titleKey,
         descriptionKey,
         imagePath,
+        label,
         violationCount,
         counts: countsAsViolation,
       });
       setShowTabWarning(true);
+      return report("raised", violationCount);
     },
     [],
   );
@@ -108,23 +161,47 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     }
   }, [isActive, showTabWarning]);
 
-  //memoized — prevents ViolationWarning re-renders on parent re-render
+  // memoized — prevents ViolationWarning re-renders on parent re-render
   const enterFullScreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        toast.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
-    }
+    if (document.fullscreenElement) return;
+    // Optional-chained because a browser that blocks or lacks the API would
+    // otherwise throw here and take dismissWarning down with it.
+    document.documentElement.requestFullscreen?.()?.catch((err) => {
+      toast.error(`Error attempting to enable fullscreen: ${err.message}`);
+    });
   }, []);
 
-  // Dismiss violation warning — reset ref IMMEDIATELY before enterFullScreen can re-trigger
-  const dismissWarning = useCallback(() => {
-    isWarningOpenRef.current = false; // Reset FIRST
+  // Reset the ref IMMEDIATELY, before enterFullScreen can re-trigger.
+  const closeWarning = useCallback(() => {
+    isWarningOpenRef.current = false;
     setShowTabWarning(false);
+  }, []);
+
+  const dismissWarning = useCallback(() => {
+    closeWarning();
+    setNeedsFullscreen(false);
+    enterFullScreen();
+  }, [closeWarning, enterFullScreen]);
+
+  // requestFullscreen needs a user gesture, so the timer can only close the
+  // modal — restoring fullscreen has to wait for a click.
+  useEffect(() => {
+    if (!showTabWarning) return;
+
+    const timer = setTimeout(() => {
+      closeWarning();
+      policyRef.current.suppressFor(AUTO_DISMISS_GRACE_MS);
+      if (!document.fullscreenElement) setNeedsFullscreen(true);
+    }, AUTO_DISMISS_MS);
+
+    return () => clearTimeout(timer);
+  }, [showTabWarning, closeWarning]);
+
+  const restoreFullscreen = useCallback(() => {
+    setNeedsFullscreen(false);
     enterFullScreen();
   }, [enterFullScreen]);
 
-  //AI Violation Handler
   const handleAiViolation = useCallback(
     (violation) => {
       if (!isActiveRef.current) return;
@@ -135,9 +212,13 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         toast.warning(tRef.current(violation.titleKey), {
           description: tRef.current(violation.descriptionKey),
         });
-        return;
+        return "soft";
       }
-      raiseViolation({
+      return raiseViolation({
+        type: violation.type,
+        source: "ai",
+        label: violation.label,
+        detail: violation.detail,
         titleKey: violation.titleKey,
         descriptionKey: violation.descriptionKey,
         imagePath: violation.imagePath,
@@ -148,15 +229,18 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     [raiseViolation],
   );
 
-  //Electron Security Bridge
   const handleElectronViolation = useCallback(
     (violation) => {
       if (!isActiveRef.current) {
         // Session still loading — buffer and replay once isActive becomes true.
         pendingElectronViolationRef.current = violation;
-        return;
+        return "buffered";
       }
-      raiseViolation(electronViolationCopy(violation.event));
+      return raiseViolation({
+        type: `ELECTRON_${getElectronViolationKey(violation.event).toUpperCase()}`,
+        source: "electron",
+        ...electronViolationCopy(violation.event),
+      });
     },
     [raiseViolation],
   );
@@ -166,7 +250,11 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     if (isActive && pendingElectronViolationRef.current) {
       const v = pendingElectronViolationRef.current;
       pendingElectronViolationRef.current = null;
-      raiseViolation(electronViolationCopy(v.event));
+      raiseViolation({
+        type: `ELECTRON_${getElectronViolationKey(v.event).toUpperCase()}`,
+        source: "electron",
+        ...electronViolationCopy(v.event),
+      });
     }
   }, [isActive, raiseViolation]);
 
@@ -202,6 +290,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     const handleVisibilityChange = () => {
       if (document.hidden) {
         raiseViolation({
+          type: "TAB_SWITCH",
+          source: "tab_switch",
           titleKey: "violations.tabSwitch.title",
           descriptionKey: "violations.tabSwitch.description",
           imagePath: "/window-switch.png",
@@ -210,8 +300,11 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     };
 
     const handleFullscreenChange = () => {
+      lastFullscreenChangeRef.current = Date.now();
       if (!document.fullscreenElement) {
         raiseViolation({
+          type: "FULLSCREEN_EXIT",
+          source: "fullscreen_exit",
           titleKey: "violations.fullscreenExit.title",
           descriptionKey: "violations.fullscreenExit.description",
           imagePath: "/window-switch.png",
@@ -247,7 +340,10 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         if (confirmTimer) clearTimeout(confirmTimer);
         confirmTimer = setTimeout(() => {
           if (!isWindowShrunk()) return;
+          if (Date.now() - lastFullscreenChangeRef.current < CASCADE_WINDOW_MS) return;
           raiseViolation({
+            type: "WINDOW_RESIZE",
+            source: "window_resize",
             titleKey: "violations.windowResize.title",
             descriptionKey: "violations.windowResize.description",
             imagePath: "/window-switch.png",
@@ -274,6 +370,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     showTabWarning,
     violationInfo,
     dismissWarning,
+    needsFullscreen,
+    restoreFullscreen,
     handleAiViolation,
     handleElectronViolation,
   };

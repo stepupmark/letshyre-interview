@@ -1,4 +1,4 @@
-import { detectViolation, sendUnloadFlush } from "./useProctoringSystem";
+import { confidenceFloorFor, detectViolation, sendUnloadFlush } from "./useProctoringSystem";
 
 const CLEAN_RESULT = {
   success: true,
@@ -91,12 +91,74 @@ describe("detectViolation", () => {
     expect(violation.type).toBe("MULTIPLE_FACES");
   });
 
-  it("does not flag a laptop — the candidate is sitting at one", () => {
+  it("flags a laptop, which the candidate's own machine can never be", () => {
     const violation = detectViolation({
       ...CLEAN_RESULT,
-      objects_detected: [{ label: "laptop", confidence: 0.99 }],
+      objects_detected: [{ label: "laptop", confidence: 0.89, area_ratio: 0.013 }],
+    });
+    expect(violation.type).toBe("PROHIBITED_OBJECT");
+    expect(violation.label).toBe("laptop");
+  });
+
+  it("applies each label's own confidence floor", () => {
+    const below = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "laptop", confidence: 0.55, area_ratio: 0.013 }],
+    });
+    const above = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "cell phone", confidence: 0.55, area_ratio: 0.013 }],
+    });
+    expect(below).toBeNull();
+    expect(above.type).toBe("PROHIBITED_OBJECT");
+  });
+
+  it("drops a detection whose box is too small to be the real thing", () => {
+    const violation = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "cell phone", confidence: 0.9, area_ratio: 0.0001 }],
     });
     expect(violation).toBeNull();
+  });
+
+  it("ignores a bottle at any confidence", () => {
+    const violation = detectViolation({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "bottle", confidence: 0.99, area_ratio: 0.5 }],
+    });
+    expect(violation).toBeNull();
+  });
+
+  it("marks a baseline-only object as a warning rather than a strike", () => {
+    const object = { label: "laptop", confidence: 0.89, area_ratio: 0.013 };
+    const violation = detectViolation({ ...CLEAN_RESULT, objects_detected: [object] }, [
+      { object, state: "baseline" },
+    ]);
+    expect(violation.type).toBe("PROHIBITED_OBJECT_BASELINE");
+    expect(violation.countsAsViolation).toBe(false);
+  });
+
+  it("prefers an introduced object over a baseline one", () => {
+    const environment = { label: "laptop", confidence: 0.89, area_ratio: 0.013 };
+    const brought = { label: "cell phone", confidence: 0.66, area_ratio: 0.028 };
+    const violation = detectViolation(
+      { ...CLEAN_RESULT, objects_detected: [environment, brought] },
+      [
+        { object: environment, state: "baseline" },
+        { object: brought, state: "introduced" },
+      ],
+    );
+    expect(violation.type).toBe("PROHIBITED_OBJECT");
+    expect(violation.label).toBe("cell phone");
+  });
+
+  it("strikes a baseline object once its grace has expired", () => {
+    const object = { label: "laptop", confidence: 0.89, area_ratio: 0.013 };
+    const violation = detectViolation({ ...CLEAN_RESULT, objects_detected: [object] }, [
+      { object, state: "expired" },
+    ]);
+    expect(violation.type).toBe("PROHIBITED_OBJECT");
+    expect(violation.countsAsViolation).toBeUndefined();
   });
 
   it("ignores a prohibited object below the confidence threshold", () => {
@@ -143,6 +205,31 @@ describe("detectViolation", () => {
   });
 });
 
+describe("confidenceFloorFor", () => {
+  const rule = { minConfidence: 0.5, minAreaRatio: 0.004 };
+
+  it("leaves the floor alone on a clean frame", () => {
+    expect(confidenceFloorFor(rule, { area_ratio: 0.01 }, 0.79)).toBe(0.5);
+  });
+
+  it("raises the floor as frame quality drops", () => {
+    expect(confidenceFloorFor(rule, { area_ratio: 0.01 }, 0.29)).toBeCloseTo(0.563, 3);
+  });
+
+  it("waives the penalty for a box big enough to be unambiguous", () => {
+    expect(confidenceFloorFor(rule, { area_ratio: 0.13 }, 0.29)).toBe(0.5);
+  });
+
+  it("leaves the floor alone when quality is not reported", () => {
+    expect(confidenceFloorFor(rule, { area_ratio: 0.01 }, undefined)).toBe(0.5);
+  });
+
+  it("keeps a marginal detection on a murky frame out", () => {
+    const floor = confidenceFloorFor(rule, { area_ratio: 0.01 }, 0.296);
+    expect(0.502).toBeLessThan(floor);
+  });
+});
+
 describe("sendUnloadFlush", () => {
   const url = "https://api.test/proctoring/log/";
 
@@ -161,7 +248,10 @@ describe("sendUnloadFlush", () => {
   });
 
   beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ ok: true })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ ok: true })),
+    );
     sessionStorage.clear();
   });
 

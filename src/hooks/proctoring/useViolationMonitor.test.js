@@ -179,9 +179,7 @@ describe("useViolationMonitor", () => {
     rerender({ isActive: true, incrementViolation: stillIncrementing, sessionViolations: 0 });
 
     expect(incrementViolation).toHaveBeenCalledTimes(1);
-    expect(result.current.violationInfo.titleKey).toBe(
-      "violations.electron.externalDisplay.title",
-    );
+    expect(result.current.violationInfo.titleKey).toBe("violations.electron.externalDisplay.title");
   });
 });
 
@@ -203,6 +201,7 @@ describe("useViolationMonitor window resize", () => {
       configurable: true,
     });
     setViewport({ width: 1000, height: 800 });
+    setFullscreen(false);
   });
 
   afterEach(() => {
@@ -220,6 +219,52 @@ describe("useViolationMonitor window resize", () => {
 
     expect(incrementViolation).toHaveBeenCalledTimes(1);
     expect(result.current.violationInfo.titleKey).toBe("violations.windowResize.title");
+  });
+
+  function setFullscreen(active) {
+    Object.defineProperty(document, "fullscreenElement", {
+      value: active ? {} : null,
+      configurable: true,
+    });
+  }
+
+  // Leaving fullscreen resizes the window by itself, so the resize that trails a
+  // fullscreen change must not cost a second strike.
+  it("ignores a resize that follows straight after a fullscreen change", () => {
+    const { incrementViolation } = setup();
+
+    act(() => {
+      setFullscreen(true);
+      document.dispatchEvent(new Event("fullscreenchange"));
+    });
+
+    act(() => {
+      setFullscreen(false);
+      setViewport({ width: 600, height: 400 });
+      window.dispatchEvent(new Event("resize"));
+      vi.advanceTimersByTime(300 + 1000);
+    });
+
+    expect(incrementViolation).not.toHaveBeenCalled();
+  });
+
+  it("still counts a resize that happens well after a fullscreen change", () => {
+    const { incrementViolation } = setup();
+
+    act(() => {
+      setFullscreen(true);
+      document.dispatchEvent(new Event("fullscreenchange"));
+      vi.advanceTimersByTime(5_000);
+    });
+
+    act(() => {
+      setFullscreen(false);
+      setViewport({ width: 600, height: 400 });
+      window.dispatchEvent(new Event("resize"));
+      vi.advanceTimersByTime(300 + 1000);
+    });
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
   });
 
   it("ignores a shrink that recovers before the confirm window closes", () => {
@@ -258,5 +303,113 @@ describe("useViolationMonitor window resize", () => {
     });
 
     expect(incrementViolation).not.toHaveBeenCalled();
+  });
+});
+
+describe("useViolationMonitor modal lifecycle", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const hardViolation = {
+    titleKey: "violations.noFace.title",
+    descriptionKey: "violations.noFace.description",
+    imagePath: "/no-candidate.png",
+  };
+
+  it("closes the modal on its own so it cannot be held open as a mute", () => {
+    const { result } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    expect(result.current.showTabWarning).toBe(true);
+
+    act(() => vi.advanceTimersByTime(20_000));
+    expect(result.current.showTabWarning).toBe(false);
+  });
+
+  it("holds the next strike for a grace period after closing itself", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => vi.advanceTimersByTime(20_000));
+    act(() => result.current.handleAiViolation(hardViolation));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.showTabWarning).toBe(false);
+  });
+
+  it("accepts a further violation once the grace and cooldown have passed", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => vi.advanceTimersByTime(20_000));
+    act(() => vi.advanceTimersByTime(20_000));
+    act(() => result.current.handleAiViolation(hardViolation));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.showTabWarning).toBe(true);
+  });
+
+  it("asks for fullscreen back when it closes itself outside fullscreen", () => {
+    const { result } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    expect(result.current.needsFullscreen).toBe(false);
+
+    act(() => vi.advanceTimersByTime(20_000));
+    expect(result.current.needsFullscreen).toBe(true);
+  });
+
+  it("reports the outcome back to the caller", () => {
+    const { result } = setup();
+
+    let first;
+    let second;
+    act(() => {
+      first = result.current.handleAiViolation(hardViolation);
+    });
+    act(() => {
+      second = result.current.handleAiViolation(hardViolation);
+    });
+
+    expect(first).toBe("raised");
+    expect(second).toBe("modal_open");
+  });
+
+  it("carries the detected object through to the modal", () => {
+    const { result } = setup();
+
+    act(() =>
+      result.current.handleAiViolation({
+        type: "PROHIBITED_OBJECT",
+        label: "cell phone",
+        titleKey: "violations.prohibitedObject.title",
+        descriptionKey: "violations.prohibitedObject.description",
+        imagePath: "/laptop.png",
+      }),
+    );
+
+    expect(result.current.violationInfo.label).toBe("cell phone");
+  });
+
+  it("releases the open-modal guard when the strike limit suppresses the modal", () => {
+    const { result } = setup({ startCount: MAX_VIOLATIONS - 1 });
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    expect(result.current.showTabWarning).toBe(false);
+
+    act(() =>
+      result.current.handleAiViolation({
+        ...hardViolation,
+        titleKey: "violations.multipleFaces.title",
+        countsAsViolation: false,
+      }),
+    );
+    expect(result.current.showTabWarning).toBe(true);
   });
 });

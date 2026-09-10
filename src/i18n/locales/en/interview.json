@@ -76,6 +76,11 @@
       "title": "Fullscreen Exit Detected",
       "description": "Exiting fullscreen is not allowed. Continued violations will end your interview."
     },
+    "fullscreenRestore": {
+      "title": "Fullscreen required",
+      "description": "Your interview must stay in fullscreen.",
+      "action": "Return to fullscreen"
+    },
     "windowResize": {
       "title": "Window Resize Detected",
       "description": "Resizing or un-maximizing the window is not allowed. Continued violations will end your interview."
@@ -90,7 +95,7 @@
     },
     "prohibitedObject": {
       "title": "Prohibited Device Detected",
-      "description": "Please put away all prohibited devices to continue the interview."
+      "description": "Please put away the {{object}} to continue the interview."
     },
     "notLooking": {
       "title": "Look at the Camera",
@@ -121,6 +126,13 @@
         "title": "Security Violation Detected",
         "description": "A security policy violation was detected. Please resolve it immediately."
       }
+    },
+    "objects": {
+      "cellPhone": "phone",
+      "laptop": "second screen",
+      "book": "book",
+      "tablet": "tablet",
+      "unknown": "prohibited device"
     }
   },
   "termination": {

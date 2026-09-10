@@ -3,6 +3,13 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
 
+// YOLO labels are snake/space-cased class names; the copy keys are camelCase.
+function objectKey(label) {
+  if (!label) return "unknown";
+  const [head, ...rest] = label.toLowerCase().split(/[\s_-]+/);
+  return head + rest.map((word) => word[0].toUpperCase() + word.slice(1)).join("");
+}
+
 export default function ViolationWarning({
   isOpen = false,
   onClose,
@@ -11,13 +18,17 @@ export default function ViolationWarning({
   titleKey,
   imagePath = "/multi-people.png",
   descriptionKey,
+  label,
   buttonText,
 }) {
   const { t } = useTranslation("interview");
   const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
+  // Naming the thing beats "prohibited device" — the candidate can only act on
+  // the warning if they know what was seen.
+  const object = t(`violations.objects.${objectKey(label)}`);
   const resolvedDescription = descriptionKey
-    ? t(descriptionKey)
-    : t("violationWarning.defaultDescription");
+    ? t(descriptionKey, { object })
+    : t("violationWarning.defaultDescription", { object });
   const resolvedButtonText = buttonText ?? t("violationWarning.defaultButtonText");
 
   // The strike before the last one says so outright — a candidate should never

@@ -2,22 +2,26 @@ import { useEffect, useRef, useState } from "react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
 import { captureFrameBase64 } from "@/lib/videoCapture";
 import { createViolationStabilizer } from "@/lib/violationStabilizer";
+import { createBaselineTracker } from "@/lib/baselineTracker";
+import { PROHIBIT_LAPTOP, SHADOW_LABELS } from "@/config/interview";
+import { recordViolationEvent, subscribeToViolationLog } from "@/lib/violationLog";
 import { logger } from "@/lib/logger";
 
-const DETECT_INTERVAL_MS = 5_000; // capture every 5 seconds
+const DETECT_INTERVAL_MS = 5_000;
 const IMAGE_QUALITY = 0.7;
 const TARGET_WIDTH = 640;
 const TARGET_HEIGHT = 480;
 
-// Detection is unreliable below this many consecutive failures, and hammering a
-// struggling AI service at full rate makes it worse.
+// Hammering a struggling AI service at full rate makes it worse.
 const MAX_BACKOFF_MS = 40_000;
 const DEGRADED_AFTER_FAILURES = 3;
 
-const VIOLATION_COOLDOWN_MS = 30_000;
-// Floor between strikes of ANY type, so one bad moment producing two different
-// violations can't burn two of the three allowed strikes in a few seconds.
-const MIN_STRIKE_INTERVAL_MS = 15_000;
+// A hard violation pulls the next couple of samples in close so it resolves in
+// about a second instead of waiting out the full interval. At 5s spacing a phone
+// held for five seconds lands in one frame and never reaches a second.
+const BURST_INTERVAL_MS = 1_000;
+const BURST_SAMPLES = 2;
+const BURST_TYPES = new Set(["PROHIBITED_OBJECT", "NO_FACE", "MULTIPLE_FACES"]);
 
 // fetch(keepalive) caps the body at 64KB. Oldest records are dropped first so a
 // too-large tail degrades to a partial log instead of no log at all.
@@ -44,7 +48,9 @@ export function sendUnloadFlush(url, payload) {
         payload: { total_records: kept.length, records: kept, truncated: true },
       });
     }
-    logger.warn(`[Proctoring] ✂️ Unload payload trimmed to ${kept.length}/${records.length} records.`);
+    logger.warn(
+      `[Proctoring] ✂️ Unload payload trimmed to ${kept.length}/${records.length} records.`,
+    );
   }
 
   try {
@@ -62,28 +68,66 @@ export function sendUnloadFlush(url, payload) {
   }
 }
 
-// "laptop" is deliberately absent: the candidate is sitting at one.
-const PROHIBITED_OBJECTS = new Set(["cell phone", "book", "tablet"]);
-const OBJECT_CONFIDENCE_THRESHOLD = 0.6;
+// Per class, because YOLO confidence is not comparable across labels or object
+// sizes. The area floor drops sub-pixel boxes without touching real detections.
+const PROHIBITED_OBJECTS = {
+  "cell phone": { minConfidence: 0.5, minAreaRatio: 0.004 },
+  laptop: { minConfidence: 0.6, minAreaRatio: 0.005 },
+  book: { minConfidence: 0.55, minAreaRatio: 0.01 },
+  tablet: { minConfidence: 0.5, minAreaRatio: 0.01 },
+};
 
-function isProhibitedObject(obj) {
-  if (!PROHIBITED_OBJECTS.has(obj?.label?.toLowerCase())) return false;
-  // Payloads without a score fall back to label-only matching rather than
-  // silently dropping every object detection.
-  const confidence = obj.confidence ?? obj.score;
-  return confidence === undefined || confidence >= OBJECT_CONFIDENCE_THRESHOLD;
+// Confidence on a murky frame is worth less than the same number on a clean
+// one, so the floor rises as quality drops. A box covering a good chunk of the
+// frame is unambiguous either way and skips the penalty.
+const QUALITY_REFERENCE = 0.5;
+const QUALITY_PENALTY = 0.3;
+const AREA_OVERRIDE_RATIO = 0.05;
+
+function ruleFor(label) {
+  if (label === "laptop" && !PROHIBIT_LAPTOP) return null;
+  return PROHIBITED_OBJECTS[label] ?? null;
+}
+
+export function confidenceFloorFor(rule, object, frameQuality) {
+  if ((object?.area_ratio ?? 0) >= AREA_OVERRIDE_RATIO) return rule.minConfidence;
+  if (typeof frameQuality !== "number") return rule.minConfidence;
+
+  const deficit = Math.max(0, QUALITY_REFERENCE - frameQuality);
+  return Math.min(0.95, rule.minConfidence + deficit * QUALITY_PENALTY);
+}
+
+export function findProhibitedObjects(result) {
+  return (result?.objects_detected || []).filter((object) => {
+    const rule = ruleFor(object?.label?.toLowerCase());
+    if (!rule) return false;
+
+    // Payloads without a score fall back to label-only matching rather than
+    // silently dropping every object detection.
+    const confidence = object.confidence ?? object.score;
+    const floor = confidenceFloorFor(rule, object, result?.frame_quality);
+    if (confidence !== undefined && confidence < floor) return false;
+
+    const area = object.area_ratio;
+    if (area !== undefined && area < rule.minAreaRatio) return false;
+
+    return true;
+  });
 }
 
 /**
  * Analyses the AI detection response and returns a violation object if found.
  * Returns null if everything is clean.
  *
- * Priority order: no face → multiple faces → prohibited object → not looking at camera
+ * `classified` carries the baseline/introduced verdict from the tracker. Without
+ * it every prohibited object counts as introduced, which is what the detection
+ * tests want.
+ *
+ * Priority order: no face → multiple faces → prohibited object → not looking
  */
-export function detectViolation(result) {
+export function detectViolation(result, classified) {
   if (!result?.success) return null;
 
-  // 1. No face detected
   if (!result.face_detected) {
     return {
       type: "NO_FACE",
@@ -93,7 +137,7 @@ export function detectViolation(result) {
     };
   }
 
-  // 2. Multiple faces — show the warning modal but DON'T count it as a strike.
+  // Show the warning modal but DON'T count it as a strike.
   if (result.face_count > 1) {
     return {
       type: "MULTIPLE_FACES",
@@ -104,19 +148,25 @@ export function detectViolation(result) {
     };
   }
 
-  // 3. Prohibited objects (phone, book, tablet)
-  const foundObject = (result.objects_detected || []).find(isProhibitedObject);
-  if (foundObject) {
+  const objects =
+    classified ?? findProhibitedObjects(result).map((object) => ({ object, state: "introduced" }));
+  const strikeable = objects.find((entry) => entry.state !== "baseline");
+  const environment = objects.find((entry) => entry.state === "baseline");
+  const hit = strikeable || environment;
+
+  if (hit) {
     return {
-      type: "PROHIBITED_OBJECT",
+      type: strikeable ? "PROHIBITED_OBJECT" : "PROHIBITED_OBJECT_BASELINE",
       titleKey: "violations.prohibitedObject.title",
       descriptionKey: "violations.prohibitedObject.description",
-      label: foundObject.label,
       imagePath: "/laptop.png",
+      label: hit.object.label,
+      detection: hit.object,
+      ...(strikeable ? {} : { countsAsViolation: false }),
     };
   }
 
-  // 4. Not looking at camera (soft — gaze is noisy; nudge, don't strike).
+  // Gaze and blinking are noisy — nudge, don't strike.
   if (result.looking_at_camera === false) {
     return {
       type: "NOT_LOOKING",
@@ -127,7 +177,6 @@ export function detectViolation(result) {
     };
   }
 
-  // 5. Eyes closed (soft — blinking would otherwise wrongly accrue strikes).
   if (result.eyes_open === false) {
     return {
       type: "EYES_CLOSED",
@@ -138,7 +187,7 @@ export function detectViolation(result) {
     };
   }
 
-  return null; // All clear
+  return null;
 }
 
 /**
@@ -162,38 +211,46 @@ export function useProctoringSystem(
   proctoringToken,
   onViolation,
 ) {
-  // ── Refs (stable across renders, no dependency issues) ───────────────
-  const queueRef = useRef([]); // collected AI detection results
-  const timerRef = useRef(null); // setTimeout id
-  const busyRef = useRef(false); // prevent overlapping detections
+  const queueRef = useRef([]);
+  const timerRef = useRef(null);
+  const busyRef = useRef(false);
   const hasFlushedRef = useRef(false); // set only on a CONFIRMED delivery
   const flushInFlightRef = useRef(false);
-  const isActiveRef = useRef(false); // mirror of isActive for use inside setTimeout
+  const isActiveRef = useRef(false);
   const sessionRef = useRef({ interviewId, sessionId, proctoringToken });
   const onViolationRef = useRef(onViolation);
-  const violationCooldownRef = useRef(new Map()); // prevent spamming the same warning
   const stabilizerRef = useRef(createViolationStabilizer());
+  const baselineRef = useRef(createBaselineTracker());
   const consecutiveFailuresRef = useRef(0);
-  const lastStrikeAtRef = useRef(0);
+  const burstRemainingRef = useRef(0);
 
   const [isDegraded, setIsDegraded] = useState(false);
 
-  // Keep session info in ref so the loop closure always has latest values
   useEffect(() => {
     sessionRef.current = { interviewId, sessionId, proctoringToken };
   }, [interviewId, sessionId, proctoringToken]);
 
-  // Keep onViolation callback in ref
   useEffect(() => {
     onViolationRef.current = onViolation;
   }, [onViolation]);
 
-  // Keep isActive mirrored in a ref
   useEffect(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
 
-  // ── Frame capture ────────────────────────────────────────────────────
+  useEffect(
+    () =>
+      subscribeToViolationLog((event) => {
+        queueRef.current.push({
+          timestamp: new Date().toISOString(),
+          source: "cv_detect",
+          event_type: "violation_decision",
+          payload: event,
+        });
+      }),
+    [],
+  );
+
   // Shared util: aspect-preserving downscale into the target box (no stretch),
   // returns raw base64 (no data-URL prefix) or null if the camera isn't ready.
   function captureFrame() {
@@ -204,8 +261,8 @@ export function useProctoringSystem(
     });
   }
 
-  // A gap in observation breaks the consecutive-evidence chain, so a streak
-  // can't span frames we never actually saw.
+  // A gap in observation breaks the evidence chain, so a window can't span
+  // frames we never actually saw.
   function recordFailure(reason) {
     stabilizerRef.current.reset();
     consecutiveFailuresRef.current += 1;
@@ -218,7 +275,9 @@ export function useProctoringSystem(
     });
 
     if (consecutiveFailuresRef.current >= DEGRADED_AFTER_FAILURES) {
-      logger.warn(`[Proctoring] ⚠️ Detection degraded after ${consecutiveFailuresRef.current} failures.`);
+      logger.warn(
+        `[Proctoring] ⚠️ Detection degraded after ${consecutiveFailuresRef.current} failures.`,
+      );
       setIsDegraded(true);
     }
   }
@@ -229,9 +288,53 @@ export function useProctoringSystem(
     setIsDegraded(false);
   }
 
-  // ── Single detection tick ────────────────────────────────────────────
+  // Why a violation did or didn't reach the candidate. Without this the batch
+  // shows only what the camera saw, never what the client decided about it.
+  function detectionDetail(violation, frameQuality) {
+    const detection = violation.detection;
+    if (!detection) return { frame_quality: frameQuality };
+
+    return {
+      label: detection.label,
+      confidence: detection.confidence ?? detection.score,
+      area_ratio: detection.area_ratio,
+      frame_quality: frameQuality,
+    };
+  }
+
+  // Outcomes the strike policy never sees, so they have to be logged here.
+  function recordDecision(violation, outcome, frameQuality) {
+    recordViolationEvent({
+      source: "ai",
+      type: violation.type,
+      outcome,
+      window: stabilizerRef.current.peek()[violation.type] ?? null,
+      ...detectionDetail(violation, frameQuality),
+    });
+  }
+
+  function dispatchViolation(violation, frameQuality) {
+    const label = violation.detection?.label?.toLowerCase();
+    if (label && SHADOW_LABELS.has(label)) {
+      stabilizerRef.current.commit(violation.type);
+      recordDecision(violation, "shadow", frameQuality);
+      return;
+    }
+
+    // The monitor owns cooldowns and the strike floor for every source, and
+    // reports back whether the evidence was actually spent.
+    const outcome = onViolationRef.current?.({
+      ...violation,
+      detail: detectionDetail(violation, frameQuality),
+    });
+
+    if (outcome === "raised" || outcome === "at_limit") {
+      stabilizerRef.current.commit(violation.type);
+      logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
+    }
+  }
+
   async function tick() {
-    // Guard: don't run if interview stopped or already processing
     if (!isActiveRef.current || busyRef.current) {
       scheduleNext();
       return;
@@ -247,7 +350,6 @@ export function useProctoringSystem(
     busyRef.current = true;
 
     try {
-      // Step 5.2: Send frame to CV detection AI
       logger.log("[Proctoring] 🤖 Sending frame to AI detection API…");
       const aiResult = await detectFrame(frame);
       logger.log("[Proctoring] ✅ AI response received:", aiResult);
@@ -265,7 +367,6 @@ export function useProctoringSystem(
       }
       recordSuccess();
 
-      // Queue the detection result for batch submission later
       queueRef.current.push({
         timestamp: new Date().toISOString(),
         source: "cv_detect",
@@ -273,41 +374,27 @@ export function useProctoringSystem(
         payload: cleanResult,
       });
 
-      // ── Check for violations and notify the UI ────────────────────
       // Re-check isActive after the async AI call — session may have ended
       // (auto-submit, normal submit) while we were waiting for the response.
-      const detected = detectViolation(cleanResult);
+      const now = Date.now();
+      const classified = baselineRef.current.classify(findProhibitedObjects(cleanResult), now);
+      const detected = detectViolation(cleanResult, classified);
       const violation = stabilizerRef.current.push(detected);
-      logger.log(
-        "[Proctoring] 🔍 detectViolation result:",
-        detected?.type || "CLEAN",
-        violation ? "(confirmed)" : "(unconfirmed)",
-      );
-      if (violation && isActiveRef.current) {
-        const now = Date.now();
-        const countsAsStrike = violation.countsAsViolation !== false && !violation.soft;
-        const lastTime = violationCooldownRef.current.get(violation.type) || 0;
-        const elapsed = now - lastTime;
-        const sinceStrike = now - lastStrikeAtRef.current;
 
-        if (elapsed <= VIOLATION_COOLDOWN_MS) {
-          logger.log(
-            `[Proctoring] ⏳ ${violation.type} in cooldown (${Math.round((VIOLATION_COOLDOWN_MS - elapsed) / 1000)}s remaining)`,
-          );
-        } else if (countsAsStrike && sinceStrike < MIN_STRIKE_INTERVAL_MS) {
-          logger.log(
-            `[Proctoring] ⏳ ${violation.type} held — ${Math.round((MIN_STRIKE_INTERVAL_MS - sinceStrike) / 1000)}s until the next strike is allowed`,
-          );
-        } else {
-          violationCooldownRef.current.set(violation.type, now);
-          if (countsAsStrike) lastStrikeAtRef.current = now;
-          logger.warn(`[Proctoring] 🚩 Violation: ${violation.type} — calling onViolation`);
-          onViolationRef.current?.(violation);
-        }
-      } else if (violation && !isActiveRef.current) {
-        logger.log(
-          `[Proctoring] ⛔ Violation ${violation.type} suppressed — session no longer active.`,
-        );
+      if (detected && BURST_TYPES.has(detected.type) && consecutiveFailuresRef.current === 0) {
+        burstRemainingRef.current = BURST_SAMPLES;
+      } else if (!detected) {
+        burstRemainingRef.current = 0;
+      }
+
+      // Re-check isActive after the async call — the session may have ended
+      // (auto-submit, normal submit) while we were waiting for the response.
+      if (violation && isActiveRef.current) {
+        dispatchViolation(violation, cleanResult.frame_quality);
+      } else if (violation) {
+        recordDecision(violation, "session_ended", cleanResult.frame_quality);
+      } else if (detected) {
+        recordDecision(detected, "unconfirmed", cleanResult.frame_quality);
       }
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
@@ -320,6 +407,13 @@ export function useProctoringSystem(
 
   function scheduleNext() {
     if (!isActiveRef.current) return;
+
+    if (burstRemainingRef.current > 0) {
+      burstRemainingRef.current -= 1;
+      timerRef.current = setTimeout(tick, BURST_INTERVAL_MS);
+      return;
+    }
+
     const failures = consecutiveFailuresRef.current;
     const delay =
       failures === 0
@@ -328,7 +422,6 @@ export function useProctoringSystem(
     timerRef.current = setTimeout(tick, delay);
   }
 
-  // ── Batch flush (ONE call at end of interview) ───────────────────────
   const flushRetryCountRef = useRef(0);
   const MAX_FLUSH_RETRIES = 3;
 
@@ -403,19 +496,17 @@ export function useProctoringSystem(
     }
   }
 
-  // ── Start / Stop loop based on isActive
   useEffect(() => {
     if (isActive) {
       logger.log("[Proctoring] ▶️ Interview active — starting detection loop.");
       hasFlushedRef.current = false;
       flushRetryCountRef.current = 0;
       stabilizerRef.current.reset();
-      violationCooldownRef.current.clear();
+      baselineRef.current.start(Date.now());
       consecutiveFailuresRef.current = 0;
-      lastStrikeAtRef.current = 0;
+      burstRemainingRef.current = 0;
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
-      // Start the first tick after a short delay
       timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);
     } else {
       logger.log("[Proctoring] ⏹️ Interview inactive — stopping loop.");
@@ -433,7 +524,6 @@ export function useProctoringSystem(
     };
   }, [isActive]); // Only depends on isActive — no callback deps!
 
-  // ── Flush when interview transitions from active → inactive ──────────
   const prevActiveRef = useRef(false);
   useEffect(() => {
     if (prevActiveRef.current && !isActive) {
@@ -442,7 +532,6 @@ export function useProctoringSystem(
     prevActiveRef.current = isActive;
   }, [isActive]);
 
-  // ── Retry flush when internet comes back online ──────────────────────
   useEffect(() => {
     const handleOnlineFlush = () => {
       if (queueRef.current.length > 0 && !hasFlushedRef.current) {
@@ -455,7 +544,6 @@ export function useProctoringSystem(
     return () => window.removeEventListener("online", handleOnlineFlush);
   }, []);
 
-  // ── Safety net: flush on page unload ─────────────────────────────────
   useEffect(() => {
     const onUnload = () => {
       if (queueRef.current.length === 0 || hasFlushedRef.current) return;

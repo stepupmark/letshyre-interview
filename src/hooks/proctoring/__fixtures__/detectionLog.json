@@ -1,0 +1,398 @@
+[
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8911,
+        "area_ratio": 0.013416,
+        "bbox": [
+          119.6,
+          94.0,
+          184.4,
+          141.7
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8784,
+        "area_ratio": 0.013759,
+        "bbox": [
+          220,
+          97.8,
+          289.2,
+          143.6
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4883,
+        "area_ratio": 0.002182,
+        "bbox": [
+          104.6,
+          96.0,
+          117.9,
+          133.8
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.874,
+        "area_ratio": 0.013759,
+        "bbox": [
+          220,
+          97.7,
+          289.2,
+          143.5
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8652,
+        "area_ratio": 0.0133,
+        "bbox": [
+          119.8,
+          94.2,
+          184.4,
+          141.7
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4456,
+        "area_ratio": 0.00217,
+        "bbox": [
+          104.8,
+          96.2,
+          118.1,
+          133.8
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8857,
+        "area_ratio": 0.013373,
+        "bbox": [
+          119.6,
+          94.0,
+          184.2,
+          141.7
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.873,
+        "area_ratio": 0.013759,
+        "bbox": [
+          220,
+          97.8,
+          289.2,
+          143.6
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8901,
+        "area_ratio": 0.013298,
+        "bbox": [
+          119.4,
+          94.3,
+          184.4,
+          141.5
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.874,
+        "area_ratio": 0.013759,
+        "bbox": [
+          220,
+          97.8,
+          289.2,
+          143.6
+        ]
+      },
+      {
+        "label": "cell phone",
+        "confidence": 0.6602,
+        "area_ratio": 0.028689,
+        "bbox": [
+          345.2,
+          184.9,
+          404.8,
+          295.8
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4844,
+        "area_ratio": 0.002201,
+        "bbox": [
+          104.7,
+          96.1,
+          118.2,
+          133.5
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8916,
+        "area_ratio": 0.013842,
+        "bbox": [
+          219.8,
+          97.8,
+          289.4,
+          143.6
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8799,
+        "area_ratio": 0.013431,
+        "bbox": [
+          119.6,
+          93.8,
+          184.2,
+          141.7
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4302,
+        "area_ratio": 0.002179,
+        "bbox": [
+          104.7,
+          96.1,
+          118.1,
+          133.6
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8901,
+        "area_ratio": 0.013342,
+        "bbox": [
+          119.4,
+          94.4,
+          184.4,
+          141.7
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8706,
+        "area_ratio": 0.014115,
+        "bbox": [
+          220,
+          97.5,
+          290,
+          144.0
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4941,
+        "area_ratio": 0.002179,
+        "bbox": [
+          104.7,
+          96.1,
+          118.1,
+          133.6
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8931,
+        "area_ratio": 0.0133,
+        "bbox": [
+          119.6,
+          94.2,
+          184.2,
+          141.7
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8887,
+        "area_ratio": 0.013759,
+        "bbox": [
+          220,
+          97.8,
+          289.2,
+          143.6
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8862,
+        "area_ratio": 0.013358,
+        "bbox": [
+          119.6,
+          94.3,
+          184.4,
+          141.8
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.7866,
+        "area_ratio": 0.013661,
+        "bbox": [
+          220.4,
+          97.6,
+          289.2,
+          143.3
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4321,
+        "area_ratio": 0.002186,
+        "bbox": [
+          104.8,
+          96.0,
+          118.1,
+          134.0
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8896,
+        "area_ratio": 0.013401,
+        "bbox": [
+          119.4,
+          94.2,
+          184.4,
+          141.7
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8608,
+        "area_ratio": 0.013947,
+        "bbox": [
+          220,
+          97.5,
+          289.2,
+          144.0
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4302,
+        "area_ratio": 0.002136,
+        "bbox": [
+          104.9,
+          96.2,
+          118.0,
+          133.8
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8857,
+        "area_ratio": 0.013256,
+        "bbox": [
+          119.8,
+          94.4,
+          184.4,
+          141.7
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8374,
+        "area_ratio": 0.013869,
+        "bbox": [
+          220,
+          97.6,
+          289.2,
+          143.8
+        ]
+      }
+    ]
+  },
+  {
+    "objects_detected": [
+      {
+        "label": "laptop",
+        "confidence": 0.8843,
+        "area_ratio": 0.014178,
+        "bbox": [
+          219.4,
+          97.4,
+          289.4,
+          144.1
+        ]
+      },
+      {
+        "label": "laptop",
+        "confidence": 0.8784,
+        "area_ratio": 0.013372,
+        "bbox": [
+          119.5,
+          94.3,
+          184.3,
+          141.9
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4456,
+        "area_ratio": 0.002099,
+        "bbox": [
+          105.1,
+          96.3,
+          118.0,
+          133.8
+        ]
+      },
+      {
+        "label": "bottle",
+        "confidence": 0.4226,
+        "area_ratio": 0.00316,
+        "bbox": [
+          569.2,
+          95.9,
+          584.2,
+          144.5
+        ]
+      }
+    ]
+  }
+]
