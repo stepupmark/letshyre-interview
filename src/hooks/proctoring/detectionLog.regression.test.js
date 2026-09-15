@@ -10,8 +10,8 @@ import { createViolationStabilizer } from "@/lib/violationStabilizer";
 
 /**
  * Replays a real session that produced no warnings at all despite a phone being
- * on camera. The two laptops in it are fixed background objects, so they must
- * stay warnings; the phone was brought into frame, so it must strike.
+ * on camera. The two laptops in it are fixed background objects, so they warn
+ * until their grace runs out; the phone was brought into frame, so it must strike.
  */
 
 const TICK_MS = 5_000;
@@ -47,11 +47,12 @@ function replay(sequence) {
 const atFiveSeconds = frames.map((frame, i) => ({ frame, at: i * TICK_MS }));
 
 describe("detection log regression", () => {
-  it("never strikes the two laptops that were there the whole time", () => {
+  it("gives the laptops that were there from the start their grace, then strikes", () => {
     const strikes = replay(atFiveSeconds).filter(
       (o) => o.confirmed?.label === "laptop" && o.confirmed.countsAsViolation !== false,
     );
-    expect(strikes).toHaveLength(0);
+    expect(strikes.length).toBeGreaterThan(0);
+    expect(strikes.every((o) => o.at > 30_000)).toBe(true);
   });
 
   it("treats those laptops as environment rather than ignoring them", () => {

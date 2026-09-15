@@ -4,6 +4,7 @@ import { captureSample } from "@/lib/videoCapture";
 import { violationCopy } from "@/lib/violationCopy";
 import { createViolationStabilizer } from "@/lib/violationStabilizer";
 import { createBaselineTracker } from "@/lib/baselineTracker";
+import { createIncidentTracker } from "@/lib/incidentTracker";
 import { OBJECT_CONFIDENCE_FLOOR, PROHIBIT_LAPTOP, SHADOW_LABELS } from "@/config/interview";
 import { recordViolationEvent, subscribeToViolationLog } from "@/lib/violationLog";
 import { logger } from "@/lib/logger";
@@ -33,8 +34,7 @@ const MAX_BURSTS = 3;
 const CAMERA_RETRY_MS = 1_000;
 const CAMERA_GRACE_TICKS = 3;
 
-// Past this much unobserved time the room may have been rearranged, and the
-// tracker's own records have expired, so the baseline is seeded again.
+// Past this much unobserved time a run of evidence counts as broken.
 export const RESEED_AFTER_GAP_MS = 20_000;
 
 // fetch(keepalive) caps the body at 64KB. Oldest records are dropped first so a
@@ -185,6 +185,7 @@ function objectViolation({ label, best, count }) {
     count,
     detection: best.object,
     shadow: SHADOW_LABELS.has(label),
+    incident: true,
     ...(isEnvironment ? { countsAsViolation: false } : {}),
   };
 }
@@ -262,11 +263,8 @@ export function useProctoringSystem(
   const consecutiveFailuresRef = useRef(0);
   const burstRemainingRef = useRef(0);
   const burstsUsedRef = useRef(0);
-  const lastSuccessAtRef = useRef(0);
   const intervalRef = useRef(DETECT_INTERVAL_MS);
-  // Keys seen on the previous frame, so a condition that never stopped is told
-  // apart from one that cleared and came back.
-  const previousKeysRef = useRef(new Set());
+  const incidentsRef = useRef(createIncidentTracker());
 
   const [isDegraded, setIsDegraded] = useState(false);
 
@@ -314,7 +312,6 @@ export function useProctoringSystem(
   // frames we never actually saw.
   function recordFailure(reason) {
     stabilizerRef.current.reset();
-    previousKeysRef.current = new Set();
     consecutiveFailuresRef.current += 1;
 
     queueRef.current.push({
@@ -389,7 +386,7 @@ export function useProctoringSystem(
 
   // Only one violation per frame reaches the candidate, but a shadowed or
   // cooled-down one must not be what stops the rest from being considered.
-  function dispatchViolations(confirmed, frameQuality) {
+  function dispatchViolations(confirmed, frameQuality, now) {
     let raised = false;
 
     for (const violation of confirmed) {
@@ -408,13 +405,15 @@ export function useProctoringSystem(
 
       // The monitor owns cooldowns and the strike floor for every source, and
       // reports back whether the evidence was actually spent.
+      const startedAt = incidentsRef.current.startedAt(key);
       const outcome = onViolationRef.current?.({
         ...violation,
-        ongoing: previousKeysRef.current.has(key),
+        ongoing: startedAt < now,
+        incidentStartedAt: startedAt,
         detail: detectionDetail(violation, frameQuality),
       });
 
-      if (outcome === "raised" || outcome === "at_limit") {
+      if (outcome === "raised" || outcome === "at_limit" || outcome === "warned") {
         stabilizerRef.current.commit(key);
         raised = true;
         logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
@@ -467,15 +466,9 @@ export function useProctoringSystem(
         payload: cleanResult,
       });
 
+      // The room is only baselined when the session starts. Re-seeding after an
+      // outage handed out a fresh grace every time the connection dropped.
       const now = Date.now();
-
-      // Coming back from a long blind stretch the tracker's records have
-      // expired and the room may have changed, so the baseline is seeded again
-      // rather than reading the candidate's own furniture as newly introduced.
-      if (now - lastSuccessAtRef.current > RESEED_AFTER_GAP_MS) {
-        baselineRef.current.start(now);
-      }
-      lastSuccessAtRef.current = now;
 
       const classified = applyBaselineRules(
         baselineRef.current.classify(findProhibitedObjects(cleanResult), now),
@@ -484,6 +477,10 @@ export function useProctoringSystem(
 
       const detected = detectViolations(cleanResult, classified);
       const confirmed = stabilizerRef.current.push(detected);
+      incidentsRef.current.observe(
+        detected.map((v) => v.key ?? v.type),
+        now,
+      );
 
       const worthBursting = detected.some((violation) => BURST_TYPES.has(violation.type));
       if (worthBursting && consecutiveFailuresRef.current === 0) {
@@ -499,7 +496,7 @@ export function useProctoringSystem(
       // Re-check isActive after the async call — the session may have ended
       // (auto-submit, normal submit) while we were waiting for the response.
       if (isActiveRef.current) {
-        dispatchViolations(confirmed, cleanResult.frame_quality);
+        dispatchViolations(confirmed, cleanResult.frame_quality, now);
       } else {
         for (const violation of confirmed) {
           recordDecision(violation, "session_ended", cleanResult.frame_quality);
@@ -511,8 +508,6 @@ export function useProctoringSystem(
           recordDecision(violation, "unconfirmed", cleanResult.frame_quality);
         }
       }
-
-      previousKeysRef.current = new Set(detected.map((v) => v.key ?? v.type));
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
       recordFailure(err?.message || "request_failed");
@@ -622,11 +617,10 @@ export function useProctoringSystem(
       flushRetryCountRef.current = 0;
       stabilizerRef.current.reset();
       baselineRef.current.start(Date.now());
-      lastSuccessAtRef.current = Date.now();
       consecutiveFailuresRef.current = 0;
       burstRemainingRef.current = 0;
       burstsUsedRef.current = 0;
-      previousKeysRef.current = new Set();
+      incidentsRef.current.reset();
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
       timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);

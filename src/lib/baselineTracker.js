@@ -14,7 +14,7 @@
 // eighty.
 const BASELINE_TICKS = 2;
 const BASELINE_WINDOW_MS = 15_000;
-const GRACE_MS = 60_000;
+const GRACE_MS = 30_000;
 const TTL_MS = 30_000;
 
 // Observed background objects drift under 1px between ticks; a device being

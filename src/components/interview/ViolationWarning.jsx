@@ -2,13 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
-
-// YOLO labels are snake/space-cased class names; the copy keys are camelCase.
-function objectKey(label) {
-  if (!label) return "unknown";
-  const [head, ...rest] = label.toLowerCase().split(/[\s_-]+/);
-  return head + rest.map((word) => word[0].toUpperCase() + word.slice(1)).join("");
-}
+import { objectNameKey } from "@/lib/violationCopy";
 
 export default function ViolationWarning({
   isOpen = false,
@@ -26,7 +20,7 @@ export default function ViolationWarning({
   const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
   // Naming the thing beats "prohibited device" — the candidate can only act on
   // the warning if they know what was seen.
-  const object = t(`violations.objects.${objectKey(label)}`);
+  const object = t(objectNameKey(label));
   const resolvedDescription = descriptionKey
     ? t(descriptionKey, { object })
     : t("violationWarning.defaultDescription", { object });

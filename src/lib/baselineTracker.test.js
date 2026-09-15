@@ -82,22 +82,13 @@ describe("createBaselineTracker", () => {
     expect(tracker.classify([laptop, phone], 10000)[1].state).toBe("introduced");
   });
 
-  // A detection outage outlives the tracker's TTL, so on recovery the room has
-  // to be seeded again or the candidate's own desk reads as newly introduced.
-  it("counts furniture as introduced after an outage if the baseline is not re-seeded", () => {
+  // The room is only baselined at session start, so an outage never hands out a
+  // second grace.
+  it("treats furniture as introduced once an outage outlives its record", () => {
     const tracker = setup();
     tracker.classify([laptop], 0);
     tracker.classify([laptop], 5000);
     expect(tracker.classify([laptop], 60000)[0].state).toBe("introduced");
-  });
-
-  it("keeps furniture as baseline across an outage once re-seeded", () => {
-    const tracker = setup();
-    tracker.classify([laptop], 0);
-    tracker.classify([laptop], 5000);
-    tracker.start(60000);
-    tracker.classify([laptop], 60000);
-    expect(tracker.classify([laptop], 65000)[0].state).toBe("baseline");
   });
 
   it("clears everything on reset", () => {

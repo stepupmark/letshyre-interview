@@ -10,16 +10,12 @@ import { recordViolationEvent } from "@/lib/violationLog";
 const RESIZE_TOLERANCE_PX = 40;
 const RESIZE_CONFIRM_MS = 1_000;
 
-// The modal blocks every further violation while it is open, so leaving it up
-// would mute proctoring for as long as the candidate likes.
+// A counted modal blocks every further violation while it is open, so leaving
+// it up would mute proctoring for as long as the candidate likes.
 const AUTO_DISMISS_MS = 20_000;
 // Closing it on a timer gives back the guard that was holding the next strike,
 // so leave a gap rather than letting the next event land immediately.
 const AUTO_DISMISS_GRACE_MS = 10_000;
-
-// Outcomes that stop a confirmed violation without telling the candidate
-// anything. A modal is excluded because one is already on screen.
-const SILENT_OUTCOMES = new Set(["cooldown", "strike_interval", "suppressed"]);
 
 // Leaving fullscreen resizes the window, so the resize handler fires right
 // behind fullscreenchange. Without this the candidate is struck twice for one
@@ -74,6 +70,10 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   const tRef = useRef(t);
 
   const isWarningOpenRef = useRef(false);
+  // Only a modal that just added a strike holds back other violations. One shown
+  // for a held-back strike must not, or a phone kept in view would keep it open
+  // and no strike could ever land.
+  const openBlocksRef = useRef(false);
 
   // Buffers an Electron hard-block that arrived before isActive was true.
   // Flushed by the effect below once the session loads.
@@ -98,9 +98,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   // values via refs) so the once-registered document listeners and the
   // AI/Electron handlers can all share it without re-binding.
   //
-  // countsAsViolation=false → show the modal but DON'T add a strike (e.g. bottle,
-  // multiple people): the displayed tally stays unchanged and it can't push the
-  // candidate toward auto-termination.
+  // countsAsViolation=false shows the modal without adding a strike. A counting
+  // violation whose strike is held back still shows the modal, as a warning.
   // Single gate for every violation, whatever raised it. Returns the outcome so
   // the AI loop knows whether its evidence was actually spent.
   const raiseViolation = useCallback(
@@ -114,11 +113,13 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       imagePath,
       countsAsViolation = true,
       ongoing = false,
+      incident = false,
+      incidentStartedAt,
       finalWarning,
     }) => {
       const key = type ?? titleKey;
 
-      const report = (outcome, violationCount) => {
+      const report = (outcome, violationCount, extra) => {
         recordViolationEvent({
           source,
           type: key,
@@ -126,32 +127,51 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
           ...(label ? { label } : {}),
           ...(detail ?? {}),
           ...(violationCount === undefined ? {} : { violation_count: violationCount }),
+          ...extra,
         });
         return outcome;
       };
 
+      const show = (counts, violationCount, blocking = counts) => {
+        isWarningOpenRef.current = true;
+        openBlocksRef.current = blocking;
+        setViolationInfo({
+          titleKey,
+          descriptionKey,
+          imagePath,
+          label,
+          violationCount,
+          counts,
+          finalWarning,
+        });
+        setShowTabWarning(true);
+      };
+
       if (!isActiveRef.current) return report("inactive");
-      if (isWarningOpenRef.current) return report("modal_open");
+
+      const warningOpen = isWarningOpenRef.current;
+      if (warningOpen && (openBlocksRef.current || !countsAsViolation)) {
+        return report("modal_open");
+      }
 
       const outcome = policyRef.current.admit(key, {
         countsAsStrike: countsAsViolation,
         ongoing,
+        incident,
+        startedAt: incidentStartedAt,
       });
+
       if (outcome !== "raised") {
-        // A strike held back by a cooldown used to reach the candidate as
-        // nothing at all, so a condition that never cleared went quiet for a
-        // minute and then ended the interview. The id keeps one toast per type
-        // rather than a stack of them.
-        if (SILENT_OUTCOMES.has(outcome) && titleKey) {
-          toast.warning(tRef.current(titleKey), {
-            id: `violation-${key}`,
-            description: descriptionKey ? tRef.current(descriptionKey) : undefined,
-          });
-        }
-        return report(outcome);
+        // Non-counting warnings keep their cooldown, or furniture would nag on
+        // every sample.
+        if (warningOpen || !countsAsViolation || !titleKey) return report(outcome);
+        // An object still in view after its strike shows that strike's count, so
+        // the candidate can see it was not skipped.
+        const counted = incident && policyRef.current.struckWithin(key);
+        show(counted, sessionViolationsRef.current, false);
+        return report("warned", undefined, { held_back: outcome });
       }
 
-      isWarningOpenRef.current = true;
       const violationCount = countsAsViolation
         ? incrementViolationRef.current()
         : sessionViolationsRef.current;
@@ -162,19 +182,13 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       // be released here or nothing ever clears it.
       if (countsAsViolation && violationCount >= MAX_VIOLATIONS) {
         isWarningOpenRef.current = false;
+        openBlocksRef.current = false;
+        setShowTabWarning(false);
         return report("at_limit", violationCount);
       }
 
-      setViolationInfo({
-        titleKey,
-        descriptionKey,
-        imagePath,
-        label,
-        violationCount,
-        counts: countsAsViolation,
-        finalWarning,
-      });
-      setShowTabWarning(true);
+      // Replaces a warning already on screen when a strike becomes admissible.
+      show(countsAsViolation, violationCount);
       return report("raised", violationCount);
     },
     [],
@@ -185,12 +199,12 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   useEffect(() => {
     if (!isActive && showTabWarning) {
       isWarningOpenRef.current = false;
+      openBlocksRef.current = false;
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setShowTabWarning(false));
     }
   }, [isActive, showTabWarning]);
 
-  // memoized — prevents ViolationWarning re-renders on parent re-render
   const enterFullScreen = useCallback(() => {
     if (document.fullscreenElement) return;
     // Optional-chained because a browser that blocks or lacks the API would
@@ -203,6 +217,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   // Reset the ref IMMEDIATELY, before enterFullScreen can re-trigger.
   const closeWarning = useCallback(() => {
     isWarningOpenRef.current = false;
+    openBlocksRef.current = false;
     setShowTabWarning(false);
   }, []);
 
@@ -224,7 +239,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     }, AUTO_DISMISS_MS);
 
     return () => clearTimeout(timer);
-  }, [showTabWarning, closeWarning]);
+  }, [showTabWarning, violationInfo, closeWarning]);
 
   const restoreFullscreen = useCallback(() => {
     setNeedsFullscreen(false);
@@ -234,9 +249,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   const handleAiViolation = useCallback(
     (violation) => {
       if (!isActiveRef.current) return;
-      // Soft signals (looking away, blinking, low-confidence objects) are noisy
-      // and must NOT count toward the strike-based auto-termination. Surface a
-      // non-blocking nudge instead of the modal + strike.
+      // Gaze and blinking are noisy, so they nudge rather than strike.
       if (violation.soft) {
         toast.warning(tRef.current(violation.titleKey), {
           description: tRef.current(violation.descriptionKey),
@@ -244,11 +257,14 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         return "soft";
       }
       return raiseViolation({
-        type: violation.type,
+        // Objects are rate-limited per object, so a laptop can't hold back a phone.
+        type: violation.key ?? violation.type,
         source: "ai",
         label: violation.label,
         detail: violation.detail,
         ongoing: violation.ongoing,
+        incident: violation.incident,
+        incidentStartedAt: violation.incidentStartedAt,
         titleKey: violation.titleKey,
         descriptionKey: violation.descriptionKey,
         imagePath: violation.imagePath,

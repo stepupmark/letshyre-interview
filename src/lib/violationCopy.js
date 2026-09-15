@@ -36,3 +36,12 @@ const COPY = {
 export function violationCopy(type) {
   return COPY[type] ?? null;
 }
+
+// Detector labels are space or snake cased while copy keys are camelCase. Any
+// warning that says {{object}} needs this, not only the modal.
+export function objectNameKey(label) {
+  if (!label) return "violations.objects.unknown";
+  const [head, ...rest] = label.toLowerCase().split(/[\s_-]+/);
+  const tail = rest.map((word) => word[0].toUpperCase() + word.slice(1)).join("");
+  return `violations.objects.${head}${tail}`;
+}

@@ -340,6 +340,62 @@ describe("useViolationMonitor modal lifecycle", () => {
     act(() => result.current.handleAiViolation(hardViolation));
 
     expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.showTabWarning).toBe(true);
+    expect(result.current.violationInfo.counts).toBe(false);
+  });
+
+  it("shows a held-back strike as a warning modal instead of a toast", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => result.current.dismissWarning());
+    act(() => vi.advanceTimersByTime(16_000));
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleAiViolation(hardViolation);
+    });
+
+    expect(outcome).toBe("warned");
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.showTabWarning).toBe(true);
+    expect(result.current.violationInfo.counts).toBe(false);
+    expect(toast.warning).not.toHaveBeenCalled();
+  });
+
+  it("upgrades an open warning to a strike once one is admissible", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => result.current.dismissWarning());
+    act(() => vi.advanceTimersByTime(16_000));
+    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => vi.advanceTimersByTime(15_000));
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleAiViolation(hardViolation);
+    });
+
+    expect(outcome).toBe("raised");
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.counts).toBe(true);
+    expect(result.current.showTabWarning).toBe(true);
+  });
+
+  it("keeps the cooldown for a non-counting warning", () => {
+    const { result } = setup();
+    const environment = { ...hardViolation, countsAsViolation: false };
+
+    act(() => result.current.handleAiViolation(environment));
+    act(() => result.current.dismissWarning());
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleAiViolation(environment);
+    });
+
+    expect(outcome).toBe("cooldown");
     expect(result.current.showTabWarning).toBe(false);
   });
 
@@ -411,5 +467,44 @@ describe("useViolationMonitor modal lifecycle", () => {
       }),
     );
     expect(result.current.showTabWarning).toBe(true);
+  });
+  const phoneIncident = {
+    type: "PROHIBITED_OBJECT",
+    key: "PROHIBITED_OBJECT:cell phone",
+    label: "cell phone",
+    incident: true,
+    titleKey: "violations.prohibitedObject.title",
+    descriptionKey: "violations.prohibitedObject.description",
+  };
+  const laptopIncident = { ...phoneIncident, key: "PROHIBITED_OBJECT:laptop", label: "laptop" };
+
+  it("strikes each newly introduced object even inside the strike gap", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(phoneIncident));
+    act(() => result.current.dismissWarning());
+    act(() => result.current.handleAiViolation(laptopIncident));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo).toMatchObject({ label: "laptop", counts: true });
+  });
+
+  it("shows the existing count while an object stays in view without blocking", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(phoneIncident));
+    act(() => result.current.dismissWarning());
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleAiViolation({ ...phoneIncident, ongoing: true });
+    });
+
+    expect(outcome).toBe("warned");
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo.counts).toBe(true);
+
+    act(() => result.current.handleAiViolation(laptopIncident));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 });

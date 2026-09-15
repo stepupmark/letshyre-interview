@@ -83,4 +83,52 @@ describe("createStrikePolicy", () => {
     expect(policy.admit("NO_FACE", { now: 60_000 })).toBe("cooldown");
     expect(policy.admit("NO_FACE", { now: 90_000 })).toBe("raised");
   });
+
+  it("strikes a newly introduced object through every hold", () => {
+    const policy = createStrikePolicy();
+    policy.admit("NO_FACE", { now: 0 });
+    policy.suppressFor(10_000, 0);
+    const phone = "PROHIBITED_OBJECT:cell phone";
+    expect(policy.admit(phone, { incident: true, startedAt: 1_000, now: 1_000 })).toBe("raised");
+  });
+
+  it("re-strikes an object that stays in view on a fixed interval", () => {
+    const policy = createStrikePolicy();
+    const phone = "PROHIBITED_OBJECT:cell phone";
+    const held = { incident: true, ongoing: true, startedAt: 0 };
+    expect(policy.admit(phone, { incident: true, startedAt: 0, now: 0 })).toBe("raised");
+    expect(policy.admit(phone, { ...held, now: 20_000 })).toBe("cooldown");
+    expect(policy.admit(phone, { ...held, now: 30_000 })).toBe("raised");
+    expect(policy.admit(phone, { ...held, now: 60_000 })).toBe("raised");
+  });
+
+  it("strikes an object brought back even though it confirms on a later frame", () => {
+    const policy = createStrikePolicy();
+    const phone = "PROHIBITED_OBJECT:cell phone";
+    expect(policy.admit(phone, { incident: true, startedAt: 20_000, now: 21_000 })).toBe("raised");
+    expect(
+      policy.admit(phone, { incident: true, ongoing: true, startedAt: 40_000, now: 42_000 }),
+    ).toBe("raised");
+  });
+
+  it("treats an object that has never struck as new even while in view", () => {
+    const policy = createStrikePolicy();
+    policy.admit("TAB_SWITCH", { now: 0 });
+    expect(
+      policy.admit("PROHIBITED_OBJECT:laptop", {
+        incident: true,
+        ongoing: true,
+        startedAt: 0,
+        now: 1_000,
+      }),
+    ).toBe("raised");
+  });
+
+  it("knows whether an object struck recently", () => {
+    const policy = createStrikePolicy();
+    policy.admit("PROHIBITED_OBJECT:cell phone", { incident: true, now: 0 });
+    expect(policy.struckWithin("PROHIBITED_OBJECT:cell phone", 30_000, 10_000)).toBe(true);
+    expect(policy.struckWithin("PROHIBITED_OBJECT:cell phone", 30_000, 40_000)).toBe(false);
+    expect(policy.struckWithin("PROHIBITED_OBJECT:laptop", 30_000, 10_000)).toBe(false);
+  });
 });
