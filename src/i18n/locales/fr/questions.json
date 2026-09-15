@@ -40,7 +40,16 @@
     "tipsTitle": "Conseils d'enregistrement",
     "tip1": "Parlez clairement et à un rythme normal",
     "tip2": "Assurez-vous que votre micro n'est pas coupé",
-    "tip3": "Essayez de minimiser le bruit de fond"
+    "tip3": "Essayez de minimiser le bruit de fond",
+    "preparing": "Préparation de votre micro…",
+    "microphone": "Micro",
+    "microphoneFallback": "Micro {{number}}",
+    "inputLevel": "Niveau du micro",
+    "errors": {
+      "micUnavailable": "L'accès au micro a été refusé ou est indisponible. Vérifiez les autorisations du navigateur et réessayez.",
+      "noSound": "Aucun son n'a été capté. Vérifiez que votre micro est branché et non coupé, puis enregistrez à nouveau.",
+      "playbackFailed": "Votre enregistrement n'a pas pu être lu. Veuillez réenregistrer votre réponse."
+    }
   },
   "shell": {
     "submittingFinal": "Envoi de votre réponse finale...",

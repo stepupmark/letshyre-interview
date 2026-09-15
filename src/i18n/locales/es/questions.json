@@ -40,7 +40,16 @@
     "tipsTitle": "Consejos de grabación",
     "tip1": "Habla con claridad y a un ritmo normal",
     "tip2": "Asegúrate de que tu micrófono no esté silenciado",
-    "tip3": "Intenta minimizar el ruido de fondo"
+    "tip3": "Intenta minimizar el ruido de fondo",
+    "preparing": "Preparando tu micrófono…",
+    "microphone": "Micrófono",
+    "microphoneFallback": "Micrófono {{number}}",
+    "inputLevel": "Nivel del micrófono",
+    "errors": {
+      "micUnavailable": "Se denegó el acceso al micrófono o no está disponible. Revisa los permisos del navegador e inténtalo de nuevo.",
+      "noSound": "No se captó ningún sonido. Comprueba que el micrófono esté conectado y no silenciado, y vuelve a grabar.",
+      "playbackFailed": "No se pudo reproducir tu grabación. Vuelve a grabar tu respuesta."
+    }
   },
   "shell": {
     "submittingFinal": "Enviando tu respuesta final...",

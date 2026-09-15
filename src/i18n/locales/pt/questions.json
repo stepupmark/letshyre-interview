@@ -40,7 +40,16 @@
     "tipsTitle": "Dicas de gravação",
     "tip1": "Fale com clareza e em ritmo normal",
     "tip2": "Certifique-se de que o microfone não está mudo",
-    "tip3": "Tente minimizar o ruído de fundo"
+    "tip3": "Tente minimizar o ruído de fundo",
+    "preparing": "Preparando seu microfone…",
+    "microphone": "Microfone",
+    "microphoneFallback": "Microfone {{number}}",
+    "inputLevel": "Nível do microfone",
+    "errors": {
+      "micUnavailable": "O acesso ao microfone foi negado ou está indisponível. Verifique as permissões do navegador e tente novamente.",
+      "noSound": "Nenhum som foi capturado. Verifique se o microfone está conectado e sem mudo e grave novamente.",
+      "playbackFailed": "Não foi possível reproduzir sua gravação. Grave sua resposta novamente."
+    }
   },
   "shell": {
     "submittingFinal": "Enviando sua resposta final...",

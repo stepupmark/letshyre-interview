@@ -21,8 +21,6 @@ import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useVoiceEnrollment } from "@mutations/useVoiceEnrollment";
 import { useVoiceCompare } from "@mutations/useVoiceCompare";
 
-// ─── Voice Comparison Result Banner ──────────────────────────────────────────
-
 function VoiceCompareResult({ isComparing, result }) {
   const { t } = useTranslation("questions");
 
@@ -30,9 +28,7 @@ function VoiceCompareResult({ isComparing, result }) {
     return (
       <div className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-5 py-4 animate-in fade-in duration-300">
         <Loader2 className="h-5 w-5 shrink-0 animate-spin text-blue-500" />
-        <p className="text-[14px] font-semibold text-blue-700">
-          {t("voice.verifying")}
-        </p>
+        <p className="text-[14px] font-semibold text-blue-700">{t("voice.verifying")}</p>
       </div>
     );
   }
@@ -46,9 +42,7 @@ function VoiceCompareResult({ isComparing, result }) {
     <div
       className={cn(
         "flex items-start gap-3 rounded-xl border px-5 py-4 animate-in fade-in slide-in-from-top-2 duration-500",
-        isMatch
-          ? "border-emerald-200 bg-emerald-50"
-          : "border-amber-200 bg-amber-50"
+        isMatch ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50",
       )}
     >
       <div className="mt-0.5 shrink-0">
@@ -59,30 +53,18 @@ function VoiceCompareResult({ isComparing, result }) {
         )}
       </div>
       <div className="space-y-0.5">
-        <p
-          className={cn(
-            "text-[14px] font-bold",
-            isMatch ? "text-emerald-800" : "text-amber-800"
-          )}
-        >
+        <p className={cn("text-[14px] font-bold", isMatch ? "text-emerald-800" : "text-amber-800")}>
           {isMatch ? t("voice.verified") : t("voice.mismatchDetected")}
         </p>
         <p
-          className={cn(
-            "text-[13px] font-medium",
-            isMatch ? "text-emerald-600" : "text-amber-600"
-          )}
+          className={cn("text-[13px] font-medium", isMatch ? "text-emerald-600" : "text-amber-600")}
         >
-          {isMatch
-            ? t("voice.matchResult", { score })
-            : t("voice.mismatchResult", { score })}
+          {isMatch ? t("voice.matchResult", { score }) : t("voice.mismatchResult", { score })}
         </p>
       </div>
     </div>
   );
 }
-
-// ─── Enrollment Badge ─────────────────────────────────────────────────────────
 
 function EnrollmentBadge({ isEnrolling, isEnrolled }) {
   const { t } = useTranslation("questions");
@@ -106,7 +88,27 @@ function EnrollmentBadge({ isEnrolling, isEnrolled }) {
   return null;
 }
 
-// ─── Main VoiceQuestion Component ────────────────────────────────────────────
+function LevelMeter({ level }) {
+  const { t } = useTranslation("questions");
+  // Speech rarely peaks past a third of full scale, so stretch it to fill the bar.
+  const percent = Math.round(Math.min(1, level * 3) * 100);
+
+  return (
+    <div
+      role="meter"
+      aria-label={t("voice.inputLevel")}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={percent}
+      className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-red-100"
+    >
+      <div
+        className="h-full rounded-full bg-red-500 transition-[width] duration-100"
+        style={{ width: `${percent}%` }}
+      />
+    </div>
+  );
+}
 
 export default function VoiceQuestion({
   question,
@@ -117,13 +119,12 @@ export default function VoiceQuestion({
   isLastQuestion,
 }) {
   const { t } = useTranslation("questions");
-  // Native MediaRecorder (audio/webm;opus, audio/mp4 on Safari). The blob is sent
-  // as-is — no client-side MP3 encoding (removes the broken lamejs dependency).
   const recorder = useAudioRecorder();
+  const isStarting = recorder.status === "starting";
   const isRecording = recorder.status === "recording";
+  const isCapturing = isStarting || isRecording;
   const audioRecorded = recorder.status === "reviewing" && !!recorder.audioBlob;
 
-  // ── Voice Enrollment (once per session) ────────────────────────────────────
   const { enroll, isEnrolling, isEnrolled, enrollmentId } = useVoiceEnrollment();
 
   useEffect(() => {
@@ -131,10 +132,14 @@ export default function VoiceQuestion({
       enroll();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // intentionally run only once on mount
+  }, []);
 
-  // ── Voice Comparison ────────────────────────────────────────────────────────
-  const { compare, isComparing, compareResult, reset: resetCompare } = useVoiceCompare(
+  const {
+    compare,
+    isComparing,
+    compareResult,
+    reset: resetCompare,
+  } = useVoiceCompare(
     (data) => {
       if (!data?.data?.matched) {
         toast.warning(t("voice.mismatchToast"), {
@@ -144,15 +149,13 @@ export default function VoiceQuestion({
     },
     (err) => {
       toast.error(err?.response?.data?.message || t("voice.compareFailed"));
-    }
+    },
   );
 
-  // ── Surface recorder errors (mic denied / hardware) ─────────────────────────
   useEffect(() => {
-    if (recorder.error) toast.error(recorder.error);
-  }, [recorder.error]);
+    if (recorder.error) toast.error(t(`voice.errors.${recorder.error.code}`));
+  }, [recorder.error, t]);
 
-  // ── Auto-compare each newly finished recording against the enrolled sample ──
   const lastComparedRef = useRef(null);
   useEffect(() => {
     const blob = recorder.audioBlob;
@@ -162,7 +165,6 @@ export default function VoiceQuestion({
     }
   }, [recorder.audioBlob, enrollmentId, compare]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
   const handleToggleRecording = useCallback(() => {
     if (isRecording) {
       recorder.stopRecording();
@@ -187,6 +189,7 @@ export default function VoiceQuestion({
   }, [recorder.audioBlob, onSubmit, t]);
 
   const questionText = question?.text || question?.question || "";
+  const deviceValue = recorder.deviceId || recorder.devices[0]?.deviceId || "";
 
   return (
     <QuestionShell
@@ -199,31 +202,52 @@ export default function VoiceQuestion({
       isLastQuestion={isLastQuestion}
     >
       <div className="mt-8 space-y-5">
-        {/* Enrollment Status */}
         <div className="flex items-center gap-2">
           <EnrollmentBadge isEnrolling={isEnrolling} isEnrolled={isEnrolled} />
         </div>
 
-        {/* Action Buttons */}
+        {recorder.devices.length > 1 && !audioRecorded && (
+          <label className="flex flex-wrap items-center gap-3 text-[14px] font-medium text-slate-700">
+            <span className="flex items-center gap-1.5">
+              <Mic className="h-4 w-4" />
+              {t("voice.microphone")}
+            </span>
+            <select
+              value={deviceValue}
+              onChange={(e) => recorder.setDeviceId(e.target.value)}
+              disabled={isCapturing}
+              className="h-10 max-w-full min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-[14px] text-slate-800 disabled:opacity-60 sm:max-w-sm"
+            >
+              {recorder.devices.map((device, index) => (
+                <option key={device.deviceId} value={device.deviceId}>
+                  {device.label || t("voice.microphoneFallback", { number: index + 1 })}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <div className="flex flex-wrap items-center gap-4">
           {!audioRecorded ? (
             <Button
               onClick={handleToggleRecording}
-              disabled={isEnrolling}
+              disabled={isEnrolling || isStarting}
               className={cn(
                 "flex h-12 w-48 items-center gap-2 rounded-xl px-7 shadow-sm transition-colors",
-                isRecording
+                isCapturing
                   ? "bg-red-100 text-red-600 hover:bg-red-200"
                   : "bg-[#a9c8ff] text-slate-900 hover:bg-[#97bcff]",
-                isEnrolling && "opacity-60 cursor-not-allowed"
+                (isEnrolling || isStarting) && "opacity-60 cursor-not-allowed",
               )}
             >
-              {isRecording ? (
+              {isStarting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isRecording ? (
                 <Square className="h-4 w-4 fill-current" />
               ) : (
                 <Mic className="h-4 w-4" />
               )}
-              {isRecording ? t("voice.stopRecording") : t("voice.startRecording")}
+              {isCapturing ? t("voice.stopRecording") : t("voice.startRecording")}
             </Button>
           ) : (
             <>
@@ -232,7 +256,11 @@ export default function VoiceQuestion({
                 disabled={isComparing}
                 className="flex h-12 w-40 items-center justify-center gap-2 rounded-xl bg-green-500 px-7 text-white shadow-sm transition-colors hover:bg-green-600 disabled:opacity-60"
               >
-                {recorder.isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
+                {recorder.isPlaying ? (
+                  <Pause className="h-4 w-4 fill-current" />
+                ) : (
+                  <Play className="h-4 w-4 fill-current" />
+                )}
                 {recorder.isPlaying ? t("voice.pause") : t("voice.listen")}
               </Button>
               <Button
@@ -247,38 +275,40 @@ export default function VoiceQuestion({
           )}
         </div>
 
-        {/* Recording Status Banner */}
         <div
           className={cn(
             "flex items-center gap-3 rounded-xl px-5 py-4 transition-colors",
             audioRecorded
               ? "bg-green-50 text-green-700"
-              : isRecording
-              ? "bg-red-50 text-red-600"
-              : "bg-[#eef4ff] text-[#5c7eb8]"
+              : isCapturing
+                ? "bg-red-50 text-red-600"
+                : "bg-[#eef4ff] text-[#5c7eb8]",
           )}
         >
           <div
             className={cn(
               "flex h-6 w-6 shrink-0 items-center justify-center rounded text-white",
-              audioRecorded ? "bg-green-500" : isRecording ? "bg-red-500" : "bg-[#7fa6eb]"
+              audioRecorded ? "bg-green-500" : isCapturing ? "bg-red-500" : "bg-[#7fa6eb]",
             )}
           >
             <AlertCircle className="h-4 w-4" />
           </div>
-          <p className="text-[15px] font-medium">
-            {audioRecorded
-              ? t("voice.recordedStatus")
-              : isRecording
-              ? t("voice.recordingStatus")
-              : t("voice.readyStatus")}
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-medium">
+              {audioRecorded
+                ? t("voice.recordedStatus")
+                : isStarting
+                  ? t("voice.preparing")
+                  : isRecording
+                    ? t("voice.recordingStatus")
+                    : t("voice.readyStatus")}
+            </p>
+            {isCapturing && <LevelMeter level={recorder.level} />}
+          </div>
         </div>
 
-        {/* Voice Comparison Result */}
         <VoiceCompareResult isComparing={isComparing} result={compareResult} />
 
-        {/* Recording Tips */}
         <div className="rounded-xl border border-blue-100 bg-[#f8fbff] p-5">
           <div className="mb-3 flex items-center gap-2 text-blue-600">
             <Lightbulb className="h-5 w-5 fill-blue-600" />

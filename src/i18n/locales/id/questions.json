@@ -8,7 +8,8 @@
     "enrolling": "Mendaftarkan suara…", "enrolled": "Suara terdaftar", "mismatchToast": "Ketidakcocokan suara terdeteksi. Pastikan Anda menggunakan suara terdaftar Anda.", "compareFailed": "Perbandingan suara gagal.",
     "recordAnswer": "Silakan rekam jawaban Anda untuk melanjutkan.", "startRecording": "Mulai Merekam", "stopRecording": "Hentikan Rekaman", "listen": "Dengarkan", "pause": "Jeda", "reRecord": "Rekam Ulang",
     "recordedStatus": "Audio berhasil direkam. Anda dapat mendengarkan atau merekam ulang.", "recordingStatus": "Perekaman sedang berlangsung…", "readyStatus": "Siap merekam kapan pun Anda mau",
-    "tipsTitle": "Tips Perekaman", "tip1": "Bicaralah dengan jelas dan dalam tempo normal", "tip2": "Pastikan mikrofon Anda tidak dalam mode bisu", "tip3": "Usahakan meminimalkan kebisingan latar belakang"
+    "tipsTitle": "Tips Perekaman", "tip1": "Bicaralah dengan jelas dan dalam tempo normal", "tip2": "Pastikan mikrofon Anda tidak dalam mode bisu", "tip3": "Usahakan meminimalkan kebisingan latar belakang", "preparing": "Menyiapkan mikrofon Anda…", "microphone": "Mikrofon", "microphoneFallback": "Mikrofon {{number}}", "inputLevel": "Level mikrofon",
+    "errors": { "micUnavailable": "Akses mikrofon ditolak atau tidak tersedia. Periksa izin browser lalu coba lagi.", "noSound": "Tidak ada suara yang terekam. Pastikan mikrofon terhubung dan tidak dibisukan, lalu rekam lagi.", "playbackFailed": "Rekaman Anda tidak dapat diputar. Silakan rekam ulang jawaban Anda." }
   },
   "shell": { "submittingFinal": "Mengirimkan jawaban akhir Anda...", "generatingNext": "Membuat Pertanyaan Wawancara Berikutnya...", "submitting": "Mengirimkan...", "submitInterview": "Kirim Wawancara", "nextQuestion": "Pertanyaan Berikutnya" },
   "loader": { "preparing": "Menyiapkan pertanyaan berikutnya…" }
