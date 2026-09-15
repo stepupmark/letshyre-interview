@@ -337,14 +337,18 @@ describe("useViolationMonitor modal lifecycle", () => {
 
     act(() => result.current.handleAiViolation(hardViolation));
     act(() => vi.advanceTimersByTime(20_000));
-    act(() => result.current.handleAiViolation(hardViolation));
 
+    let outcome;
+    act(() => {
+      outcome = result.current.handleAiViolation(hardViolation);
+    });
+
+    expect(outcome).toBe("suppressed");
     expect(incrementViolation).toHaveBeenCalledTimes(1);
-    expect(result.current.showTabWarning).toBe(true);
-    expect(result.current.violationInfo.counts).toBe(false);
+    expect(result.current.showTabWarning).toBe(false);
   });
 
-  it("shows a held-back strike as a warning modal instead of a toast", () => {
+  it("shows nothing for a held-back strike that is not an object in view", () => {
     const { result, incrementViolation } = setup();
 
     act(() => result.current.handleAiViolation(hardViolation));
@@ -356,25 +360,51 @@ describe("useViolationMonitor modal lifecycle", () => {
       outcome = result.current.handleAiViolation(hardViolation);
     });
 
-    expect(outcome).toBe("warned");
+    expect(outcome).toBe("cooldown");
     expect(incrementViolation).toHaveBeenCalledTimes(1);
-    expect(result.current.showTabWarning).toBe(true);
-    expect(result.current.violationInfo.counts).toBe(false);
+    expect(result.current.showTabWarning).toBe(false);
     expect(toast.warning).not.toHaveBeenCalled();
+  });
+
+  it("does not hold back strikes after a warning closes itself", () => {
+    const { result, incrementViolation } = setup();
+    const phone = {
+      ...hardViolation,
+      type: "PROHIBITED_OBJECT:cell phone",
+      incident: true,
+      remindWhileHeld: true,
+    };
+
+    act(() => result.current.handleAiViolation({ ...phone, incidentStartedAt: 0 }));
+    act(() => result.current.dismissWarning());
+    act(() => result.current.handleAiViolation({ ...phone, ongoing: true, incidentStartedAt: 0 }));
+    act(() => vi.advanceTimersByTime(20_000));
+    expect(result.current.showTabWarning).toBe(false);
+
+    act(() => result.current.handleAiViolation({ ...hardViolation, type: "TAB_SWITCH" }));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 
   it("upgrades an open warning to a strike once one is admissible", () => {
     const { result, incrementViolation } = setup();
+    const phone = {
+      ...hardViolation,
+      type: "PROHIBITED_OBJECT:cell phone",
+      incident: true,
+      remindWhileHeld: true,
+      incidentStartedAt: Date.now(),
+    };
 
-    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => result.current.handleAiViolation(phone));
     act(() => result.current.dismissWarning());
     act(() => vi.advanceTimersByTime(16_000));
-    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => result.current.handleAiViolation({ ...phone, ongoing: true }));
+    expect(result.current.violationInfo.counts).toBe(true);
     act(() => vi.advanceTimersByTime(15_000));
 
     let outcome;
     act(() => {
-      outcome = result.current.handleAiViolation(hardViolation);
+      outcome = result.current.handleAiViolation({ ...phone, ongoing: true });
     });
 
     expect(outcome).toBe("raised");
@@ -473,6 +503,7 @@ describe("useViolationMonitor modal lifecycle", () => {
     key: "PROHIBITED_OBJECT:cell phone",
     label: "cell phone",
     incident: true,
+    remindWhileHeld: true,
     titleKey: "violations.prohibitedObject.title",
     descriptionKey: "violations.prohibitedObject.description",
   };
@@ -505,6 +536,23 @@ describe("useViolationMonitor modal lifecycle", () => {
     expect(result.current.violationInfo.counts).toBe(true);
 
     act(() => result.current.handleAiViolation(laptopIncident));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("counts a candidate who stays away once per interval without warnings between", () => {
+    const { result, incrementViolation } = setup();
+    const away = { ...hardViolation, type: "NO_FACE", incident: true, incidentStartedAt: 0 };
+    const shown = [];
+
+    for (let ms = 0; ms <= 45_000; ms += 1_000) {
+      act(() => {
+        const outcome = result.current.handleAiViolation({ ...away, ongoing: ms > 0 });
+        if (outcome === "raised") shown.push(ms);
+      });
+      act(() => vi.advanceTimersByTime(1_000));
+    }
+
+    expect(shown).toEqual([0, 30_000]);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 });

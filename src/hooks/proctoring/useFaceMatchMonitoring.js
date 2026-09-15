@@ -6,11 +6,6 @@ import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { violationCopy } from "@/lib/violationCopy";
 import { recordViolationEvent } from "@/lib/violationLog";
 
-// Raised from here as well as from detection. The two services run different
-// models and disagree often enough that leaving these to detection alone let a
-// frame go unwarned. The shared strike policy de-duplicates whichever is second.
-const RAISED_CONDITIONS = new Set(["NO_FACE", "MULTIPLE_FACES"]);
-
 const MAX_UNAVAILABLE = 3;
 
 // `violation` carries two unrelated things. These are identity verdicts; the
@@ -133,15 +128,9 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
       return;
     }
 
+    // Detection owns face presence; raising it here too struck the same frame twice.
     if (verdict === "condition") {
       report("condition", { condition: reason });
-      if (RAISED_CONDITIONS.has(reason)) {
-        onViolationRef.current?.({
-          type: reason,
-          ...violationCopy(reason),
-          detail: { origin: "face_match" },
-        });
-      }
       return;
     }
 
@@ -176,6 +165,13 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
       }
 
       if (!sample?.file || inFlightRef.current) return;
+
+      // Without exactly one face the comparison can't mean anything, and a
+      // mismatch read from it would end the interview of someone who leaned away.
+      if (sample.faceCount !== undefined && sample.faceCount !== 1) {
+        streakRef.current = 0;
+        return;
+      }
 
       // A blind stretch breaks the evidence chain. The threshold follows the
       // cadence actually in use, or a detection backoff would look like a gap

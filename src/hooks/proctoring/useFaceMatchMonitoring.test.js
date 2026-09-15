@@ -298,34 +298,40 @@ describe("useFaceMatchMonitoring", () => {
     expect(autoSubmit).not.toHaveBeenCalled();
   });
 
-  it("raises the multiple-people warning with its own artwork", async () => {
+  it.each([
+    ["no face", NO_FACE],
+    ["multiple faces", MULTIPLE_FACES],
+  ])("leaves a %s condition to detection", async (_label, response) => {
     const { onViolation, sample } = setup();
-
-    await sample(MULTIPLE_FACES, 1);
-
-    expect(onViolation).toHaveBeenCalledTimes(1);
-    expect(onViolation).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "MULTIPLE_FACES",
-        imagePath: "/multi-people.png",
-        titleKey: "violations.multipleFaces.title",
-      }),
-    );
+    await sample(response, 3);
+    expect(onViolation).not.toHaveBeenCalled();
   });
 
-  it("warns on a no-face frame rather than waiting for detection to agree", async () => {
-    const { onViolation, sample } = setup();
+  it("skips a frame where detection did not see exactly one face", async () => {
+    const { autoSubmit, onViolation, result } = setup();
 
-    await sample(NO_FACE, 1);
+    for (const faceCount of [0, 2]) {
+      await act(async () => {
+        await result.current.verifySample({ ...SAMPLE, faceCount, capturedAt: 5000 });
+      });
+    }
 
-    expect(onViolation).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "NO_FACE",
-        imagePath: "/no-candidate.png",
-        titleKey: "violations.noFace.title",
-        detail: { origin: "face_match" },
-      }),
-    );
+    expect(mutateAsync).not.toHaveBeenCalled();
+    expect(onViolation).not.toHaveBeenCalled();
+    expect(autoSubmit).not.toHaveBeenCalled();
+  });
+
+  it("breaks the streak when the face leaves the frame", async () => {
+    const { autoSubmit, sample, result } = setup();
+
+    await sample(MISMATCH, 1);
+    await act(async () => {
+      await result.current.verifySample({ ...SAMPLE, faceCount: 0, capturedAt: 10000 });
+    });
+    await sample(MISMATCH, 1);
+
+    expect(result.current.mismatchCount).toBe(1);
+    expect(autoSubmit).not.toHaveBeenCalled();
   });
 
   it("stops verifying once the session is repeatedly rejected", async () => {
@@ -396,16 +402,6 @@ describe("useFaceMatchMonitoring", () => {
     await sample(MISMATCH, 2, BACKED_OFF);
 
     await waitFor(() => expect(autoSubmit).toHaveBeenCalledTimes(1));
-  });
-
-  it("tells the log which model saw the second person", async () => {
-    const { onViolation, sample } = setup();
-
-    await sample(MULTIPLE_FACES, 1);
-
-    expect(onViolation).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: { origin: "face_match" } }),
-    );
   });
 
   it("records once that the interview ran without a registered face", async () => {

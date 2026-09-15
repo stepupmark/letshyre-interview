@@ -98,8 +98,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   // values via refs) so the once-registered document listeners and the
   // AI/Electron handlers can all share it without re-binding.
   //
-  // countsAsViolation=false shows the modal without adding a strike. A counting
-  // violation whose strike is held back still shows the modal, as a warning.
+  // countsAsViolation=false shows the modal without adding a strike. A held-back
+  // strike shows a warning only when remindWhileHeld is set.
   // Single gate for every violation, whatever raised it. Returns the outcome so
   // the AI loop knows whether its evidence was actually spent.
   const raiseViolation = useCallback(
@@ -115,6 +115,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       ongoing = false,
       incident = false,
       incidentStartedAt,
+      remindWhileHeld = false,
       finalWarning,
     }) => {
       const key = type ?? titleKey;
@@ -162,9 +163,11 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       });
 
       if (outcome !== "raised") {
-        // Non-counting warnings keep their cooldown, or furniture would nag on
-        // every sample.
-        if (warningOpen || !countsAsViolation || !titleKey) return report(outcome);
+        // Only an object in view gets a reminder. A held-back absence or tab
+        // switch re-showing on every sample reads as strikes that never count.
+        if (warningOpen || !countsAsViolation || !remindWhileHeld || !titleKey) {
+          return report(outcome);
+        }
         // An object still in view after its strike shows that strike's count, so
         // the candidate can see it was not skipped.
         const counted = incident && policyRef.current.struckWithin(key);
@@ -233,8 +236,9 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     if (!showTabWarning) return;
 
     const timer = setTimeout(() => {
+      const wasStrike = openBlocksRef.current;
       closeWarning();
-      policyRef.current.suppressFor(AUTO_DISMISS_GRACE_MS);
+      if (wasStrike) policyRef.current.suppressFor(AUTO_DISMISS_GRACE_MS);
       if (!document.fullscreenElement) setNeedsFullscreen(true);
     }, AUTO_DISMISS_MS);
 
@@ -265,6 +269,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         ongoing: violation.ongoing,
         incident: violation.incident,
         incidentStartedAt: violation.incidentStartedAt,
+        remindWhileHeld: violation.remindWhileHeld,
         titleKey: violation.titleKey,
         descriptionKey: violation.descriptionKey,
         imagePath: violation.imagePath,

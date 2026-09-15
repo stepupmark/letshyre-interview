@@ -186,6 +186,7 @@ function objectViolation({ label, best, count }) {
     detection: best.object,
     shadow: SHADOW_LABELS.has(label),
     incident: true,
+    remindWhileHeld: true,
     ...(isEnvironment ? { countsAsViolation: false } : {}),
   };
 }
@@ -207,11 +208,11 @@ export function detectViolations(result, classified) {
   // YOLO's person count gets a say too.
   const multiplePeople = result.face_count > 1 || result.yolo_person_count > 1;
   if (multiplePeople) {
-    return [{ type: "MULTIPLE_FACES", ...violationCopy("MULTIPLE_FACES") }];
+    return [{ type: "MULTIPLE_FACES", ...violationCopy("MULTIPLE_FACES"), incident: true }];
   }
 
   if (!result.face_detected) {
-    return [{ type: "NO_FACE", ...violationCopy("NO_FACE") }];
+    return [{ type: "NO_FACE", ...violationCopy("NO_FACE"), incident: true }];
   }
 
   const objects =
@@ -439,7 +440,9 @@ export function useProctoringSystem(
     }
 
     busyRef.current = true;
-    onSampleRef.current?.({ ...sample, intervalMs: intervalRef.current });
+    // Verification waits for detection so it only compares frames with one face.
+    // Unknown when detection fails, so identity still runs through an outage.
+    let faceCount;
 
     try {
       logger.log("[Proctoring] 🤖 Sending frame to AI detection API…");
@@ -458,6 +461,9 @@ export function useProctoringSystem(
         return;
       }
       recordSuccess();
+      faceCount = cleanResult.face_detected
+        ? Math.max(cleanResult.face_count ?? 1, cleanResult.yolo_person_count ?? 0, 1)
+        : 0;
 
       queueRef.current.push({
         timestamp: new Date().toISOString(),
@@ -512,6 +518,9 @@ export function useProctoringSystem(
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
       recordFailure(err?.message || "request_failed");
     } finally {
+      if (isActiveRef.current) {
+        onSampleRef.current?.({ ...sample, intervalMs: intervalRef.current, faceCount });
+      }
       busyRef.current = false;
       scheduleNext();
     }
