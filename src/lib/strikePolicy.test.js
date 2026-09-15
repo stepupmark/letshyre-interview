@@ -68,4 +68,19 @@ describe("createStrikePolicy", () => {
     policy.reset();
     expect(policy.admit("TAB_SWITCH", { now: 1_000 })).toBe("raised");
   });
+
+  it("holds the base cooldown while a condition never cleared", () => {
+    const policy = createStrikePolicy();
+    expect(policy.admit("NO_FACE", { now: 0 })).toBe("raised");
+    expect(policy.admit("NO_FACE", { ongoing: true, now: 30_000 })).toBe("raised");
+    expect(policy.admit("NO_FACE", { ongoing: true, now: 60_000 })).toBe("raised");
+  });
+
+  it("still backs off when a violation clears and comes back", () => {
+    const policy = createStrikePolicy();
+    expect(policy.admit("NO_FACE", { now: 0 })).toBe("raised");
+    expect(policy.admit("NO_FACE", { now: 30_000 })).toBe("raised");
+    expect(policy.admit("NO_FACE", { now: 60_000 })).toBe("cooldown");
+    expect(policy.admit("NO_FACE", { now: 90_000 })).toBe("raised");
+  });
 });

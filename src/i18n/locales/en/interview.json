@@ -133,6 +133,10 @@
       "tv": "screen",
       "book": "book",
       "unknown": "prohibited device"
+    },
+    "faceMismatch": {
+      "title": "Identity Check Failed",
+      "description": "We could not confirm it is still you on camera. Make sure your face is clearly visible and well lit."
     }
   },
   "termination": {
@@ -146,7 +150,7 @@
     "faceMismatch": {
       "title": "Interview Ended",
       "pill": "Identity check failed",
-      "description": "We could not confirm it was still you on camera. Your interview has been submitted with the answers you completed."
+      "description": "Identity verification failed on {{faceMismatches}} checks in a row, so we could not confirm it was still you on camera. Your interview has been submitted with the answers you completed."
     },
     "networkDisconnects": {
       "title": "Interview Ended",

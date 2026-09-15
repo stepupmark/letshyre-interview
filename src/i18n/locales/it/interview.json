@@ -39,7 +39,8 @@
     "warning": "Avviso",
     "defaultTitle": "Avviso di cambio finestra",
     "defaultDescription": "L'uscita dalla schermata del colloquio viene registrata come violazione",
-    "defaultButtonText": "Ho capito, torna al colloquio"
+    "defaultButtonText": "Ho capito, torna al colloquio",
+    "finalWarning": "Questo è il tuo ultimo avviso. Un'altra violazione terminerà il colloquio."
   },
   "autoSubmitLoader": {
     "noInternet": "Nessuna connessione Internet",
@@ -65,5 +66,45 @@
     "waitingError": "Tocchi \"Riprova\" per inviare di nuovo. I suoi progressi sono al sicuro.",
     "waitingSuccess": "Reindirizzamento ai suoi risultati…",
     "waitingSubmitting": "Attenda, non chiuda né aggiorni questa pagina."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "Verifica dell'identità non riuscita",
+      "description": "Non abbiamo potuto confermare che sei ancora tu davanti alla fotocamera. Assicurati che il viso sia ben visibile e illuminato."
+    }
+  },
+  "termination": {
+    "acknowledge": "Ho capito",
+    "countdown": "Prosecuzione automatica tra {{count}}s",
+    "violationLimit": {
+      "title": "Colloquio terminato",
+      "pill": "Violazioni delle regole",
+      "description": "Hai raggiunto {{violations}} violazioni. Il colloquio è stato inviato con le risposte completate."
+    },
+    "faceMismatch": {
+      "title": "Colloquio terminato",
+      "pill": "Verifica dell'identità non riuscita",
+      "description": "La verifica dell'identità non è riuscita per {{faceMismatches}} controlli consecutivi, quindi non abbiamo potuto confermare che fossi ancora tu davanti alla fotocamera. Il colloquio è stato inviato con le risposte completate."
+    },
+    "networkDisconnects": {
+      "title": "Colloquio terminato",
+      "pill": "Connessione persa",
+      "description": "La connessione è caduta {{disconnects}} volte. Il colloquio è stato inviato con le risposte completate."
+    },
+    "timeExpired": {
+      "title": "Tempo scaduto",
+      "pill": "Limite di tempo raggiunto",
+      "description": "Il tempo del colloquio è terminato. Le tue risposte sono state inviate."
+    },
+    "electronSecurity": {
+      "title": "Colloquio terminato",
+      "pill": "Violazione di sicurezza",
+      "description": "Una violazione della politica di sicurezza ha terminato il colloquio. È stato inviato con le risposte completate."
+    },
+    "generic": {
+      "title": "Colloquio terminato",
+      "pill": "Inviato automaticamente",
+      "description": "Il colloquio è stato inviato con le risposte completate."
+    }
   }
 }

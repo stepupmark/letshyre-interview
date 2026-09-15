@@ -39,7 +39,8 @@
     "warning": "Peringatan",
     "defaultTitle": "Peringatan Perpindahan Jendela",
     "defaultDescription": "Berpindah dari layar wawancara sedang dicatat sebagai pelanggaran",
-    "defaultButtonText": "Saya Mengerti, Kembali ke Wawancara"
+    "defaultButtonText": "Saya Mengerti, Kembali ke Wawancara",
+    "finalWarning": "Ini peringatan terakhir Anda. Satu pelanggaran lagi akan mengakhiri wawancara Anda."
   },
   "autoSubmitLoader": {
     "noInternet": "Tidak Ada Koneksi Internet",
@@ -65,5 +66,45 @@
     "waitingError": "Ketuk \"Coba Lagi\" untuk mengirim ulang. Progres Anda aman.",
     "waitingSuccess": "Mengalihkan ke hasil Anda…",
     "waitingSubmitting": "Mohon tunggu, jangan tutup atau muat ulang halaman ini."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "Verifikasi Identitas Gagal",
+      "description": "Kami tidak dapat memastikan bahwa ini masih Anda di kamera. Pastikan wajah Anda terlihat jelas dan cukup cahaya."
+    }
+  },
+  "termination": {
+    "acknowledge": "Saya Mengerti",
+    "countdown": "Lanjut otomatis dalam {{count}}d",
+    "violationLimit": {
+      "title": "Wawancara Berakhir",
+      "pill": "Pelanggaran kebijakan",
+      "description": "Anda mencapai {{violations}} pelanggaran. Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
+    },
+    "faceMismatch": {
+      "title": "Wawancara Berakhir",
+      "pill": "Verifikasi identitas gagal",
+      "description": "Verifikasi identitas gagal {{faceMismatches}} kali berturut-turut, sehingga kami tidak dapat memastikan bahwa itu masih Anda di kamera. Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
+    },
+    "networkDisconnects": {
+      "title": "Wawancara Berakhir",
+      "pill": "Koneksi terputus",
+      "description": "Koneksi Anda terputus {{disconnects}} kali. Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
+    },
+    "timeExpired": {
+      "title": "Waktu Habis",
+      "pill": "Batas waktu tercapai",
+      "description": "Waktu wawancara Anda telah berakhir. Jawaban Anda telah dikirim."
+    },
+    "electronSecurity": {
+      "title": "Wawancara Berakhir",
+      "pill": "Pelanggaran keamanan",
+      "description": "Pelanggaran kebijakan keamanan mengakhiri wawancara Anda. Wawancara dikirim beserta jawaban yang telah diselesaikan."
+    },
+    "generic": {
+      "title": "Wawancara Berakhir",
+      "pill": "Dikirim otomatis",
+      "description": "Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
+    }
   }
 }

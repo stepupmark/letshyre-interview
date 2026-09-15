@@ -17,6 +17,10 @@ const AUTO_DISMISS_MS = 20_000;
 // so leave a gap rather than letting the next event land immediately.
 const AUTO_DISMISS_GRACE_MS = 10_000;
 
+// Outcomes that stop a confirmed violation without telling the candidate
+// anything. A modal is excluded because one is already on screen.
+const SILENT_OUTCOMES = new Set(["cooldown", "strike_interval", "suppressed"]);
+
 // Leaving fullscreen resizes the window, so the resize handler fires right
 // behind fullscreenchange. Without this the candidate is struck twice for one
 // action.
@@ -109,6 +113,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       descriptionKey,
       imagePath,
       countsAsViolation = true,
+      ongoing = false,
+      finalWarning,
     }) => {
       const key = type ?? titleKey;
 
@@ -127,8 +133,23 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       if (!isActiveRef.current) return report("inactive");
       if (isWarningOpenRef.current) return report("modal_open");
 
-      const outcome = policyRef.current.admit(key, { countsAsStrike: countsAsViolation });
-      if (outcome !== "raised") return report(outcome);
+      const outcome = policyRef.current.admit(key, {
+        countsAsStrike: countsAsViolation,
+        ongoing,
+      });
+      if (outcome !== "raised") {
+        // A strike held back by a cooldown used to reach the candidate as
+        // nothing at all, so a condition that never cleared went quiet for a
+        // minute and then ended the interview. The id keeps one toast per type
+        // rather than a stack of them.
+        if (SILENT_OUTCOMES.has(outcome) && titleKey) {
+          toast.warning(tRef.current(titleKey), {
+            id: `violation-${key}`,
+            description: descriptionKey ? tRef.current(descriptionKey) : undefined,
+          });
+        }
+        return report(outcome);
+      }
 
       isWarningOpenRef.current = true;
       const violationCount = countsAsViolation
@@ -151,6 +172,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         label,
         violationCount,
         counts: countsAsViolation,
+        finalWarning,
       });
       setShowTabWarning(true);
       return report("raised", violationCount);
@@ -226,10 +248,12 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         source: "ai",
         label: violation.label,
         detail: violation.detail,
+        ongoing: violation.ongoing,
         titleKey: violation.titleKey,
         descriptionKey: violation.descriptionKey,
         imagePath: violation.imagePath,
         countsAsViolation: violation.countsAsViolation !== false,
+        finalWarning: violation.finalWarning,
       });
     },
     [raiseViolation],

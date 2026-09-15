@@ -39,7 +39,8 @@
     "warning": "警告",
     "defaultTitle": "ウィンドウ切り替え警告",
     "defaultDescription": "面接画面から離れる操作は違反として記録されています",
-    "defaultButtonText": "理解しました。面接に戻ります"
+    "defaultButtonText": "理解しました。面接に戻ります",
+    "finalWarning": "これが最終警告です。次に違反があると面接は終了します。"
   },
   "autoSubmitLoader": {
     "noInternet": "インターネット接続がありません",
@@ -65,5 +66,45 @@
     "waitingError": "再送信するには「再試行」をタップしてください。進捗は保存されています。",
     "waitingSuccess": "結果ページへ移動しています…",
     "waitingSubmitting": "このページを閉じたり更新したりせず、そのままお待ちください。"
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "本人確認に失敗しました",
+      "description": "カメラに映っているのが本人かどうか確認できませんでした。顔がはっきり見えるよう、明るい場所で撮影してください。"
+    }
+  },
+  "termination": {
+    "acknowledge": "了解しました",
+    "countdown": "{{count}}秒後に自動的に進みます",
+    "violationLimit": {
+      "title": "面接終了",
+      "pill": "ポリシー違反",
+      "description": "違反が{{violations}}件に達しました。回答済みの内容で面接を送信しました。"
+    },
+    "faceMismatch": {
+      "title": "面接終了",
+      "pill": "本人確認に失敗",
+      "description": "本人確認が{{faceMismatches}}回連続で失敗したため、カメラに映っているのが本人か確認できませんでした。回答済みの内容で面接を送信しました。"
+    },
+    "networkDisconnects": {
+      "title": "面接終了",
+      "pill": "接続が切断されました",
+      "description": "接続が{{disconnects}}回切断されました。回答済みの内容で面接を送信しました。"
+    },
+    "timeExpired": {
+      "title": "時間切れ",
+      "pill": "制限時間に到達",
+      "description": "面接の時間が終了しました。回答は送信されました。"
+    },
+    "electronSecurity": {
+      "title": "面接終了",
+      "pill": "セキュリティ違反",
+      "description": "セキュリティポリシー違反により面接が終了しました。回答済みの内容で送信されました。"
+    },
+    "generic": {
+      "title": "面接終了",
+      "pill": "自動送信",
+      "description": "回答済みの内容で面接を送信しました。"
+    }
   }
 }

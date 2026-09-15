@@ -25,7 +25,7 @@ import { useElectronViolation } from "@hooks/electron/useElectronViolation";
 import { useInterviewComplete } from "@hooks/electron/useInterviewComplete";
 import { useElectronScreenRecording } from "@hooks/electron/useElectronScreenRecording";
 import { useRegisterFace } from "@mutations/useRegisterFace";
-import { captureFrameFile, dataUrlToFile } from "@/lib/videoCapture";
+import { dataUrlToFile } from "@/lib/videoCapture";
 import { logger } from "@/lib/logger";
 
 export function Interview() {
@@ -63,7 +63,6 @@ export function Interview() {
     sessionViolations: session?.violations ?? 0,
   });
 
-  // videoRef declared before captureImage to avoid TDZ risk.
   const videoRef = useRef(null);
 
   // Face match monitoring must not start until the reference face is registered.
@@ -76,13 +75,10 @@ export function Interview() {
 
   const registerFaceMutation = useRegisterFace(session?.session_id);
 
-  // Full-resolution frame as a File for face-match verification.
-  const captureImage = useCallback(() => captureFrameFile(videoRef.current, "frame.jpg"), []);
-
-  useFaceMatchMonitoring({
+  const { verifySample, isVerificationUnavailable } = useFaceMatchMonitoring({
     sessionId: session?.session_id,
-    captureImage,
     autoSubmit,
+    onViolation: handleAiViolation,
     isReady: isFaceRegistered,
   });
 
@@ -116,7 +112,7 @@ export function Interview() {
     }
   }, []);
 
-  //Central Proctoring System
+  // Owns the only camera clock; face verification reads the frames it samples.
   const { isDegraded: isProctoringDegraded } = useProctoringSystem(
     videoRef,
     session?.interview_id,
@@ -124,6 +120,7 @@ export function Interview() {
     isActive,
     session?.proctoring_token,
     handleAiViolation,
+    verifySample,
   );
 
   const {
@@ -153,11 +150,11 @@ export function Interview() {
   }, [needsFullscreen, restoreFullscreen]);
 
   useEffect(() => {
-    if (!isProctoringDegraded) return;
+    if (!isProctoringDegraded && !isVerificationUnavailable) return;
     toast.warning("Proctoring checks are temporarily unavailable.", {
       description: "Your session is still being recorded. Stay in front of the camera.",
     });
-  }, [isProctoringDegraded]);
+  }, [isProctoringDegraded, isVerificationUnavailable]);
 
   useElectronViolation({
     onHardBlock: handleElectronViolation,
@@ -313,6 +310,7 @@ export function Interview() {
         descriptionKey={violationInfo.descriptionKey}
         imagePath={violationInfo.imagePath}
         label={violationInfo.label}
+        finalWarning={violationInfo.finalWarning}
       />
     </div>
   );

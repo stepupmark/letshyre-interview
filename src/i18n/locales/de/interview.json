@@ -39,7 +39,8 @@
     "warning": "Warnung",
     "defaultTitle": "Warnung: Fensterwechsel",
     "defaultDescription": "Das Verlassen des Interviewbildschirms wird als Verstoß protokolliert",
-    "defaultButtonText": "Verstanden, zurück zum Interview"
+    "defaultButtonText": "Verstanden, zurück zum Interview",
+    "finalWarning": "Dies ist Ihre letzte Warnung. Ein weiterer Verstoß beendet Ihr Interview."
   },
   "autoSubmitLoader": {
     "noInternet": "Keine Internetverbindung",
@@ -65,5 +66,45 @@
     "waitingError": "Tippen Sie auf „Erneut versuchen“, um erneut zu übermitteln. Ihr Fortschritt ist sicher.",
     "waitingSuccess": "Weiterleitung zu Ihren Ergebnissen…",
     "waitingSubmitting": "Bitte warten Sie, schließen oder aktualisieren Sie diese Seite nicht."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "Identitätsprüfung fehlgeschlagen",
+      "description": "Wir konnten nicht bestätigen, dass Sie noch vor der Kamera sind. Achten Sie auf ein gut sichtbares, gut beleuchtetes Gesicht."
+    }
+  },
+  "termination": {
+    "acknowledge": "Verstanden",
+    "countdown": "Automatisch weiter in {{count}}s",
+    "violationLimit": {
+      "title": "Interview beendet",
+      "pill": "Richtlinienverstöße",
+      "description": "Sie haben {{violations}} Verstöße erreicht. Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
+    },
+    "faceMismatch": {
+      "title": "Interview beendet",
+      "pill": "Identitätsprüfung fehlgeschlagen",
+      "description": "Die Identitätsprüfung ist {{faceMismatches}} Mal hintereinander fehlgeschlagen, daher konnten wir nicht bestätigen, dass Sie noch vor der Kamera sind. Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
+    },
+    "networkDisconnects": {
+      "title": "Interview beendet",
+      "pill": "Verbindung verloren",
+      "description": "Ihre Verbindung ist {{disconnects}} Mal abgebrochen. Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
+    },
+    "timeExpired": {
+      "title": "Zeit abgelaufen",
+      "pill": "Zeitlimit erreicht",
+      "description": "Ihre Interviewzeit ist abgelaufen. Ihre Antworten wurden eingereicht."
+    },
+    "electronSecurity": {
+      "title": "Interview beendet",
+      "pill": "Sicherheitsverstoß",
+      "description": "Ein Verstoß gegen die Sicherheitsrichtlinie hat Ihr Interview beendet. Es wurde mit den bereits gegebenen Antworten eingereicht."
+    },
+    "generic": {
+      "title": "Interview beendet",
+      "pill": "Automatisch eingereicht",
+      "description": "Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
+    }
   }
 }

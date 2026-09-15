@@ -14,7 +14,8 @@ const num = (value, fallback) => {
 // allowed before the interview is auto-submitted.
 export const MAX_VIOLATIONS = num(import.meta.env.VITE_AI_MAX_VIOLATIONS_ALLOWED, 3);
 
-// Consecutive face mismatches allowed before auto-submit.
+// Consecutive mismatching frames before auto-submit. Anything that isn't a
+// verdict — a no-face frame, an error, a failed call — resets the streak.
 export const FACE_MISMATCH_LIMIT = num(import.meta.env.VITE_AI_FACE_MISMATCH_LIMIT, 2);
 
 // Internet disconnects allowed before auto-submit. Tracked separately from
@@ -34,6 +35,11 @@ export const INTERVIEW_DURATION_MINUTES = num(
   15,
 );
 
+// Confidence an object detection must carry before it can become a violation.
+// The detector's own list is trusted above this; below it the box is logged and
+// dropped. Raise it if cluttered rooms start producing false warnings.
+export const OBJECT_CONFIDENCE_FLOOR = num(import.meta.env.VITE_AI_OBJECT_CONFIDENCE_FLOOR, 0.35);
+
 // Laptops are a live proctoring concern but the highest false-positive label in
 // the set — YOLO reads TVs, picture frames and shelves as one. Kill switch so
 // enforcement can be pulled without a redeploy.
@@ -42,7 +48,7 @@ export const PROHIBIT_LAPTOP = import.meta.env.VITE_AI_PROHIBIT_LAPTOP !== "fals
 // Labels detected and logged but never surfaced to the candidate, so a new rule
 // can be measured against real interviews before it starts ending them.
 export const SHADOW_LABELS = new Set(
-  (import.meta.env.VITE_AI_SHADOW_LABELS ?? "laptop,tv")
+  (import.meta.env.VITE_AI_SHADOW_LABELS ?? "tv")
     .split(",")
     .map((label) => label.trim().toLowerCase())
     .filter(Boolean),

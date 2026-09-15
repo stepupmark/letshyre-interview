@@ -39,7 +39,8 @@
     "warning": "Waarschuwing",
     "defaultTitle": "Waarschuwing: venster gewisseld",
     "defaultDescription": "Het verlaten van het interviewscherm wordt geregistreerd als een overtreding",
-    "defaultButtonText": "Ik begrijp het, terug naar interview"
+    "defaultButtonText": "Ik begrijp het, terug naar interview",
+    "finalWarning": "Dit is uw laatste waarschuwing. Nog één overtreding beëindigt uw interview."
   },
   "autoSubmitLoader": {
     "noInternet": "Geen internetverbinding",
@@ -65,5 +66,45 @@
     "waitingError": "Tik op \"Opnieuw proberen\" om opnieuw in te dienen. Uw voortgang is veilig.",
     "waitingSuccess": "U wordt doorgestuurd naar uw resultaten…",
     "waitingSubmitting": "Wacht alstublieft, sluit deze pagina niet en ververs deze niet."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "Identiteitscontrole mislukt",
+      "description": "We konden niet bevestigen dat u nog voor de camera zit. Zorg dat uw gezicht duidelijk zichtbaar en goed verlicht is."
+    }
+  },
+  "termination": {
+    "acknowledge": "Ik begrijp het",
+    "countdown": "Automatisch verder over {{count}}s",
+    "violationLimit": {
+      "title": "Interview beëindigd",
+      "pill": "Beleidsovertredingen",
+      "description": "U heeft {{violations}} overtredingen bereikt. Uw interview is ingediend met de antwoorden die u heeft voltooid."
+    },
+    "faceMismatch": {
+      "title": "Interview beëindigd",
+      "pill": "Identiteitscontrole mislukt",
+      "description": "De identiteitscontrole is {{faceMismatches}} keer achter elkaar mislukt, dus we konden niet bevestigen dat u nog voor de camera zat. Uw interview is ingediend met de antwoorden die u heeft voltooid."
+    },
+    "networkDisconnects": {
+      "title": "Interview beëindigd",
+      "pill": "Verbinding verbroken",
+      "description": "Uw verbinding is {{disconnects}} keer verbroken. Uw interview is ingediend met de antwoorden die u heeft voltooid."
+    },
+    "timeExpired": {
+      "title": "Tijd is om",
+      "pill": "Tijdslimiet bereikt",
+      "description": "Uw interviewtijd is voorbij. Uw antwoorden zijn ingediend."
+    },
+    "electronSecurity": {
+      "title": "Interview beëindigd",
+      "pill": "Beveiligingsovertreding",
+      "description": "Een overtreding van het beveiligingsbeleid heeft uw interview beëindigd. Het is ingediend met de antwoorden die u heeft voltooid."
+    },
+    "generic": {
+      "title": "Interview beëindigd",
+      "pill": "Automatisch ingediend",
+      "description": "Uw interview is ingediend met de antwoorden die u heeft voltooid."
+    }
   }
 }

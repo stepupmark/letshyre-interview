@@ -9,7 +9,9 @@
 
 const COOLDOWN_MS = 30_000;
 // Repeats of the same violation back off, so a candidate glancing at a phone on
-// their desk doesn't burn every strike inside a minute.
+// their desk doesn't burn every strike inside a minute. A condition that never
+// stopped is not a repeat, so it holds the base cooldown instead of sliding
+// into minutes of silence.
 const MAX_COOLDOWN_MS = 120_000;
 // Floor between strikes of ANY type, so one bad moment producing two different
 // violations can't burn two of the three allowed strikes in a few seconds.
@@ -32,7 +34,7 @@ export function createStrikePolicy(options = {}) {
   let suppressUntil = 0;
 
   return {
-    admit(type, { countsAsStrike = true, now = Date.now() } = {}) {
+    admit(type, { countsAsStrike = true, ongoing = false, now = Date.now() } = {}) {
       if (now < suppressUntil) return "suppressed";
 
       const previous = lastRaisedAt.get(type);
@@ -46,7 +48,8 @@ export function createStrikePolicy(options = {}) {
       }
 
       lastRaisedAt.set(type, now);
-      repeats.set(type, (repeats.get(type) ?? 0) + 1);
+      const seen = repeats.get(type) ?? 0;
+      repeats.set(type, ongoing ? Math.max(seen, 1) : seen + 1);
       if (countsAsStrike) lastStrikeAt = now;
 
       return "raised";

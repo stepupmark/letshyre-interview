@@ -1,9 +1,15 @@
+import { StrictMode } from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
 import { useInterviewSession } from "./useInterviewSession";
 
 const startMutateAsync = vi.fn();
 const submitMutateAsync = vi.fn();
 const autoSubmitMutateAsync = vi.fn();
+
+vi.mock("sonner", () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
 
 vi.mock("@mutations/useStartInterviewMutation", () => ({
   useStartInterviewMutation: () => ({
@@ -41,6 +47,8 @@ const FAKE_START_RESPONSE = {
 describe("useInterviewSession", () => {
   beforeEach(() => {
     sessionStorage.clear();
+    toast.error.mockClear();
+    toast.success.mockClear();
     startMutateAsync.mockReset();
     submitMutateAsync.mockReset();
     autoSubmitMutateAsync.mockReset();
@@ -134,5 +142,28 @@ describe("useInterviewSession", () => {
       afterTerminate = result.current.incrementViolation();
     });
     expect(afterTerminate).toBe(0);
+  });
+
+  it("raises one strike per disconnect, even though StrictMode replays updaters", async () => {
+    const { result } = renderHook(() => useInterviewSession(), { wrapper: StrictMode });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    toast.error.mockClear();
+
+    act(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+
+    await waitFor(() => expect(result.current.session.internet_disconnect_count).toBe(1));
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error.mock.calls[0][0]).toContain("Strike 1 of 3");
+
+    act(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+
+    await waitFor(() => expect(result.current.session.internet_disconnect_count).toBe(2));
+    expect(toast.error).toHaveBeenCalledTimes(2);
+    expect(toast.error.mock.calls[1][0]).toContain("Strike 2 of 3");
   });
 });

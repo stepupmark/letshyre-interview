@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
-import { captureFrameBase64 } from "@/lib/videoCapture";
+import { captureSample } from "@/lib/videoCapture";
+import { violationCopy } from "@/lib/violationCopy";
 import { createViolationStabilizer } from "@/lib/violationStabilizer";
 import { createBaselineTracker } from "@/lib/baselineTracker";
-import { PROHIBIT_LAPTOP, SHADOW_LABELS } from "@/config/interview";
+import { OBJECT_CONFIDENCE_FLOOR, PROHIBIT_LAPTOP, SHADOW_LABELS } from "@/config/interview";
 import { recordViolationEvent, subscribeToViolationLog } from "@/lib/violationLog";
 import { logger } from "@/lib/logger";
 
@@ -16,12 +17,12 @@ const TARGET_HEIGHT = 480;
 const MAX_BACKOFF_MS = 40_000;
 const DEGRADED_AFTER_FAILURES = 3;
 
-// A held object can appear and vanish between two 5s samples, so a candidate
-// detection pulls the next couple in close. Faces don't need this — a person
-// who left or joined the frame is still there at the next regular sample.
+// A violation can appear and vanish between two 5s samples, so a candidate
+// detection pulls the next couple in close and confirmation lands a second
+// later instead of five. Soft signals are noisy and not worth the request rate.
 const BURST_INTERVAL_MS = 1_000;
 const BURST_SAMPLES = 2;
-const BURST_TYPES = new Set(["PROHIBITED_OBJECT"]);
+export const BURST_TYPES = new Set(["PROHIBITED_OBJECT", "MULTIPLE_FACES", "NO_FACE"]);
 
 // Without a cap a phone left on the desk holds the loop at 1s for the rest of
 // the interview, at five times the request rate.
@@ -34,7 +35,7 @@ const CAMERA_GRACE_TICKS = 3;
 
 // Past this much unobserved time the room may have been rearranged, and the
 // tracker's own records have expired, so the baseline is seeded again.
-const RESEED_AFTER_GAP_MS = 20_000;
+export const RESEED_AFTER_GAP_MS = 20_000;
 
 // fetch(keepalive) caps the body at 64KB. Oldest records are dropped first so a
 // too-large tail degrades to a partial log instead of no log at all.
@@ -81,15 +82,16 @@ export function sendUnloadFlush(url, payload) {
   }
 }
 
-// Per class, because YOLO confidence is not comparable across labels or object
-// sizes. The area floor drops sub-pixel boxes without touching real detections.
+// The area floor drops sub-pixel boxes without touching real detections, and
+// maxBaselineAreaRatio stops something filling the lens from passing as
+// furniture. Class ids are the 80-class COCO set the detector reports.
 const PROHIBITED_OBJECTS = {
   // A phone is never part of the room, so it can't earn furniture status the
   // way a monitor or a bookshelf can.
-  "cell phone": { classId: 67, canBaseline: false, minConfidence: 0.5, minAreaRatio: 0.004 },
-  laptop: { classId: 63, minConfidence: 0.6, minAreaRatio: 0.005 },
-  tv: { classId: 62, minConfidence: 0.6, minAreaRatio: 0.01 },
-  book: { classId: 84, minConfidence: 0.55, minAreaRatio: 0.01 },
+  "cell phone": { classId: 67, canBaseline: false, minAreaRatio: 0.004 },
+  laptop: { classId: 63, minAreaRatio: 0.005, maxBaselineAreaRatio: 0.25 },
+  tv: { classId: 62, minAreaRatio: 0.01, maxBaselineAreaRatio: 0.25 },
+  book: { classId: 73, minAreaRatio: 0.01, maxBaselineAreaRatio: 0.25 },
 };
 
 // class_id survives a model relabelling; the label string doesn't.
@@ -101,13 +103,6 @@ export function canonicalLabel(object) {
   return LABEL_BY_CLASS_ID.get(object?.class_id) ?? object?.label?.toLowerCase() ?? null;
 }
 
-// Confidence on a murky frame is worth less than the same number on a clean
-// one, so the floor rises as quality drops. A box covering a good chunk of the
-// frame is unambiguous either way and skips the penalty.
-const QUALITY_REFERENCE = 0.5;
-const QUALITY_PENALTY = 0.3;
-const AREA_OVERRIDE_RATIO = 0.05;
-
 function ruleFor(object) {
   const label = canonicalLabel(object);
   if (!label) return null;
@@ -115,22 +110,20 @@ function ruleFor(object) {
   return PROHIBITED_OBJECTS[label] ?? null;
 }
 
-export function confidenceFloorFor(rule, object, frameQuality) {
-  if ((object?.area_ratio ?? 0) >= AREA_OVERRIDE_RATIO) return rule.minConfidence;
-  if (typeof frameQuality !== "number") return rule.minConfidence;
-
-  const deficit = Math.max(0, QUALITY_REFERENCE - frameQuality);
-  return Math.min(0.95, rule.minConfidence + deficit * QUALITY_PENALTY);
-}
-
 const ENVIRONMENT_STATES = new Set(["baseline", "pending"]);
 
 export function applyBaselineRules(classified) {
-  return classified.map((entry) =>
-    ENVIRONMENT_STATES.has(entry.state) && ruleFor(entry.object)?.canBaseline === false
-      ? { ...entry, state: "introduced" }
-      : entry,
-  );
+  return classified.map((entry) => {
+    if (!ENVIRONMENT_STATES.has(entry.state)) return entry;
+
+    const rule = ruleFor(entry.object);
+    if (!rule) return entry;
+
+    const cap = rule.maxBaselineAreaRatio;
+    const dominates = cap !== undefined && (entry.object?.area_ratio ?? 0) >= cap;
+
+    return rule.canBaseline === false || dominates ? { ...entry, state: "introduced" } : entry;
+  });
 }
 
 export function findProhibitedObjects(result) {
@@ -141,8 +134,7 @@ export function findProhibitedObjects(result) {
     // Payloads without a score fall back to label-only matching rather than
     // silently dropping every object detection.
     const confidence = object.confidence ?? object.score;
-    const floor = confidenceFloorFor(rule, object, result?.frame_quality);
-    if (confidence !== undefined && confidence < floor) return false;
+    if (confidence !== undefined && confidence < OBJECT_CONFIDENCE_FLOOR) return false;
 
     const area = object.area_ratio;
     if (area !== undefined && area < rule.minAreaRatio) return false;
@@ -151,94 +143,101 @@ export function findProhibitedObjects(result) {
   });
 }
 
-/**
- * Analyses the AI detection response and returns a violation object if found.
- * Returns null if everything is clean.
- *
- * `classified` carries the baseline/introduced verdict from the tracker. Without
- * it every prohibited object counts as introduced, which is what the detection
- * tests want.
- *
- * Priority order: no face → multiple faces → prohibited object → not looking
- */
-export function detectViolation(result, classified) {
-  if (!result?.success) return null;
+// Strikeable first, then the biggest and clearest box. Detector order is noise.
+function compareDetections(a, b) {
+  const rank = (entry) => (ENVIRONMENT_STATES.has(entry.state) ? 0 : 1);
+  const area = (entry) => entry.object?.area_ratio ?? 0;
+  const score = (entry) => entry.object?.confidence ?? entry.object?.score ?? 0;
 
-  if (!result.face_detected) {
-    return {
-      type: "NO_FACE",
-      titleKey: "violations.noFace.title",
-      descriptionKey: "violations.noFace.description",
-      imagePath: "/no-candidate.png",
-    };
+  return rank(b) - rank(a) || area(b) - area(a) || score(b) - score(a);
+}
+
+// Two phones are one violation with a count, not two competing windows.
+function groupByLabel(classified) {
+  const groups = new Map();
+
+  for (const entry of classified) {
+    const label = canonicalLabel(entry.object);
+    if (!label) continue;
+
+    const group = groups.get(label);
+    if (!group) {
+      groups.set(label, { label, best: entry, count: 1 });
+      continue;
+    }
+
+    group.count += 1;
+    if (compareDetections(entry, group.best) < 0) group.best = entry;
   }
+
+  return [...groups.values()];
+}
+
+function objectViolation({ label, best, count }) {
+  const isEnvironment = ENVIRONMENT_STATES.has(best.state);
+
+  return {
+    type: "PROHIBITED_OBJECT",
+    ...violationCopy("PROHIBITED_OBJECT"),
+    key: `PROHIBITED_OBJECT:${label}`,
+    state: best.state,
+    label,
+    count,
+    detection: best.object,
+    shadow: SHADOW_LABELS.has(label),
+    ...(isEnvironment ? { countsAsViolation: false } : {}),
+  };
+}
+
+/**
+ * Every violation the frame shows, most severe first. Empty when it is clean.
+ *
+ * `classified` carries the baseline/introduced verdict from the tracker;
+ * without it every prohibited object counts as introduced.
+ *
+ * Face presence gates everything below it. A frame with no face can't support
+ * a claim about what the candidate is holding, so it reports the missing face
+ * and leaves the object to the log.
+ */
+export function detectViolations(result, classified) {
+  if (!result?.success) return [];
 
   // The face model misses people who are turned away or half out of frame, so
   // YOLO's person count gets a say too.
-  if (result.face_count > 1 || result.yolo_person_count > 1) {
-    return {
-      type: "MULTIPLE_FACES",
-      titleKey: "violations.multipleFaces.title",
-      descriptionKey: "violations.multipleFaces.description",
-      imagePath: "/multi-people.png",
-    };
+  const multiplePeople = result.face_count > 1 || result.yolo_person_count > 1;
+  if (multiplePeople) {
+    return [{ type: "MULTIPLE_FACES", ...violationCopy("MULTIPLE_FACES") }];
+  }
+
+  if (!result.face_detected) {
+    return [{ type: "NO_FACE", ...violationCopy("NO_FACE") }];
   }
 
   const objects =
     classified ?? findProhibitedObjects(result).map((object) => ({ object, state: "introduced" }));
-  const strikeable = objects.find((entry) => !ENVIRONMENT_STATES.has(entry.state));
-  const environment = objects.find((entry) => ENVIRONMENT_STATES.has(entry.state));
-  const hit = strikeable || environment;
 
-  if (hit) {
-    const label = canonicalLabel(hit.object);
-    return {
-      type: "PROHIBITED_OBJECT",
-      key: `PROHIBITED_OBJECT:${label}`,
-      state: hit.state,
-      titleKey: "violations.prohibitedObject.title",
-      descriptionKey: "violations.prohibitedObject.description",
-      imagePath: "/laptop.png",
-      label,
-      detection: hit.object,
-      ...(strikeable ? {} : { countsAsViolation: false }),
-    };
-  }
+  // Stable sorts, so shadowed labels fall to the back without disturbing the
+  // strikeable-first order among the rest.
+  const violations = groupByLabel(objects)
+    .sort((a, b) => compareDetections(a.best, b.best))
+    .map(objectViolation)
+    .sort((a, b) => Number(a.shadow) - Number(b.shadow));
 
   // Gaze and blinking are noisy — nudge, don't strike.
   if (result.looking_at_camera === false) {
-    return {
-      type: "NOT_LOOKING",
-      titleKey: "violations.notLooking.title",
-      descriptionKey: "violations.notLooking.description",
-      soft: true,
-    };
+    violations.push({ type: "NOT_LOOKING", ...violationCopy("NOT_LOOKING") });
+  } else if (result.eyes_open === false) {
+    violations.push({ type: "EYES_CLOSED", ...violationCopy("EYES_CLOSED") });
   }
 
-  if (result.eyes_open === false) {
-    return {
-      type: "EYES_CLOSED",
-      titleKey: "violations.eyesClosed.title",
-      descriptionKey: "violations.eyesClosed.description",
-      soft: true,
-    };
-  }
-
-  return null;
+  return violations;
 }
 
 /**
- * Proctoring system hook.
- *
- * While `isActive` is true:
- *   1. Captures a webcam frame every DETECT_INTERVAL_MS
- *   2. Sends it to the CV AI detection API
- *   3. Stores the AI response (without the base64 frame) in a local queue
- *
- * When the interview ends (isActive becomes false):
- *   - Sends ONE single POST to Django with all collected detection results
- *
- * Also flushes on page unload as a safety net.
+ * While `isActive` is true, samples the webcam every DETECT_INTERVAL_MS, sends
+ * the frame to the CV detection API, hands the same sample to `onSample` for
+ * face verification, and queues the response locally. The queue is flushed to
+ * Django in one POST when the interview ends, and on unload as a safety net.
  */
 export function useProctoringSystem(
   videoRef,
@@ -247,6 +246,7 @@ export function useProctoringSystem(
   isActive,
   proctoringToken,
   onViolation,
+  onSample,
 ) {
   const queueRef = useRef([]);
   const timerRef = useRef(null);
@@ -256,12 +256,17 @@ export function useProctoringSystem(
   const isActiveRef = useRef(false);
   const sessionRef = useRef({ interviewId, sessionId, proctoringToken });
   const onViolationRef = useRef(onViolation);
+  const onSampleRef = useRef(onSample);
   const stabilizerRef = useRef(createViolationStabilizer());
   const baselineRef = useRef(createBaselineTracker());
   const consecutiveFailuresRef = useRef(0);
   const burstRemainingRef = useRef(0);
   const burstsUsedRef = useRef(0);
   const lastSuccessAtRef = useRef(0);
+  const intervalRef = useRef(DETECT_INTERVAL_MS);
+  // Keys seen on the previous frame, so a condition that never stopped is told
+  // apart from one that cleared and came back.
+  const previousKeysRef = useRef(new Set());
 
   const [isDegraded, setIsDegraded] = useState(false);
 
@@ -272,6 +277,10 @@ export function useProctoringSystem(
   useEffect(() => {
     onViolationRef.current = onViolation;
   }, [onViolation]);
+
+  useEffect(() => {
+    onSampleRef.current = onSample;
+  }, [onSample]);
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -290,10 +299,11 @@ export function useProctoringSystem(
     [],
   );
 
-  // Shared util: aspect-preserving downscale into the target box (no stretch),
-  // returns raw base64 (no data-URL prefix) or null if the camera isn't ready.
+  // This loop owns the only camera clock. Detection and face verification both
+  // read the frame it produces, so their verdicts describe the same instant and
+  // backoff and bursts apply to both.
   function captureFrame() {
-    return captureFrameBase64(videoRef.current, {
+    return captureSample(videoRef.current, {
       maxWidth: TARGET_WIDTH,
       maxHeight: TARGET_HEIGHT,
       quality: IMAGE_QUALITY,
@@ -304,6 +314,7 @@ export function useProctoringSystem(
   // frames we never actually saw.
   function recordFailure(reason) {
     stabilizerRef.current.reset();
+    previousKeysRef.current = new Set();
     consecutiveFailuresRef.current += 1;
 
     queueRef.current.push({
@@ -337,6 +348,7 @@ export function useProctoringSystem(
       label: canonicalLabel(detection),
       confidence: detection.confidence ?? detection.score,
       area_ratio: detection.area_ratio,
+      ...(violation.count > 1 ? { count: violation.count } : {}),
       frame_quality: frameQuality,
     };
   }
@@ -353,16 +365,19 @@ export function useProctoringSystem(
     });
   }
 
-  // Only one object per frame becomes a violation, so without this the
-  // baseline/introduced verdict on the rest is never recorded anywhere.
-  function recordClassification(classified, frameQuality) {
+  // Violations collapse per label, so without this the baseline/introduced
+  // verdict on every other box is never recorded anywhere.
+  function recordClassification(classified, result) {
     if (!classified.length) return;
 
     recordViolationEvent({
       source: "ai",
       type: "OBJECT_CLASSIFICATION",
       outcome: "observed",
-      frame_quality: frameQuality,
+      frame_quality: result.frame_quality,
+      // The service's own verdict, kept alongside ours so the two can be
+      // compared when tuning the floor.
+      api_violations: result.violations ?? [],
       objects: classified.map((entry) => ({
         label: canonicalLabel(entry.object),
         state: entry.state,
@@ -372,24 +387,38 @@ export function useProctoringSystem(
     });
   }
 
-  function dispatchViolation(violation, frameQuality) {
-    const label = canonicalLabel(violation.detection);
-    if (label && SHADOW_LABELS.has(label)) {
-      stabilizerRef.current.commit(violation.key ?? violation.type);
-      recordDecision(violation, "shadow", frameQuality);
-      return;
-    }
+  // Only one violation per frame reaches the candidate, but a shadowed or
+  // cooled-down one must not be what stops the rest from being considered.
+  function dispatchViolations(confirmed, frameQuality) {
+    let raised = false;
 
-    // The monitor owns cooldowns and the strike floor for every source, and
-    // reports back whether the evidence was actually spent.
-    const outcome = onViolationRef.current?.({
-      ...violation,
-      detail: detectionDetail(violation, frameQuality),
-    });
+    for (const violation of confirmed) {
+      const key = violation.key ?? violation.type;
 
-    if (outcome === "raised" || outcome === "at_limit") {
-      stabilizerRef.current.commit(violation.key ?? violation.type);
-      logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
+      if (violation.shadow) {
+        recordDecision(violation, "shadow", frameQuality);
+        stabilizerRef.current.commit(key);
+        continue;
+      }
+
+      if (raised) {
+        recordDecision(violation, "deferred", frameQuality);
+        continue;
+      }
+
+      // The monitor owns cooldowns and the strike floor for every source, and
+      // reports back whether the evidence was actually spent.
+      const outcome = onViolationRef.current?.({
+        ...violation,
+        ongoing: previousKeysRef.current.has(key),
+        detail: detectionDetail(violation, frameQuality),
+      });
+
+      if (outcome === "raised" || outcome === "at_limit") {
+        stabilizerRef.current.commit(key);
+        raised = true;
+        logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
+      }
     }
   }
 
@@ -399,8 +428,8 @@ export function useProctoringSystem(
       return;
     }
 
-    const frame = captureFrame();
-    if (!frame) {
+    const sample = captureFrame();
+    if (!sample) {
       recordFailure("camera_unavailable");
       if (consecutiveFailuresRef.current <= CAMERA_GRACE_TICKS) {
         timerRef.current = setTimeout(tick, CAMERA_RETRY_MS);
@@ -411,10 +440,11 @@ export function useProctoringSystem(
     }
 
     busyRef.current = true;
+    onSampleRef.current?.({ ...sample, intervalMs: intervalRef.current });
 
     try {
       logger.log("[Proctoring] 🤖 Sending frame to AI detection API…");
-      const aiResult = await detectFrame(frame);
+      const aiResult = await detectFrame(sample.frame);
       logger.log("[Proctoring] ✅ AI response received:", aiResult);
 
       // Strip any base64 frame the AI might echo back
@@ -450,30 +480,39 @@ export function useProctoringSystem(
       const classified = applyBaselineRules(
         baselineRef.current.classify(findProhibitedObjects(cleanResult), now),
       );
-      recordClassification(classified, cleanResult.frame_quality);
+      recordClassification(classified, cleanResult);
 
-      const detected = detectViolation(cleanResult, classified);
-      const violation = stabilizerRef.current.push(detected);
+      const detected = detectViolations(cleanResult, classified);
+      const confirmed = stabilizerRef.current.push(detected);
 
-      if (detected && BURST_TYPES.has(detected.type) && consecutiveFailuresRef.current === 0) {
+      const worthBursting = detected.some((violation) => BURST_TYPES.has(violation.type));
+      if (worthBursting && consecutiveFailuresRef.current === 0) {
         if (burstsUsedRef.current < MAX_BURSTS) {
           burstRemainingRef.current = BURST_SAMPLES;
           burstsUsedRef.current += 1;
         }
       } else {
         burstRemainingRef.current = 0;
-        if (!detected) burstsUsedRef.current = 0;
+        if (!detected.length) burstsUsedRef.current = 0;
       }
 
       // Re-check isActive after the async call — the session may have ended
       // (auto-submit, normal submit) while we were waiting for the response.
-      if (violation && isActiveRef.current) {
-        dispatchViolation(violation, cleanResult.frame_quality);
-      } else if (violation) {
-        recordDecision(violation, "session_ended", cleanResult.frame_quality);
-      } else if (detected) {
-        recordDecision(detected, "unconfirmed", cleanResult.frame_quality);
+      if (isActiveRef.current) {
+        dispatchViolations(confirmed, cleanResult.frame_quality);
+      } else {
+        for (const violation of confirmed) {
+          recordDecision(violation, "session_ended", cleanResult.frame_quality);
+        }
       }
+
+      for (const violation of detected) {
+        if (!confirmed.includes(violation)) {
+          recordDecision(violation, "unconfirmed", cleanResult.frame_quality);
+        }
+      }
+
+      previousKeysRef.current = new Set(detected.map((v) => v.key ?? v.type));
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
       recordFailure(err?.message || "request_failed");
@@ -488,6 +527,7 @@ export function useProctoringSystem(
 
     if (burstRemainingRef.current > 0) {
       burstRemainingRef.current -= 1;
+      intervalRef.current = BURST_INTERVAL_MS;
       timerRef.current = setTimeout(tick, BURST_INTERVAL_MS);
       return;
     }
@@ -497,6 +537,7 @@ export function useProctoringSystem(
       failures === 0
         ? DETECT_INTERVAL_MS
         : Math.min(DETECT_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
+    intervalRef.current = delay;
     timerRef.current = setTimeout(tick, delay);
   }
 
@@ -585,6 +626,7 @@ export function useProctoringSystem(
       consecutiveFailuresRef.current = 0;
       burstRemainingRef.current = 0;
       burstsUsedRef.current = 0;
+      previousKeysRef.current = new Set();
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
       timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);

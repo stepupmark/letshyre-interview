@@ -20,6 +20,7 @@ export default function ViolationWarning({
   descriptionKey,
   label,
   buttonText,
+  finalWarning,
 }) {
   const { t } = useTranslation("interview");
   const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
@@ -32,8 +33,9 @@ export default function ViolationWarning({
   const resolvedButtonText = buttonText ?? t("violationWarning.defaultButtonText");
 
   // The strike before the last one says so outright — a candidate should never
-  // be surprised by the termination that follows.
-  const isFinalWarning = counts && violationCount === MAX_VIOLATIONS - 1;
+  // be surprised by the termination that follows. Identity checks run to their
+  // own limit, so that path sets the flag itself.
+  const isFinalWarning = finalWarning ?? (counts && violationCount === MAX_VIOLATIONS - 1);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

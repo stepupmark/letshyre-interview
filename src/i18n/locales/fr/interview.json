@@ -39,7 +39,8 @@
     "warning": "Avertissement",
     "defaultTitle": "Avertissement de changement de fenêtre",
     "defaultDescription": "Le fait de quitter l'écran de l'entretien est enregistré comme une violation",
-    "defaultButtonText": "J'ai compris, retourner à l'entretien"
+    "defaultButtonText": "J'ai compris, retourner à l'entretien",
+    "finalWarning": "Ceci est votre dernier avertissement. Une infraction de plus mettra fin à votre entretien."
   },
   "autoSubmitLoader": {
     "noInternet": "Aucune connexion Internet",
@@ -65,5 +66,45 @@
     "waitingError": "Appuyez sur « Réessayer » pour renvoyer. Votre progression est sauvegardée.",
     "waitingSuccess": "Redirection vers vos résultats…",
     "waitingSubmitting": "Veuillez patienter, ne fermez pas et n'actualisez pas cette page."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "Échec de la vérification d'identité",
+      "description": "Nous n'avons pas pu confirmer que c'est toujours vous devant la caméra. Veillez à ce que votre visage soit bien visible et éclairé."
+    }
+  },
+  "termination": {
+    "acknowledge": "J'ai compris",
+    "countdown": "Poursuite automatique dans {{count}}s",
+    "violationLimit": {
+      "title": "Entretien terminé",
+      "pill": "Infractions aux règles",
+      "description": "Vous avez atteint {{violations}} infractions. Votre entretien a été soumis avec les réponses complétées."
+    },
+    "faceMismatch": {
+      "title": "Entretien terminé",
+      "pill": "Échec de la vérification d'identité",
+      "description": "La vérification d'identité a échoué {{faceMismatches}} fois de suite, nous n'avons donc pas pu confirmer que c'était toujours vous devant la caméra. Votre entretien a été soumis avec les réponses complétées."
+    },
+    "networkDisconnects": {
+      "title": "Entretien terminé",
+      "pill": "Connexion perdue",
+      "description": "Votre connexion a été interrompue {{disconnects}} fois. Votre entretien a été soumis avec les réponses complétées."
+    },
+    "timeExpired": {
+      "title": "Temps écoulé",
+      "pill": "Limite de temps atteinte",
+      "description": "Le temps de votre entretien est écoulé. Vos réponses ont été soumises."
+    },
+    "electronSecurity": {
+      "title": "Entretien terminé",
+      "pill": "Violation de sécurité",
+      "description": "Une violation de la politique de sécurité a mis fin à votre entretien. Il a été soumis avec les réponses complétées."
+    },
+    "generic": {
+      "title": "Entretien terminé",
+      "pill": "Soumis automatiquement",
+      "description": "Votre entretien a été soumis avec les réponses complétées."
+    }
   }
 }

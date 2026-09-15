@@ -1,4 +1,7 @@
-import { confidenceFloorFor, detectViolation, sendUnloadFlush } from "./useProctoringSystem";
+import { detectViolations, sendUnloadFlush } from "./useProctoringSystem";
+
+const first = (result, classified) => detectViolations(result, classified)[0] ?? null;
+const types = (result, classified) => detectViolations(result, classified).map((v) => v.type);
 
 const CLEAN_RESULT = {
   success: true,
@@ -9,38 +12,38 @@ const CLEAN_RESULT = {
   eyes_open: true,
 };
 
-describe("detectViolation", () => {
-  it("returns null when the API call was not successful", () => {
-    expect(detectViolation({ success: false })).toBeNull();
-    expect(detectViolation(null)).toBeNull();
-    expect(detectViolation(undefined)).toBeNull();
+describe("detectViolations", () => {
+  it("returns nothing when the API call was not successful", () => {
+    expect(detectViolations({ success: false })).toEqual([]);
+    expect(detectViolations(null)).toEqual([]);
+    expect(detectViolations(undefined)).toEqual([]);
   });
 
   it("returns a NO_FACE violation when no face is detected", () => {
-    const violation = detectViolation({ ...CLEAN_RESULT, face_detected: false });
+    const violation = first({ ...CLEAN_RESULT, face_detected: false });
     expect(violation).not.toBeNull();
     expect(violation.type).toBe("NO_FACE");
   });
 
   it("returns a MULTIPLE_FACES violation that counts as a strike", () => {
-    const violation = detectViolation({ ...CLEAN_RESULT, face_count: 2 });
+    const violation = first({ ...CLEAN_RESULT, face_count: 2 });
     expect(violation).not.toBeNull();
     expect(violation.type).toBe("MULTIPLE_FACES");
     expect(violation.countsAsViolation).toBeUndefined();
   });
 
   it("catches a second person the face model missed but YOLO counted", () => {
-    const violation = detectViolation({ ...CLEAN_RESULT, yolo_person_count: 2 });
+    const violation = first({ ...CLEAN_RESULT, yolo_person_count: 2 });
     expect(violation?.type).toBe("MULTIPLE_FACES");
   });
 
   it("leaves a single person alone when YOLO reports nobody", () => {
-    const violation = detectViolation({ ...CLEAN_RESULT, yolo_person_count: 0 });
+    const violation = first({ ...CLEAN_RESULT, yolo_person_count: 0 });
     expect(violation).toBeNull();
   });
 
   it("returns a PROHIBITED_OBJECT violation for a known prohibited object", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "cell phone" }],
     });
@@ -49,7 +52,7 @@ describe("detectViolation", () => {
   });
 
   it("matches prohibited object labels case-insensitively", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "Cell Phone" }],
     });
@@ -58,7 +61,7 @@ describe("detectViolation", () => {
   });
 
   it("does not flag an object that is not in the prohibited set", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "cup" }],
     });
@@ -66,34 +69,31 @@ describe("detectViolation", () => {
   });
 
   it("returns a soft NOT_LOOKING violation when not looking at camera", () => {
-    const violation = detectViolation({ ...CLEAN_RESULT, looking_at_camera: false });
+    const violation = first({ ...CLEAN_RESULT, looking_at_camera: false });
     expect(violation).not.toBeNull();
     expect(violation.type).toBe("NOT_LOOKING");
     expect(violation.soft).toBe(true);
   });
 
   it("returns a soft EYES_CLOSED violation when eyes are closed", () => {
-    const violation = detectViolation({ ...CLEAN_RESULT, eyes_open: false });
+    const violation = first({ ...CLEAN_RESULT, eyes_open: false });
     expect(violation).not.toBeNull();
     expect(violation.type).toBe("EYES_CLOSED");
     expect(violation.soft).toBe(true);
   });
 
   it("returns null for a fully clean result", () => {
-    expect(detectViolation(CLEAN_RESULT)).toBeNull();
+    expect(first(CLEAN_RESULT)).toBeNull();
   });
 
-  it("prioritizes NO_FACE over MULTIPLE_FACES when both conditions match", () => {
-    const violation = detectViolation({
-      ...CLEAN_RESULT,
-      face_detected: false,
-      face_count: 2,
-    });
-    expect(violation.type).toBe("NO_FACE");
+  it("prioritizes MULTIPLE_FACES over NO_FACE when both conditions match", () => {
+    expect(types({ ...CLEAN_RESULT, face_detected: false, face_count: 2 })).toEqual([
+      "MULTIPLE_FACES",
+    ]);
   });
 
   it("prioritizes MULTIPLE_FACES over PROHIBITED_OBJECT when both conditions match", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       face_count: 2,
       objects_detected: [{ label: "cell phone" }],
@@ -102,7 +102,7 @@ describe("detectViolation", () => {
   });
 
   it("flags a laptop, which the candidate's own machine can never be", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "laptop", confidence: 0.89, area_ratio: 0.013 }],
     });
@@ -110,21 +110,39 @@ describe("detectViolation", () => {
     expect(violation.label).toBe("laptop");
   });
 
-  it("applies each label's own confidence floor", () => {
-    const below = detectViolation({
+  it("applies one confidence floor to every label", () => {
+    const below = first({
       ...CLEAN_RESULT,
-      objects_detected: [{ label: "laptop", confidence: 0.55, area_ratio: 0.013 }],
+      objects_detected: [{ label: "laptop", confidence: 0.3, area_ratio: 0.013 }],
     });
-    const above = detectViolation({
+    const above = first({
       ...CLEAN_RESULT,
-      objects_detected: [{ label: "cell phone", confidence: 0.55, area_ratio: 0.013 }],
+      objects_detected: [{ label: "laptop", confidence: 0.4, area_ratio: 0.013 }],
     });
     expect(below).toBeNull();
     expect(above.type).toBe("PROHIBITED_OBJECT");
   });
 
+  it("does not raise the floor on a murky frame", () => {
+    const violation = first({
+      ...CLEAN_RESULT,
+      frame_quality: 0.2803687793400733,
+      objects_detected: [
+        {
+          label: "laptop",
+          class_id: 63,
+          confidence: 0.401611328125,
+          bbox: [0.15625, 287.9166564941406, 104.21875, 357.9166564941406],
+          area_ratio: 0.0316162109375,
+        },
+      ],
+    });
+    expect(violation?.type).toBe("PROHIBITED_OBJECT");
+    expect(violation.label).toBe("laptop");
+  });
+
   it("drops a detection whose box is too small to be the real thing", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "cell phone", confidence: 0.9, area_ratio: 0.0001 }],
     });
@@ -132,7 +150,7 @@ describe("detectViolation", () => {
   });
 
   it("ignores a bottle at any confidence", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "bottle", confidence: 0.99, area_ratio: 0.5 }],
     });
@@ -140,7 +158,7 @@ describe("detectViolation", () => {
   });
 
   it("flags a tv, the label a second monitor usually lands on", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "tv", confidence: 0.8, area_ratio: 0.05 }],
     });
@@ -149,7 +167,7 @@ describe("detectViolation", () => {
   });
 
   it("identifies an object by class_id when the label has been renamed", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [
         { label: "mobile_phone", class_id: 67, confidence: 0.8, area_ratio: 0.05 },
@@ -161,7 +179,7 @@ describe("detectViolation", () => {
 
   it("marks a baseline-only object as a warning rather than a strike", () => {
     const object = { label: "laptop", confidence: 0.89, area_ratio: 0.013 };
-    const violation = detectViolation({ ...CLEAN_RESULT, objects_detected: [object] }, [
+    const violation = first({ ...CLEAN_RESULT, objects_detected: [object] }, [
       { object, state: "baseline" },
     ]);
     expect(violation.type).toBe("PROHIBITED_OBJECT");
@@ -172,20 +190,17 @@ describe("detectViolation", () => {
   it("prefers an introduced object over a baseline one", () => {
     const environment = { label: "laptop", confidence: 0.89, area_ratio: 0.013 };
     const brought = { label: "cell phone", confidence: 0.66, area_ratio: 0.028 };
-    const violation = detectViolation(
-      { ...CLEAN_RESULT, objects_detected: [environment, brought] },
-      [
-        { object: environment, state: "baseline" },
-        { object: brought, state: "introduced" },
-      ],
-    );
+    const violation = first({ ...CLEAN_RESULT, objects_detected: [environment, brought] }, [
+      { object: environment, state: "baseline" },
+      { object: brought, state: "introduced" },
+    ]);
     expect(violation.type).toBe("PROHIBITED_OBJECT");
     expect(violation.label).toBe("cell phone");
   });
 
   it("strikes a baseline object once its grace has expired", () => {
     const object = { label: "laptop", confidence: 0.89, area_ratio: 0.013 };
-    const violation = detectViolation({ ...CLEAN_RESULT, objects_detected: [object] }, [
+    const violation = first({ ...CLEAN_RESULT, objects_detected: [object] }, [
       { object, state: "expired" },
     ]);
     expect(violation.type).toBe("PROHIBITED_OBJECT");
@@ -193,7 +208,7 @@ describe("detectViolation", () => {
   });
 
   it("ignores a prohibited object below the confidence threshold", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "cell phone", confidence: 0.3 }],
     });
@@ -201,7 +216,7 @@ describe("detectViolation", () => {
   });
 
   it("flags a prohibited object above the confidence threshold", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "cell phone", confidence: 0.9 }],
     });
@@ -210,15 +225,15 @@ describe("detectViolation", () => {
 
   it("accepts a score field as the confidence source", () => {
     expect(
-      detectViolation({ ...CLEAN_RESULT, objects_detected: [{ label: "book", score: 0.2 }] }),
+      first({ ...CLEAN_RESULT, objects_detected: [{ label: "book", score: 0.2 }] }),
     ).toBeNull();
-    expect(
-      detectViolation({ ...CLEAN_RESULT, objects_detected: [{ label: "book", score: 0.8 }] }).type,
-    ).toBe("PROHIBITED_OBJECT");
+    expect(first({ ...CLEAN_RESULT, objects_detected: [{ label: "book", score: 0.8 }] }).type).toBe(
+      "PROHIBITED_OBJECT",
+    );
   });
 
   it("prioritizes PROHIBITED_OBJECT over NOT_LOOKING when both conditions match", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       objects_detected: [{ label: "book" }],
       looking_at_camera: false,
@@ -226,38 +241,98 @@ describe("detectViolation", () => {
     expect(violation.type).toBe("PROHIBITED_OBJECT");
   });
 
+  it("reports the missing face, not the phone, when no face is found", () => {
+    expect(
+      types({
+        ...CLEAN_RESULT,
+        face_detected: false,
+        face_count: 0,
+        frame_quality: 0.474,
+        objects_detected: [
+          {
+            label: "cell phone",
+            class_id: 67,
+            confidence: 0.9468,
+            area_ratio: 0.1776,
+            bbox: [249.8, 205.6, 494.9, 794.2],
+          },
+        ],
+      }),
+    ).toEqual(["NO_FACE"]);
+  });
+
+  it("reports the missing face, not the laptop, when no face is found", () => {
+    expect(
+      types({
+        ...CLEAN_RESULT,
+        face_detected: false,
+        face_count: 0,
+        objects_detected: [{ label: "laptop", class_id: 63, confidence: 0.968, area_ratio: 0.497 }],
+      }),
+    ).toEqual(["NO_FACE"]);
+  });
+
+  it("reports the object once the candidate is visible again", () => {
+    expect(
+      types({
+        ...CLEAN_RESULT,
+        objects_detected: [
+          { label: "cell phone", class_id: 67, confidence: 0.85, area_ratio: 0.009 },
+        ],
+      }),
+    ).toEqual(["PROHIBITED_OBJECT"]);
+  });
+
+  it("reports an empty frame as NO_FACE", () => {
+    expect(types({ ...CLEAN_RESULT, face_detected: false, face_count: 0 })).toEqual(["NO_FACE"]);
+  });
+
+  it("counts two phones as one violation carrying the count", () => {
+    const violations = detectViolations({
+      ...CLEAN_RESULT,
+      objects_detected: [
+        { label: "cell phone", class_id: 67, confidence: 0.9468, area_ratio: 0.1776 },
+        { label: "cell phone", class_id: 67, confidence: 0.8984, area_ratio: 0.2086 },
+      ],
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0].count).toBe(2);
+    expect(violations[0].detection.area_ratio).toBe(0.2086);
+  });
+
+  it("never lets a shadowed label outrank a real one", () => {
+    const tv = { label: "tv", confidence: 0.9, area_ratio: 0.4 };
+    const phone = { label: "cell phone", confidence: 0.6, area_ratio: 0.01 };
+    const violations = detectViolations({ ...CLEAN_RESULT, objects_detected: [tv, phone] }, [
+      { object: tv, state: "introduced" },
+      { object: phone, state: "introduced" },
+    ]);
+    expect(violations[0].label).toBe("cell phone");
+    expect(violations[1]).toMatchObject({ label: "tv", shadow: true });
+  });
+
+  it("ranks by size and confidence rather than the order the API sent", () => {
+    const small = { label: "book", confidence: 0.9, area_ratio: 0.02 };
+    const big = { label: "cell phone", confidence: 0.9, area_ratio: 0.3 };
+    const violations = detectViolations({ ...CLEAN_RESULT, objects_detected: [small, big] });
+    expect(violations[0].label).toBe("cell phone");
+  });
+
+  it("identifies a book by its 80-class id", () => {
+    const violation = first({
+      ...CLEAN_RESULT,
+      objects_detected: [{ label: "renamed", class_id: 73, confidence: 0.8, area_ratio: 0.05 }],
+    });
+    expect(violation.label).toBe("book");
+  });
+
   it("prioritizes NOT_LOOKING over EYES_CLOSED when both conditions match", () => {
-    const violation = detectViolation({
+    const violation = first({
       ...CLEAN_RESULT,
       looking_at_camera: false,
       eyes_open: false,
     });
     expect(violation.type).toBe("NOT_LOOKING");
-  });
-});
-
-describe("confidenceFloorFor", () => {
-  const rule = { minConfidence: 0.5, minAreaRatio: 0.004 };
-
-  it("leaves the floor alone on a clean frame", () => {
-    expect(confidenceFloorFor(rule, { area_ratio: 0.01 }, 0.79)).toBe(0.5);
-  });
-
-  it("raises the floor as frame quality drops", () => {
-    expect(confidenceFloorFor(rule, { area_ratio: 0.01 }, 0.29)).toBeCloseTo(0.563, 3);
-  });
-
-  it("waives the penalty for a box big enough to be unambiguous", () => {
-    expect(confidenceFloorFor(rule, { area_ratio: 0.13 }, 0.29)).toBe(0.5);
-  });
-
-  it("leaves the floor alone when quality is not reported", () => {
-    expect(confidenceFloorFor(rule, { area_ratio: 0.01 }, undefined)).toBe(0.5);
-  });
-
-  it("keeps a marginal detection on a murky frame out", () => {
-    const floor = confidenceFloorFor(rule, { area_ratio: 0.01 }, 0.296);
-    expect(0.502).toBeLessThan(floor);
   });
 });
 

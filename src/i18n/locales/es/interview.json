@@ -39,7 +39,8 @@
     "warning": "Advertencia",
     "defaultTitle": "Advertencia de cambio de ventana",
     "defaultDescription": "Salir de la pantalla de la entrevista se está registrando como una infracción",
-    "defaultButtonText": "Entendido, volver a la entrevista"
+    "defaultButtonText": "Entendido, volver a la entrevista",
+    "finalWarning": "Esta es su advertencia final. Una infracción más finalizará su entrevista."
   },
   "autoSubmitLoader": {
     "noInternet": "Sin conexión a Internet",
@@ -65,5 +66,45 @@
     "waitingError": "Toca «Intentar de nuevo» para reenviar. Tu progreso está guardado.",
     "waitingSuccess": "Redirigiendo a tus resultados…",
     "waitingSubmitting": "Por favor, espera, no cierres ni actualices esta página."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "Verificación de identidad fallida",
+      "description": "No pudimos confirmar que siga siendo usted en la cámara. Asegúrese de que su rostro esté bien visible e iluminado."
+    }
+  },
+  "termination": {
+    "acknowledge": "Entendido",
+    "countdown": "Continuando automáticamente en {{count}}s",
+    "violationLimit": {
+      "title": "Entrevista finalizada",
+      "pill": "Infracciones de la política",
+      "description": "Alcanzó {{violations}} infracciones. Su entrevista se envió con las respuestas que completó."
+    },
+    "faceMismatch": {
+      "title": "Entrevista finalizada",
+      "pill": "Verificación de identidad fallida",
+      "description": "La verificación de identidad falló en {{faceMismatches}} comprobaciones seguidas, por lo que no pudimos confirmar que siguiera siendo usted en la cámara. Su entrevista se envió con las respuestas que completó."
+    },
+    "networkDisconnects": {
+      "title": "Entrevista finalizada",
+      "pill": "Conexión perdida",
+      "description": "Su conexión se interrumpió {{disconnects}} veces. Su entrevista se envió con las respuestas que completó."
+    },
+    "timeExpired": {
+      "title": "Se acabó el tiempo",
+      "pill": "Límite de tiempo alcanzado",
+      "description": "El tiempo de su entrevista ha terminado. Sus respuestas se enviaron."
+    },
+    "electronSecurity": {
+      "title": "Entrevista finalizada",
+      "pill": "Infracción de seguridad",
+      "description": "Una infracción de la política de seguridad finalizó su entrevista. Se envió con las respuestas que completó."
+    },
+    "generic": {
+      "title": "Entrevista finalizada",
+      "pill": "Enviada automáticamente",
+      "description": "Su entrevista se envió con las respuestas que completó."
+    }
   }
 }

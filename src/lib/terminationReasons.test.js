@@ -32,6 +32,14 @@ describe("terminationReasons", () => {
     expect(getTerminationCopy("something_else").titleKey).toBe("termination.generic.title");
   });
 
+  it("gives every reason its own artwork", () => {
+    const reasons = Object.values(TERMINATION_REASONS);
+    const images = reasons.map((reason) => getTerminationCopy(reason).imagePath);
+    expect(new Set([...images, getTerminationCopy("unknown").imagePath]).size).toBe(
+      reasons.length + 1,
+    );
+  });
+
   it("does not treat a timed-out session as misconduct", () => {
     expect(getTerminationCopy(TERMINATION_REASONS.TIME_EXPIRED).punitive).toBe(false);
     expect(getTerminationCopy(TERMINATION_REASONS.NETWORK_DISCONNECTS).punitive).toBe(false);

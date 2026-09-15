@@ -39,7 +39,8 @@
     "warning": "Aviso",
     "defaultTitle": "Aviso de troca de janela",
     "defaultDescription": "Sair da tela da entrevista está sendo registrado como uma violação",
-    "defaultButtonText": "Entendi, voltar à entrevista"
+    "defaultButtonText": "Entendi, voltar à entrevista",
+    "finalWarning": "Este é o seu aviso final. Mais uma violação encerrará a sua entrevista."
   },
   "autoSubmitLoader": {
     "noInternet": "Sem conexão com a internet",
@@ -65,5 +66,45 @@
     "waitingError": "Toque em “Tentar novamente” para reenviar. Seu progresso está salvo.",
     "waitingSuccess": "Redirecionando para seus resultados…",
     "waitingSubmitting": "Aguarde, não feche nem atualize esta página."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "Falha na verificação de identidade",
+      "description": "Não conseguimos confirmar que ainda é você na câmara. Garanta que o seu rosto está bem visível e iluminado."
+    }
+  },
+  "termination": {
+    "acknowledge": "Entendi",
+    "countdown": "A continuar automaticamente em {{count}}s",
+    "violationLimit": {
+      "title": "Entrevista terminada",
+      "pill": "Violações da política",
+      "description": "Atingiu {{violations}} violações. A sua entrevista foi submetida com as respostas que completou."
+    },
+    "faceMismatch": {
+      "title": "Entrevista terminada",
+      "pill": "Verificação de identidade falhou",
+      "description": "A verificação de identidade falhou em {{faceMismatches}} verificações seguidas, pelo que não conseguimos confirmar que ainda era você na câmara. A sua entrevista foi submetida com as respostas que completou."
+    },
+    "networkDisconnects": {
+      "title": "Entrevista terminada",
+      "pill": "Ligação perdida",
+      "description": "A sua ligação caiu {{disconnects}} vezes. A sua entrevista foi submetida com as respostas que completou."
+    },
+    "timeExpired": {
+      "title": "Tempo esgotado",
+      "pill": "Limite de tempo atingido",
+      "description": "O tempo da sua entrevista terminou. As suas respostas foram submetidas."
+    },
+    "electronSecurity": {
+      "title": "Entrevista terminada",
+      "pill": "Violação de segurança",
+      "description": "Uma violação da política de segurança terminou a sua entrevista. Foi submetida com as respostas que completou."
+    },
+    "generic": {
+      "title": "Entrevista terminada",
+      "pill": "Submetida automaticamente",
+      "description": "A sua entrevista foi submetida com as respostas que completou."
+    }
   }
 }

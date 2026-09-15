@@ -1,105 +1,224 @@
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useContinuousVerify } from "@queries/useContinuousVerify";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useContinuousVerifyMutation } from "@mutations/useContinuousVerifyMutation";
+import { RESEED_AFTER_GAP_MS } from "./useProctoringSystem";
 import { FACE_MISMATCH_LIMIT } from "@/config/interview";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
-import { createViolationStabilizer } from "@/lib/violationStabilizer";
+import { violationCopy } from "@/lib/violationCopy";
 import { recordViolationEvent } from "@/lib/violationLog";
 
-// A verdict returned on a frame this poor is not evidence either way.
-const MIN_FRAME_QUALITY = 0.25;
+// Raised from here as well as from detection. The two services run different
+// models and disagree often enough that leaving these to detection alone let a
+// frame go unwarned. The shared strike policy de-duplicates whichever is second.
+const RAISED_CONDITIONS = new Set(["NO_FACE", "MULTIPLE_FACES"]);
 
-export const useFaceMatchMonitoring = ({ sessionId, captureImage, autoSubmit, isReady = true }) => {
+const MAX_UNAVAILABLE = 3;
+
+// `violation` carries two unrelated things. These are identity verdicts; the
+// rest are frame conditions that stopped the comparison from happening.
+const IDENTITY_VIOLATIONS = new Set(["FACE_MISMATCH"]);
+
+/**
+ * The fields carry independent meaning: `error` means the call never ran,
+ * `violation` means either an identity verdict or a frame condition, and
+ * `same_person` is only a verdict once `success` is true. Read out of order, a
+ * no-face frame looks exactly like an impostor.
+ *
+ * A real mismatch arrives in `same_person` and `violation` at once, so either
+ * one is enough. Reading `violation` first used to file it as a condition and
+ * silently drop it.
+ */
+export function classifyVerification(result) {
+  if (!result || typeof result !== "object") return { verdict: "no_verdict" };
+  if (result.error) return { verdict: "unavailable", reason: result.error };
+
+  if (
+    result.success === true &&
+    (result.same_person === false || IDENTITY_VIOLATIONS.has(result.violation))
+  ) {
+    return {
+      verdict: "mismatch",
+      confidence: result.confidence,
+      serverTotal: result.total_violations,
+    };
+  }
+
+  if (result.violation) return { verdict: "condition", reason: result.violation };
+  if (result.success !== true) return { verdict: "no_verdict", reason: "unsuccessful_response" };
+  if (result.same_person === true) return { verdict: "match", confidence: result.confidence };
+  return { verdict: "no_verdict", reason: "unrecognized_response" };
+}
+
+export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isReady = true }) => {
   const [mismatchCount, setMismatchCount] = useState(0);
   const [isMonitoringStopped, setIsMonitoringStopped] = useState(false);
+  const [isVerificationUnavailable, setIsVerificationUnavailable] = useState(false);
 
   const hasSubmittedRef = useRef(false);
-  const mismatchRef = useRef(0);
-  const stabilizerRef = useRef(createViolationStabilizer());
+  const streakRef = useRef(0);
+  const stoppedRef = useRef(false);
+  const inFlightRef = useRef(false);
+  const unavailableRef = useRef(0);
+  const lastSampleAtRef = useRef(0);
+  const onViolationRef = useRef(onViolation);
+  const autoSubmitRef = useRef(autoSubmit);
+  const reportedUnregisteredRef = useRef(false);
 
-  const continuousVerifyQuery = useContinuousVerify(
-    sessionId,
-    captureImage,
-    isMonitoringStopped,
-    isReady,
-  );
+  const verifyMutation = useContinuousVerifyMutation(sessionId);
+  const { mutateAsync } = verifyMutation;
 
-  const { data, dataUpdatedAt } = continuousVerifyQuery;
-
-  // Keyed on dataUpdatedAt, not on the response object: React Query hands back
-  // the same reference when two polls agree, so identical consecutive
-  // mismatches would otherwise never be counted.
   useEffect(() => {
-    if (isMonitoringStopped || !dataUpdatedAt || !data) return;
+    onViolationRef.current = onViolation;
+    autoSubmitRef.current = autoSubmit;
+  });
+
+  useEffect(() => {
+    stoppedRef.current = isMonitoringStopped;
+  }, [isMonitoringStopped]);
+
+  const evaluate = useCallback((result) => {
+    const { verdict, reason, confidence, serverTotal } = classifyVerification(result);
 
     const report = (outcome, extra) =>
       recordViolationEvent({
         source: "face_match",
         type: "FACE_MISMATCH",
         outcome,
-        frame_quality: data.frame_quality,
+        ...(confidence === undefined ? {} : { confidence }),
+        // The service keeps its own cumulative tally; ours is the consecutive
+        // run. Logging both leaves the two comparable.
+        ...(serverTotal === undefined ? {} : { server_total: serverTotal }),
         ...extra,
       });
 
-    // Camera still warming up or no frame captured — a technical gap, not an
-    // identity mismatch.
-    if (data.no_sample) {
-      report("no_sample");
-      return;
-    }
+    if (verdict !== "unavailable") unavailableRef.current = 0;
+    const hadStreak = streakRef.current > 0;
 
-    if (typeof data.frame_quality === "number" && data.frame_quality < MIN_FRAME_QUALITY) {
-      report("inconclusive");
-      return;
-    }
+    if (verdict === "mismatch") {
+      const streak = (streakRef.current += 1);
+      setMismatchCount(streak);
+      report("raised", { violation_count: streak });
 
-    if (data.same_person === true) {
-      stabilizerRef.current.reset();
-      mismatchRef.current = 0;
-      hasSubmittedRef.current = false;
-      // Deferred so the setState isn't a direct synchronous call in the effect.
-      queueMicrotask(() => setMismatchCount(0));
-      return;
-    }
+      if (streak >= FACE_MISMATCH_LIMIT) {
+        if (hasSubmittedRef.current) return;
+        hasSubmittedRef.current = true;
+        stoppedRef.current = true;
+        setIsMonitoringStopped(true);
+        report("terminated", { violation_count: streak });
+        // No modal here: the termination notice owns the screen and a warning
+        // under it would promise a way back that no longer exists.
+        autoSubmitRef.current?.(TERMINATION_REASONS.FACE_MISMATCH);
+        return;
+      }
 
-    if (data.same_person !== false) return;
-
-    if (!stabilizerRef.current.push({ type: "FACE_MISMATCH" })) {
-      report("unconfirmed", { window: stabilizerRef.current.peek().FACE_MISMATCH ?? null });
-      return;
-    }
-
-    stabilizerRef.current.commit("FACE_MISMATCH");
-    mismatchRef.current += 1;
-    queueMicrotask(() => setMismatchCount(mismatchRef.current));
-    report("raised", { violation_count: mismatchRef.current });
-  }, [data, dataUpdatedAt, isMonitoringStopped]);
-
-  useEffect(() => {
-    if (mismatchCount === 0) return;
-
-    toast.error(`Face mismatch detected (${mismatchCount}/${FACE_MISMATCH_LIMIT})`);
-
-    if (mismatchCount >= FACE_MISMATCH_LIMIT && !hasSubmittedRef.current) {
-      hasSubmittedRef.current = true;
-      setIsMonitoringStopped(true);
-
-      recordViolationEvent({
-        source: "face_match",
+      // Warn only. Identity runs to its own limit, so this must not also spend
+      // a proctoring strike.
+      onViolationRef.current?.({
         type: "FACE_MISMATCH",
-        outcome: "terminated",
-        violation_count: mismatchCount,
+        ...violationCopy("FACE_MISMATCH"),
+        countsAsViolation: false,
+        finalWarning: streak === FACE_MISMATCH_LIMIT - 1,
+        detail: { origin: "face_match", violation_count: streak },
       });
-
-      // The termination notice explains this one; a toast underneath it would
-      // just be noise.
-      autoSubmit(TERMINATION_REASONS.FACE_MISMATCH);
+      return;
     }
-  }, [mismatchCount]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    streakRef.current = 0;
+
+    if (verdict === "match") {
+      hasSubmittedRef.current = false;
+      setMismatchCount(0);
+      // A match is most frames of the interview and says nothing on its own.
+      // Only the recovery from a mismatch is worth a record.
+      if (hadStreak) report("cleared");
+      return;
+    }
+
+    if (verdict === "condition") {
+      report("condition", { condition: reason });
+      if (RAISED_CONDITIONS.has(reason)) {
+        onViolationRef.current?.({
+          type: reason,
+          ...violationCopy(reason),
+          detail: { origin: "face_match" },
+        });
+      }
+      return;
+    }
+
+    if (verdict === "unavailable") {
+      unavailableRef.current += 1;
+      report("unavailable", { error: reason });
+      if (unavailableRef.current >= MAX_UNAVAILABLE) setIsVerificationUnavailable(true);
+      return;
+    }
+
+    report("no_verdict", { reason });
+  }, []);
+
+  // Driven by the proctoring loop's sampler rather than its own timer, so the
+  // identity verdict and the object verdict describe the same frame.
+  const verifySample = useCallback(
+    async (sample) => {
+      if (!sessionId || stoppedRef.current) return;
+
+      // Without a registered reference face there is nothing to compare against.
+      // Recorded once, so an interview that ran unverified says so.
+      if (!isReady) {
+        if (!reportedUnregisteredRef.current) {
+          reportedUnregisteredRef.current = true;
+          recordViolationEvent({
+            source: "face_match",
+            type: "FACE_MISMATCH",
+            outcome: "not_registered",
+          });
+        }
+        return;
+      }
+
+      if (!sample?.file || inFlightRef.current) return;
+
+      // A blind stretch breaks the evidence chain. The threshold follows the
+      // cadence actually in use, or a detection backoff would look like a gap
+      // on every sample and no streak could ever build.
+      const capturedAt = sample.capturedAt ?? Date.now();
+      const blindAfter = Math.max(RESEED_AFTER_GAP_MS, (sample.intervalMs ?? 0) * 2);
+      if (lastSampleAtRef.current && capturedAt - lastSampleAtRef.current > blindAfter) {
+        streakRef.current = 0;
+      }
+      lastSampleAtRef.current = capturedAt;
+
+      inFlightRef.current = true;
+      try {
+        const result = await mutateAsync({ imageFile: sample.file });
+        if (!stoppedRef.current) evaluate(result);
+      } catch {
+        streakRef.current = 0;
+        recordViolationEvent({ source: "face_match", type: "FACE_MISMATCH", outcome: "failed" });
+      } finally {
+        inFlightRef.current = false;
+      }
+    },
+    [sessionId, isReady, mutateAsync, evaluate],
+  );
+
+  // Verification is a proctoring control, so losing it has to leave a trace
+  // rather than quietly stopping. It never counts against the candidate.
+  useEffect(() => {
+    if (!isVerificationUnavailable) return;
+    stoppedRef.current = true;
+    queueMicrotask(() => setIsMonitoringStopped(true));
+    recordViolationEvent({
+      source: "face_match",
+      type: "FACE_MISMATCH",
+      outcome: "verification_unavailable",
+    });
+  }, [isVerificationUnavailable]);
 
   return {
     mismatchCount,
     isMonitoringStopped,
-    continuousVerifyQuery,
+    isVerificationUnavailable,
+    verifySample,
+    verifyMutation,
   };
 };

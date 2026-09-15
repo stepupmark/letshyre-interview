@@ -1,11 +1,3 @@
-/**
- * Shared webcam frame-capture helpers.
- *
- * Single implementation used by both the proctoring loop (base64 frame → CV
- * /detect) and the face-match monitor (File → /continuous-verify), so the
- * readiness guard and capture logic can't drift apart.
- */
-
 /** True when the video element currently has a decodable frame. */
 export function isVideoReady(video) {
   return (
@@ -19,6 +11,7 @@ export function isVideoReady(video) {
 }
 
 let sharedCanvas = null;
+let scaledCanvas = null;
 
 /** Draws the current frame to a canvas, scaled down (never up) to fit maxWidth/maxHeight. Returns null if the video isn't ready. */
 export function captureCanvas(video, { maxWidth, maxHeight } = {}) {
@@ -47,14 +40,34 @@ export function dataUrlToFile(dataUrl, filename) {
   return new File([u8], filename, { type: mime });
 }
 
-export function captureFrameBase64(video, opts = {}) {
-  const canvas = captureCanvas(video, opts);
-  if (!canvas) return null;
-  return canvas.toDataURL("image/jpeg", opts.quality ?? 0.92).split(",")[1];
-}
+/**
+ * One draw of the video, two payloads: the downscaled base64 that detection
+ * sends and the full-size File that face verification sends. Capturing them
+ * separately let the two checks describe different moments.
+ */
+export function captureSample(video, opts = {}) {
+  const source = captureCanvas(video);
+  if (!source) return null;
 
-export function captureFrameFile(video, filename = "frame.jpg", opts = {}) {
-  const canvas = captureCanvas(video, opts);
-  if (!canvas) return null;
-  return dataUrlToFile(canvas.toDataURL("image/jpeg", opts.quality ?? 0.92), filename);
+  const file = dataUrlToFile(
+    source.toDataURL("image/jpeg", opts.fileQuality ?? 0.92),
+    opts.filename ?? "frame.jpg",
+  );
+
+  const { maxWidth, maxHeight } = opts;
+  const scale =
+    maxWidth && maxHeight ? Math.min(maxWidth / source.width, maxHeight / source.height, 1) : 1;
+  const w = Math.max(1, Math.round(source.width * scale));
+  const h = Math.max(1, Math.round(source.height * scale));
+
+  if (!scaledCanvas) scaledCanvas = document.createElement("canvas");
+  if (scaledCanvas.width !== w) scaledCanvas.width = w;
+  if (scaledCanvas.height !== h) scaledCanvas.height = h;
+  scaledCanvas.getContext("2d").drawImage(source, 0, 0, w, h);
+
+  return {
+    frame: scaledCanvas.toDataURL("image/jpeg", opts.quality ?? 0.92).split(",")[1],
+    file,
+    capturedAt: Date.now(),
+  };
 }

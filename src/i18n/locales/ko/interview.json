@@ -39,7 +39,8 @@
     "warning": "경고",
     "defaultTitle": "창 전환 경고",
     "defaultDescription": "인터뷰 화면을 벗어나는 행위는 위반 사항으로 기록됩니다",
-    "defaultButtonText": "확인했습니다, 인터뷰로 돌아가기"
+    "defaultButtonText": "확인했습니다, 인터뷰로 돌아가기",
+    "finalWarning": "마지막 경고입니다. 한 번 더 위반하면 면접이 종료됩니다."
   },
   "autoSubmitLoader": {
     "noInternet": "인터넷 연결 없음",
@@ -65,5 +66,45 @@
     "waitingError": "다시 제출하려면 \"다시 시도\"를 누르세요. 진행 상황은 안전하게 보관됩니다.",
     "waitingSuccess": "결과 페이지로 이동하는 중…",
     "waitingSubmitting": "이 페이지를 닫거나 새로고침하지 말고 기다려 주십시오."
+  },
+  "violations": {
+    "faceMismatch": {
+      "title": "신원 확인 실패",
+      "description": "카메라에 보이는 사람이 본인인지 확인할 수 없습니다. 얼굴이 밝고 선명하게 보이도록 해주세요."
+    }
+  },
+  "termination": {
+    "acknowledge": "확인했습니다",
+    "countdown": "{{count}}초 후 자동으로 진행됩니다",
+    "violationLimit": {
+      "title": "면접 종료",
+      "pill": "정책 위반",
+      "description": "위반이 {{violations}}회에 도달했습니다. 완료한 답변과 함께 면접이 제출되었습니다."
+    },
+    "faceMismatch": {
+      "title": "면접 종료",
+      "pill": "신원 확인 실패",
+      "description": "신원 확인이 연속 {{faceMismatches}}회 실패하여 카메라에 보이는 사람이 본인인지 확인할 수 없었습니다. 완료한 답변과 함께 면접이 제출되었습니다."
+    },
+    "networkDisconnects": {
+      "title": "면접 종료",
+      "pill": "연결 끊김",
+      "description": "연결이 {{disconnects}}회 끊겼습니다. 완료한 답변과 함께 면접이 제출되었습니다."
+    },
+    "timeExpired": {
+      "title": "시간 종료",
+      "pill": "제한 시간 도달",
+      "description": "면접 시간이 종료되었습니다. 답변이 제출되었습니다."
+    },
+    "electronSecurity": {
+      "title": "면접 종료",
+      "pill": "보안 위반",
+      "description": "보안 정책 위반으로 면접이 종료되었습니다. 완료한 답변과 함께 제출되었습니다."
+    },
+    "generic": {
+      "title": "면접 종료",
+      "pill": "자동 제출",
+      "description": "완료한 답변과 함께 면접이 제출되었습니다."
+    }
   }
 }

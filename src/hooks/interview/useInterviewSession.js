@@ -4,6 +4,7 @@ import { useStartInterviewMutation } from "@mutations/useStartInterviewMutation"
 import { useSubmitAnswerMutation } from "@mutations/useSubmitAnswerMutation";
 import { useAutoSubmitFlow } from "./useAutoSubmitFlow";
 import {
+  MAX_INTERNET_DISCONNECTS,
   MAX_VIOLATIONS,
   INTERVIEW_DURATION_MINUTES,
   INTERVIEW_SESSION_STORAGE_KEY,
@@ -84,6 +85,7 @@ export function useInterviewSession() {
    * especially in React StrictMode
    */
   const hasInitializedRef = useRef(false);
+  const disconnectCountRef = useRef(0);
 
   /**
    * Persist session automatically
@@ -275,31 +277,32 @@ export function useInterviewSession() {
     });
 
   /**
-   * Listen to network connectivity offline/online events.
-   * Only tracks disconnect count and shows toasts. Auto-submit is
-   * triggered reactively by useAutoSubmitFlow's internet_disconnect_count effect.
+   * Tracks the disconnect count and toasts it. Auto-submit is triggered
+   * reactively by useAutoSubmitFlow's internet_disconnect_count effect.
    */
   useEffect(() => {
     if (!session || session.status !== SESSION_STATUS.ACTIVE) return;
 
+    // The strike is counted here rather than inside the setSession updater:
+    // StrictMode runs that updater twice, which fired the toast twice.
+    disconnectCountRef.current = session.internet_disconnect_count || 0;
+
     const handleOffline = () => {
-      setSession((prev) => {
-        if (!prev || prev.status !== SESSION_STATUS.ACTIVE) return prev;
+      disconnectCountRef.current += 1;
+      const count = disconnectCountRef.current;
 
-        const newCount = (prev.internet_disconnect_count || 0) + 1;
-        logger.warn(`[Network] ⚠️ Offline event fired. Disconnection count: ${newCount}`);
+      logger.warn(`[Network] ⚠️ Offline event fired. Disconnection count: ${count}`);
 
-        toast.error(`Internet disconnected! (Strike ${newCount} of 3)`, {
-          description:
-            "Your interview will be automatically submitted if your connection drops 3 times.",
-          duration: 7000,
-        });
-
-        return {
-          ...prev,
-          internet_disconnect_count: newCount,
-        };
+      toast.error(`Internet disconnected! (Strike ${count} of ${MAX_INTERNET_DISCONNECTS})`, {
+        description: `Your interview will be automatically submitted if your connection drops ${MAX_INTERNET_DISCONNECTS} times.`,
+        duration: 7000,
       });
+
+      setSession((prev) =>
+        prev && prev.status === SESSION_STATUS.ACTIVE
+          ? { ...prev, internet_disconnect_count: count }
+          : prev,
+      );
     };
 
     const handleOnline = () => {

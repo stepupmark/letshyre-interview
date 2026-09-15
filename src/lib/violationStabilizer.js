@@ -6,6 +6,9 @@
  * sliding window, so a detection that flickers off for a frame still confirms,
  * and a candidate alternating between two violations can't reset both.
  *
+ * A tick reports every violation it saw rather than only the most severe, so a
+ * frame holding both a second person and a phone builds evidence for both.
+ *
  * Callers can pass a narrower `key` than the type — object violations use
  * "PROHIBITED_OBJECT:<label>" so a laptop on the desk can't bank evidence
  * towards confirming a phone, while the same phone flipping between furniture
@@ -16,7 +19,6 @@ const CONFIRM_RULES = {
   NO_FACE: { needed: 2, window: 3 },
   MULTIPLE_FACES: { needed: 2, window: 3 },
   PROHIBITED_OBJECT: { needed: 2, window: 3 },
-  FACE_MISMATCH: { needed: 3, window: 5 },
   NOT_LOOKING: { needed: 3, window: 5 },
   EYES_CLOSED: { needed: 3, window: 5 },
 };
@@ -26,6 +28,8 @@ const DEFAULT_RULE = { needed: 2, window: 3 };
 export function confirmRuleFor(key) {
   return CONFIRM_RULES[String(key).split(":")[0]] ?? DEFAULT_RULE;
 }
+
+const keyOf = (violation) => violation.key ?? violation.type;
 
 export function createViolationStabilizer() {
   const windows = new Map();
@@ -42,15 +46,16 @@ export function createViolationStabilizer() {
   }
 
   return {
-    push(violation) {
-      const seen = violation ? (violation.key ?? violation.type) : null;
+    /** Takes the frame's violations, returns the subset that just confirmed. */
+    push(violations) {
+      const batch = Array.isArray(violations) ? violations : violations ? [violations] : [];
+      const seen = new Set(batch.map(keyOf));
 
       for (const key of windows.keys()) {
-        if (key !== seen) observe(key, false);
+        if (!seen.has(key)) observe(key, false);
       }
 
-      if (!seen) return null;
-      return observe(seen, true) ? violation : null;
+      return batch.filter((violation) => observe(keyOf(violation), true));
     },
 
     // Called only once a confirmed violation actually reaches the candidate.

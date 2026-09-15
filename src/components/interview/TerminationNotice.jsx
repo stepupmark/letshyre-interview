@@ -12,8 +12,7 @@ export default function TerminationNotice({ reason, secondsLeft, onAcknowledge }
   const { t } = useTranslation("interview");
   const { titleKey, descriptionKey, pillKey, imagePath, punitive } = getTerminationCopy(reason);
 
-  // Every limit is passed to each string; i18next ignores the ones a given
-  // message doesn't interpolate.
+  // i18next ignores the counts a given message doesn't interpolate.
   const counts = {
     violations: MAX_VIOLATIONS,
     faceMismatches: FACE_MISMATCH_LIMIT,
@@ -48,8 +47,8 @@ export default function TerminationNotice({ reason, secondsLeft, onAcknowledge }
           </div>
 
           <div className="mt-2 flex items-center justify-center">
-            <div className="relative h-[220px] w-[330px]">
-              <img src={imagePath} alt="" />
+            <div className="h-[220px] w-[330px]">
+              <img src={imagePath} alt="" className="h-full w-full object-contain" />
             </div>
           </div>
 
