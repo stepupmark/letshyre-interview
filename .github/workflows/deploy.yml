@@ -44,6 +44,7 @@ jobs:
           VITE_DEBUG_LOGS: ${{ vars.VITE_DEBUG_LOGS }}
           VITE_AI_PROHIBIT_LAPTOP: ${{ vars.VITE_AI_PROHIBIT_LAPTOP }}
           VITE_AI_SHADOW_LABELS: ${{ vars.VITE_AI_SHADOW_LABELS }}
+          VITE_AI_OBJECT_CONFIDENCE_FLOOR: ${{ vars.VITE_AI_OBJECT_CONFIDENCE_FLOOR }}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
