@@ -266,6 +266,7 @@ export function useProctoringSystem(
   const burstsUsedRef = useRef(0);
   const intervalRef = useRef(DETECT_INTERVAL_MS);
   const incidentsRef = useRef(createIncidentTracker());
+  const struckIncidentsRef = useRef(new Map());
 
   const [isDegraded, setIsDegraded] = useState(false);
 
@@ -416,6 +417,7 @@ export function useProctoringSystem(
 
       if (outcome === "raised" || outcome === "at_limit" || outcome === "warned") {
         stabilizerRef.current.commit(key);
+        struckIncidentsRef.current.set(key, startedAt);
         raised = true;
         logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
       }
@@ -440,9 +442,10 @@ export function useProctoringSystem(
     }
 
     busyRef.current = true;
-    // Verification waits for detection so it only compares frames with one face.
-    // Unknown when detection fails, so identity still runs through an outage.
+    // Verification waits for detection so it only compares clear, single-face
+    // frames. Both stay unknown when detection fails, so identity still runs.
     let faceCount;
+    let faceConfidence;
 
     try {
       logger.log("[Proctoring] 🤖 Sending frame to AI detection API…");
@@ -464,6 +467,7 @@ export function useProctoringSystem(
       faceCount = cleanResult.face_detected
         ? Math.max(cleanResult.face_count ?? 1, cleanResult.yolo_person_count ?? 0, 1)
         : 0;
+      faceConfidence = cleanResult.confidence_score;
 
       queueRef.current.push({
         timestamp: new Date().toISOString(),
@@ -488,15 +492,16 @@ export function useProctoringSystem(
         now,
       );
 
+      // A held phone often drops out of a single frame, so a miss lets the burst
+      // finish instead of falling straight back to the slow cadence.
       const worthBursting = detected.some((violation) => BURST_TYPES.has(violation.type));
-      if (worthBursting && consecutiveFailuresRef.current === 0) {
+      if (worthBursting) {
         if (burstsUsedRef.current < MAX_BURSTS) {
           burstRemainingRef.current = BURST_SAMPLES;
           burstsUsedRef.current += 1;
         }
-      } else {
-        burstRemainingRef.current = 0;
-        if (!detected.length) burstsUsedRef.current = 0;
+      } else if (!detected.length && burstRemainingRef.current === 0) {
+        burstsUsedRef.current = 0;
       }
 
       // Re-check isActive after the async call — the session may have ended
@@ -509,17 +514,26 @@ export function useProctoringSystem(
         }
       }
 
+      // A commit clears the window, so the same object right after its strike
+      // would otherwise log as a fresh, unconfirmed sighting.
+      const struck = struckIncidentsRef.current;
       for (const violation of detected) {
-        if (!confirmed.includes(violation)) {
-          recordDecision(violation, "unconfirmed", cleanResult.frame_quality);
-        }
+        if (confirmed.includes(violation)) continue;
+        const key = violation.key ?? violation.type;
+        const held = struck.has(key) && struck.get(key) === incidentsRef.current.startedAt(key);
+        recordDecision(violation, held ? "held" : "unconfirmed", cleanResult.frame_quality);
       }
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
       recordFailure(err?.message || "request_failed");
     } finally {
       if (isActiveRef.current) {
-        onSampleRef.current?.({ ...sample, intervalMs: intervalRef.current, faceCount });
+        onSampleRef.current?.({
+          ...sample,
+          intervalMs: intervalRef.current,
+          faceCount,
+          faceConfidence,
+        });
       }
       busyRef.current = false;
       scheduleNext();
@@ -630,6 +644,7 @@ export function useProctoringSystem(
       burstRemainingRef.current = 0;
       burstsUsedRef.current = 0;
       incidentsRef.current.reset();
+      struckIncidentsRef.current.clear();
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
       timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);

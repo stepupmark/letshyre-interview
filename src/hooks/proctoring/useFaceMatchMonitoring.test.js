@@ -334,6 +334,63 @@ describe("useFaceMatchMonitoring", () => {
     expect(autoSubmit).not.toHaveBeenCalled();
   });
 
+  it("skips the unclear faces that produced false mismatches in the live log", async () => {
+    const { onViolation, result } = setup();
+    const events = [];
+    const unsubscribe = subscribeToViolationLog((event) => events.push(event));
+
+    for (const [faceConfidence, capturedAt] of [
+      [0.759, 5000],
+      [0.64, 10000],
+    ]) {
+      await act(async () => {
+        await result.current.verifySample({ ...SAMPLE, faceCount: 1, faceConfidence, capturedAt });
+      });
+    }
+    unsubscribe();
+
+    expect(mutateAsync).not.toHaveBeenCalled();
+    expect(onViolation).not.toHaveBeenCalled();
+    expect(events.map((e) => [e.outcome, e.face_confidence])).toEqual([
+      ["skipped", 0.759],
+      ["skipped", 0.64],
+    ]);
+  });
+
+  it("compares a clear face", async () => {
+    const { result } = setup();
+    mutateAsync.mockResolvedValueOnce(MATCH);
+
+    await act(async () => {
+      await result.current.verifySample({
+        ...SAMPLE,
+        faceCount: 1,
+        faceConfidence: 0.926,
+        capturedAt: 5000,
+      });
+    });
+
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("neither counts nor breaks a streak on an unclear face", async () => {
+    const { autoSubmit, sample, result } = setup();
+
+    await sample(MISMATCH, 1);
+    await act(async () => {
+      await result.current.verifySample({
+        ...SAMPLE,
+        faceCount: 1,
+        faceConfidence: 0.5,
+        capturedAt: 7500,
+      });
+    });
+    expect(result.current.mismatchCount).toBe(1);
+
+    await sample(MISMATCH, 1);
+    expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
+  });
+
   it("stops verifying once the session is repeatedly rejected", async () => {
     const { sample, result } = setup();
 

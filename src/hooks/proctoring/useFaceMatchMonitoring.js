@@ -7,6 +7,9 @@ import { violationCopy } from "@/lib/violationCopy";
 import { recordViolationEvent } from "@/lib/violationLog";
 
 const MAX_UNAVAILABLE = 3;
+// Every false mismatch in real logs came from a frame the detector scored below
+// this; genuine matches sat well above it.
+export const MIN_FACE_CONFIDENCE = 0.8;
 
 // `violation` carries two unrelated things. These are identity verdicts; the
 // rest are frame conditions that stopped the comparison from happening.
@@ -170,6 +173,18 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
       // mismatch read from it would end the interview of someone who leaned away.
       if (sample.faceCount !== undefined && sample.faceCount !== 1) {
         streakRef.current = 0;
+        return;
+      }
+
+      // A blurred or turned face says nothing about identity either way, so it
+      // neither counts toward nor breaks a streak.
+      if (sample.faceConfidence !== undefined && sample.faceConfidence < MIN_FACE_CONFIDENCE) {
+        recordViolationEvent({
+          source: "face_match",
+          type: "FACE_MISMATCH",
+          outcome: "skipped",
+          face_confidence: sample.faceConfidence,
+        });
         return;
       }
 
