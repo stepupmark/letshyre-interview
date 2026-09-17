@@ -45,10 +45,16 @@
     "microphone": "Micro",
     "microphoneFallback": "Micro {{number}}",
     "inputLevel": "Niveau du micro",
+    "micMuted": "Votre micro semble coupé. Réactivez-le pour continuer l'enregistrement.",
     "errors": {
       "micUnavailable": "L'accès au micro a été refusé ou est indisponible. Vérifiez les autorisations du navigateur et réessayez.",
       "noSound": "Aucun son n'a été capté. Vérifiez que votre micro est branché et non coupé, puis enregistrez à nouveau.",
-      "playbackFailed": "Votre enregistrement n'a pas pu être lu. Veuillez réenregistrer votre réponse."
+      "playbackFailed": "Votre enregistrement n'a pas pu être lu. Veuillez réenregistrer votre réponse.",
+      "unplayable": "Votre enregistrement n'a pas pu être enregistré dans un format lisible. Veuillez réenregistrer.",
+      "playbackBlocked": "Votre navigateur a bloqué la lecture. Appuyez de nouveau sur Écouter.",
+      "virtualMic": "Les périphériques audio virtuels ou de bouclage ne sont pas autorisés. Choisissez votre vrai micro et réenregistrez.",
+      "micDisconnected": "Votre micro a été déconnecté. Rebranchez-le ou choisissez-en un autre, puis réenregistrez.",
+      "micSwitched": "Le micro sélectionné n'est plus disponible, nous en avons donc choisi un autre."
     }
   },
   "shell": {

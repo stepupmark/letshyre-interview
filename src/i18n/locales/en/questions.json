@@ -45,10 +45,16 @@
     "microphone": "Microphone",
     "microphoneFallback": "Microphone {{number}}",
     "inputLevel": "Microphone level",
+    "micMuted": "Your microphone seems muted. Unmute it to keep recording.",
     "errors": {
       "micUnavailable": "Microphone access was denied or is unavailable. Check your browser permissions and try again.",
       "noSound": "No sound was captured. Check that your microphone is connected and not muted, then record again.",
-      "playbackFailed": "Your recording couldn't be played back. Please re-record your answer."
+      "playbackFailed": "Your recording couldn't be played back. Please re-record your answer.",
+      "unplayable": "Your recording couldn't be saved in a playable format. Please record again.",
+      "playbackBlocked": "Your browser blocked playback. Press Listen again.",
+      "virtualMic": "Virtual or loopback audio devices aren't allowed. Choose your real microphone and record again.",
+      "micDisconnected": "Your microphone was disconnected. Reconnect it or choose another one, then record again.",
+      "micSwitched": "Your selected microphone isn't available anymore, so we switched to another one."
     }
   },
   "shell": {

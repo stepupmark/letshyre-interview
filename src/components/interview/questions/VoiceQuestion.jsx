@@ -20,6 +20,10 @@ import { useTranslation } from "react-i18next";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useVoiceEnrollment } from "@mutations/useVoiceEnrollment";
 import { useVoiceCompare } from "@mutations/useVoiceCompare";
+import { recordViolationEvent } from "@/lib/violationLog";
+
+const VOICE_MATCH_THRESHOLD = 0.6;
+const WARNING_CODES = new Set(["micSwitched"]);
 
 function VoiceCompareResult({ isComparing, result }) {
   const { t } = useTranslation("questions");
@@ -141,6 +145,14 @@ export default function VoiceQuestion({
     reset: resetCompare,
   } = useVoiceCompare(
     (data) => {
+      // Logged for reviewers only; the threshold is too loose to strike on.
+      recordViolationEvent({
+        source: "voice",
+        type: "VOICE_MISMATCH",
+        outcome: data?.data?.matched ? "matched" : "mismatch",
+        score: data?.data?.score ?? null,
+        question_number: questionNumber ?? null,
+      });
       if (!data?.data?.matched) {
         toast.warning(t("voice.mismatchToast"), {
           duration: 5000,
@@ -153,7 +165,10 @@ export default function VoiceQuestion({
   );
 
   useEffect(() => {
-    if (recorder.error) toast.error(t(`voice.errors.${recorder.error.code}`));
+    if (!recorder.error) return;
+    const { code } = recorder.error;
+    const notify = WARNING_CODES.has(code) ? toast.warning : toast.error;
+    notify(t(`voice.errors.${code}`));
   }, [recorder.error, t]);
 
   const lastComparedRef = useRef(null);
@@ -161,7 +176,7 @@ export default function VoiceQuestion({
     const blob = recorder.audioBlob;
     if (blob && blob !== lastComparedRef.current) {
       lastComparedRef.current = blob;
-      compare({ audioBlob: blob, enrollmentId, threshold: 0.6 });
+      compare({ audioBlob: blob, enrollmentId, threshold: VOICE_MATCH_THRESHOLD });
     }
   }, [recorder.audioBlob, enrollmentId, compare]);
 
@@ -189,7 +204,6 @@ export default function VoiceQuestion({
   }, [recorder.audioBlob, onSubmit, t]);
 
   const questionText = question?.text || question?.question || "";
-  const deviceValue = recorder.deviceId || recorder.devices[0]?.deviceId || "";
 
   return (
     <QuestionShell
@@ -213,8 +227,8 @@ export default function VoiceQuestion({
               {t("voice.microphone")}
             </span>
             <select
-              value={deviceValue}
-              onChange={(e) => recorder.setDeviceId(e.target.value)}
+              value={recorder.deviceId}
+              onChange={(e) => recorder.selectDevice(e.target.value)}
               disabled={isCapturing}
               className="h-10 max-w-full min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-[14px] text-slate-800 disabled:opacity-60 sm:max-w-sm"
             >
@@ -300,7 +314,9 @@ export default function VoiceQuestion({
                 : isStarting
                   ? t("voice.preparing")
                   : isRecording
-                    ? t("voice.recordingStatus")
+                    ? recorder.inputMuted
+                      ? t("voice.micMuted")
+                      : t("voice.recordingStatus")
                     : t("voice.readyStatus")}
             </p>
             {isCapturing && <LevelMeter level={recorder.level} />}

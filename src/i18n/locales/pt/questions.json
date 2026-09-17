@@ -45,10 +45,16 @@
     "microphone": "Microfone",
     "microphoneFallback": "Microfone {{number}}",
     "inputLevel": "Nível do microfone",
+    "micMuted": "Seu microfone parece estar sem som. Ative-o para continuar gravando.",
     "errors": {
       "micUnavailable": "O acesso ao microfone foi negado ou está indisponível. Verifique as permissões do navegador e tente novamente.",
       "noSound": "Nenhum som foi capturado. Verifique se o microfone está conectado e sem mudo e grave novamente.",
-      "playbackFailed": "Não foi possível reproduzir sua gravação. Grave sua resposta novamente."
+      "playbackFailed": "Não foi possível reproduzir sua gravação. Grave sua resposta novamente.",
+      "unplayable": "Não foi possível salvar sua gravação em um formato reproduzível. Grave novamente.",
+      "playbackBlocked": "Seu navegador bloqueou a reprodução. Pressione Ouvir novamente.",
+      "virtualMic": "Dispositivos de áudio virtuais ou de loopback não são permitidos. Escolha seu microfone real e grave novamente.",
+      "micDisconnected": "Seu microfone foi desconectado. Reconecte-o ou escolha outro e grave novamente.",
+      "micSwitched": "O microfone selecionado não está mais disponível, então mudamos para outro."
     }
   },
   "shell": {

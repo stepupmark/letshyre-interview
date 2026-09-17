@@ -8,8 +8,8 @@
     "enrolling": "음성을 등록하는 중…", "enrolled": "음성이 등록되었습니다", "mismatchToast": "음성 불일치가 감지되었습니다. 등록된 본인의 음성을 사용하고 있는지 확인해 주십시오.", "compareFailed": "음성 비교에 실패했습니다.",
     "recordAnswer": "계속하려면 답변을 녹음해 주십시오.", "startRecording": "녹음 시작", "stopRecording": "녹음 중지", "listen": "듣기", "pause": "일시 정지", "reRecord": "다시 녹음",
     "recordedStatus": "오디오가 성공적으로 녹음되었습니다. 재생하거나 다시 녹음할 수 있습니다.", "recordingStatus": "녹음 진행 중…", "readyStatus": "준비되면 녹음할 수 있습니다",
-    "tipsTitle": "녹음 팁", "tip1": "명확하고 일정한 속도로 말씀해 주세요", "tip2": "마이크가 음소거되어 있지 않은지 확인하세요", "tip3": "배경 소음을 최소화하도록 노력하세요", "preparing": "마이크를 준비하는 중…", "microphone": "마이크", "microphoneFallback": "마이크 {{number}}", "inputLevel": "마이크 음량",
-    "errors": { "micUnavailable": "마이크 접근이 거부되었거나 사용할 수 없습니다. 브라우저 권한을 확인하고 다시 시도하세요.", "noSound": "소리가 녹음되지 않았습니다. 마이크가 연결되어 있고 음소거되지 않았는지 확인한 후 다시 녹음하세요.", "playbackFailed": "녹음을 재생할 수 없습니다. 답변을 다시 녹음해 주세요." }
+    "tipsTitle": "녹음 팁", "tip1": "명확하고 일정한 속도로 말씀해 주세요", "tip2": "마이크가 음소거되어 있지 않은지 확인하세요", "tip3": "배경 소음을 최소화하도록 노력하세요", "preparing": "마이크를 준비하는 중…", "microphone": "마이크", "microphoneFallback": "마이크 {{number}}", "inputLevel": "마이크 음량", "micMuted": "마이크가 음소거된 것 같습니다. 녹음을 계속하려면 음소거를 해제하세요.",
+    "errors": { "micUnavailable": "마이크 접근이 거부되었거나 사용할 수 없습니다. 브라우저 권한을 확인하고 다시 시도하세요.", "noSound": "소리가 녹음되지 않았습니다. 마이크가 연결되어 있고 음소거되지 않았는지 확인한 후 다시 녹음하세요.", "playbackFailed": "녹음을 재생할 수 없습니다. 답변을 다시 녹음해 주세요.", "unplayable": "녹음을 재생 가능한 형식으로 저장하지 못했습니다. 다시 녹음해 주세요.", "playbackBlocked": "브라우저가 재생을 차단했습니다. 듣기를 다시 눌러 주세요.", "virtualMic": "가상 또는 루프백 오디오 장치는 사용할 수 없습니다. 실제 마이크를 선택하고 다시 녹음하세요.", "micDisconnected": "마이크 연결이 끊어졌습니다. 다시 연결하거나 다른 마이크를 선택한 후 다시 녹음하세요.", "micSwitched": "선택한 마이크를 더 이상 사용할 수 없어 다른 마이크로 전환했습니다." }
   },
   "shell": { "submittingFinal": "최종 답변을 제출하는 중입니다...", "generatingNext": "다음 인터뷰 질문을 생성하는 중입니다...", "submitting": "제출하는 중...", "submitInterview": "인터뷰 제출", "nextQuestion": "다음 질문" },
   "loader": { "preparing": "다음 질문을 준비하는 중입니다…" }
