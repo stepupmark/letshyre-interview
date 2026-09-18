@@ -1,5 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
-import { getElectronViolationKey, useViolationMonitor } from "./useViolationMonitor";
+import {
+  getElectronViolationKey,
+  REMINDER_INTERVAL_MS,
+  useViolationMonitor,
+} from "./useViolationMonitor";
 import { MAX_VIOLATIONS } from "@/config/interview";
 
 vi.mock("react-i18next", () => ({
@@ -508,6 +512,13 @@ describe("useViolationMonitor modal lifecycle", () => {
     descriptionKey: "violations.prohibitedObject.description",
   };
   const laptopIncident = { ...phoneIncident, key: "PROHIBITED_OBJECT:laptop", label: "laptop" };
+  const objectsInView = {
+    ...phoneIncident,
+    strikeKey: "PROHIBITED_OBJECT",
+    incidentStartedAt: 0,
+    restrikeAfterMs: 60_000,
+    maxRestrikes: 1,
+  };
 
   it("strikes each newly introduced object even inside the strike gap", () => {
     const { result, incrementViolation } = setup();
@@ -525,10 +536,16 @@ describe("useViolationMonitor modal lifecycle", () => {
 
     act(() => result.current.handleAiViolation(phoneIncident));
     act(() => result.current.dismissWarning());
+    act(() => vi.advanceTimersByTime(REMINDER_INTERVAL_MS));
 
     let outcome;
     act(() => {
-      outcome = result.current.handleAiViolation({ ...phoneIncident, ongoing: true });
+      outcome = result.current.handleAiViolation({
+        ...phoneIncident,
+        ongoing: true,
+        restrikeAfterMs: 60_000,
+        maxRestrikes: 1,
+      });
     });
 
     expect(outcome).toBe("warned");
@@ -537,6 +554,42 @@ describe("useViolationMonitor modal lifecycle", () => {
 
     act(() => result.current.handleAiViolation(laptopIncident));
     expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("reminds about an object kept in view every 30s and strikes it once more after a minute", () => {
+    const { result, incrementViolation } = setup();
+    const outcomes = [];
+
+    for (let ms = 0; ms <= 180_000; ms += 5_000) {
+      act(() => {
+        const outcome = result.current.handleAiViolation({ ...objectsInView, ongoing: ms > 0 });
+        if (outcome === "raised" || outcome === "warned") outcomes.push([ms, outcome]);
+      });
+      act(() => result.current.dismissWarning());
+      act(() => vi.advanceTimersByTime(5_000));
+    }
+
+    expect(outcomes).toEqual([
+      [0, "raised"],
+      [30_000, "warned"],
+      [60_000, "raised"],
+      [90_000, "warned"],
+      [120_000, "warned"],
+      [150_000, "warned"],
+      [180_000, "warned"],
+    ]);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("counts a phone and a laptop that appear together as one strike", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() =>
+      result.current.handleAiViolation({ ...objectsInView, labels: ["cell phone", "laptop"] }),
+    );
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo.labels).toEqual(["cell phone", "laptop"]);
   });
 
   it("counts a candidate who stays away once per interval without warnings between", () => {

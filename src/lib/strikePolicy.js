@@ -28,6 +28,7 @@ export function createStrikePolicy(options = {}) {
 
   let lastRaisedAt = new Map();
   let struckAt = new Map();
+  let restrikes = new Map();
   let repeats = new Map();
   let lastStrikeAt = null;
   let suppressUntil = 0;
@@ -51,6 +52,8 @@ export function createStrikePolicy(options = {}) {
         ongoing = false,
         incident = false,
         startedAt,
+        restrikeAfterMs = restrikeMs,
+        maxRestrikes = Infinity,
         now = Date.now(),
       } = {},
     ) {
@@ -61,14 +64,18 @@ export function createStrikePolicy(options = {}) {
       // back is a second act, so a new incident goes straight through.
       const newIncident =
         struck === undefined || (startedAt === undefined ? !ongoing : struck < startedAt);
-      if (perIncident && newIncident) return record(type, now, true, false);
+      if (perIncident && newIncident) {
+        restrikes.set(type, 0);
+        return record(type, now, true, false);
+      }
 
       if (now < suppressUntil) return "suppressed";
+      if (perIncident && (restrikes.get(type) ?? 0) >= maxRestrikes) return "held";
 
       const previous = perIncident ? struck : lastRaisedAt.get(type);
       if (previous !== undefined) {
         const wait = perIncident
-          ? restrikeMs
+          ? restrikeAfterMs
           : cooldownFor((repeats.get(type) ?? 1) - 1, cooldownMs, maxCooldownMs);
         if (now - previous < wait) return "cooldown";
       }
@@ -77,12 +84,13 @@ export function createStrikePolicy(options = {}) {
         return "strike_interval";
       }
 
+      if (perIncident) restrikes.set(type, (restrikes.get(type) ?? 0) + 1);
       return record(type, now, countsAsStrike, ongoing);
     },
 
-    struckWithin(type, ms = restrikeMs, now = Date.now()) {
+    struckSince(type, startedAt) {
       const at = struckAt.get(type);
-      return at !== undefined && now - at < ms;
+      return at !== undefined && (startedAt === undefined || at >= startedAt);
     },
 
     // Used after the modal closes itself rather than by a candidate action: the
@@ -95,6 +103,7 @@ export function createStrikePolicy(options = {}) {
     reset() {
       lastRaisedAt = new Map();
       struckAt = new Map();
+      restrikes = new Map();
       repeats = new Map();
       lastStrikeAt = null;
       suppressUntil = 0;

@@ -55,7 +55,10 @@ export function createViolationStabilizer() {
         if (!seen.has(key)) observe(key, false);
       }
 
-      return batch.filter((violation) => observe(keyOf(violation), true));
+      // `instant` skips the wait but still records the hit.
+      return batch.filter(
+        (violation) => observe(keyOf(violation), true) || violation.instant === true,
+      );
     },
 
     // Called only once a confirmed violation actually reaches the candidate.

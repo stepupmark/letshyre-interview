@@ -4,6 +4,15 @@ import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
 import { objectNameKey } from "@/lib/violationCopy";
 
+function listNames(labels, t, language) {
+  const names = labels.map((label) => t(objectNameKey(label)));
+  try {
+    return new Intl.ListFormat(language, { type: "conjunction" }).format(names);
+  } catch {
+    return names.join(", ");
+  }
+}
+
 export default function ViolationWarning({
   isOpen = false,
   onClose,
@@ -13,14 +22,15 @@ export default function ViolationWarning({
   imagePath = "/multi-people.png",
   descriptionKey,
   label,
+  labels,
   buttonText,
   finalWarning,
 }) {
-  const { t } = useTranslation("interview");
+  const { t, i18n } = useTranslation("interview");
   const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
   // Naming the thing beats "prohibited device" — the candidate can only act on
   // the warning if they know what was seen.
-  const object = t(objectNameKey(label));
+  const object = labels?.length > 1 ? listNames(labels, t, i18n.language) : t(objectNameKey(label));
   const resolvedDescription = descriptionKey
     ? t(descriptionKey, { object })
     : t("violationWarning.defaultDescription", { object });

@@ -17,6 +17,10 @@ const AUTO_DISMISS_MS = 20_000;
 // so leave a gap rather than letting the next event land immediately.
 const AUTO_DISMISS_GRACE_MS = 10_000;
 
+// An object kept in view is re-checked every few seconds; the candidate only
+// needs reminding this often.
+export const REMINDER_INTERVAL_MS = 30_000;
+
 // Leaving fullscreen resizes the window, so the resize handler fires right
 // behind fullscreenchange. Without this the candidate is struck twice for one
 // action.
@@ -70,6 +74,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   const tRef = useRef(t);
 
   const isWarningOpenRef = useRef(false);
+  const lastReminderRef = useRef(new Map());
   // Only a modal that just added a strike holds back other violations. One shown
   // for a held-back strike must not, or a phone kept in view would keep it open
   // and no strike could ever land.
@@ -94,19 +99,16 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     tRef.current = t;
   });
 
-  // Single entry point for raising a violation modal. Stable identity (reads live
-  // values via refs) so the once-registered document listeners and the
-  // AI/Electron handlers can all share it without re-binding.
-  //
-  // countsAsViolation=false shows the modal without adding a strike. A held-back
-  // strike shows a warning only when remindWhileHeld is set.
   // Single gate for every violation, whatever raised it. Returns the outcome so
   // the AI loop knows whether its evidence was actually spent.
+  // countsAsViolation=false shows the modal without adding a strike, and a
+  // held-back strike only shows one when remindWhileHeld is set.
   const raiseViolation = useCallback(
     ({
       type,
       source,
       label,
+      labels,
       detail,
       titleKey,
       descriptionKey,
@@ -115,6 +117,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       ongoing = false,
       incident = false,
       incidentStartedAt,
+      restrikeAfterMs,
+      maxRestrikes,
       remindWhileHeld = false,
       finalWarning,
     }) => {
@@ -141,6 +145,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
           descriptionKey,
           imagePath,
           label,
+          labels,
           violationCount,
           counts,
           finalWarning,
@@ -160,6 +165,8 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         ongoing,
         incident,
         startedAt: incidentStartedAt,
+        restrikeAfterMs,
+        maxRestrikes,
       });
 
       if (outcome !== "raised") {
@@ -168,9 +175,14 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         if (warningOpen || !countsAsViolation || !remindWhileHeld || !titleKey) {
           return report(outcome);
         }
+        const now = Date.now();
+        if (now - (lastReminderRef.current.get(key) ?? -Infinity) < REMINDER_INTERVAL_MS) {
+          return report(outcome);
+        }
+        lastReminderRef.current.set(key, now);
         // An object still in view after its strike shows that strike's count, so
         // the candidate can see it was not skipped.
-        const counted = incident && policyRef.current.struckWithin(key);
+        const counted = incident && policyRef.current.struckSince(key, incidentStartedAt);
         show(counted, sessionViolationsRef.current, false);
         return report("warned", undefined, { held_back: outcome });
       }
@@ -178,6 +190,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
       const violationCount = countsAsViolation
         ? incrementViolationRef.current()
         : sessionViolationsRef.current;
+      if (remindWhileHeld) lastReminderRef.current.set(key, Date.now());
 
       // At the limit the session is already terminating, and TerminationNotice
       // owns the screen — showing a dismissible "return to interview" modal on
@@ -261,14 +274,16 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         return "soft";
       }
       return raiseViolation({
-        // Objects are rate-limited per object, so a laptop can't hold back a phone.
-        type: violation.key ?? violation.type,
+        type: violation.strikeKey ?? violation.key ?? violation.type,
         source: "ai",
         label: violation.label,
+        labels: violation.labels,
         detail: violation.detail,
         ongoing: violation.ongoing,
         incident: violation.incident,
         incidentStartedAt: violation.incidentStartedAt,
+        restrikeAfterMs: violation.restrikeAfterMs,
+        maxRestrikes: violation.maxRestrikes,
         remindWhileHeld: violation.remindWhileHeld,
         titleKey: violation.titleKey,
         descriptionKey: violation.descriptionKey,

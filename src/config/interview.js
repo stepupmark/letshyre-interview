@@ -47,11 +47,12 @@ export const PROHIBIT_LAPTOP = import.meta.env.VITE_AI_PROHIBIT_LAPTOP !== "fals
 
 // Labels detected and logged but never surfaced to the candidate, so a new rule
 // can be measured against real interviews before it starts ending them.
+// PROHIBIT_LAPTOP wins: a stale shadow entry muted every laptop in production.
 export const SHADOW_LABELS = new Set(
   (import.meta.env.VITE_AI_SHADOW_LABELS ?? "tv")
     .split(",")
     .map((label) => label.trim().toLowerCase())
-    .filter(Boolean),
+    .filter((label) => label && !(PROHIBIT_LAPTOP && label === "laptop")),
 );
 
 // sessionStorage key holding the in-progress interview session. Shared so the

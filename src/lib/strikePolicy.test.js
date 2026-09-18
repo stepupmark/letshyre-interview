@@ -124,11 +124,42 @@ describe("createStrikePolicy", () => {
     ).toBe("raised");
   });
 
-  it("knows whether an object struck recently", () => {
+  it("knows whether the current incident has struck", () => {
     const policy = createStrikePolicy();
-    policy.admit("PROHIBITED_OBJECT:cell phone", { incident: true, now: 0 });
-    expect(policy.struckWithin("PROHIBITED_OBJECT:cell phone", 30_000, 10_000)).toBe(true);
-    expect(policy.struckWithin("PROHIBITED_OBJECT:cell phone", 30_000, 40_000)).toBe(false);
-    expect(policy.struckWithin("PROHIBITED_OBJECT:laptop", 30_000, 10_000)).toBe(false);
+    policy.admit("PROHIBITED_OBJECT", { incident: true, startedAt: 5_000, now: 5_000 });
+    expect(policy.struckSince("PROHIBITED_OBJECT", 5_000)).toBe(true);
+    expect(policy.struckSince("PROHIBITED_OBJECT", 90_000)).toBe(false);
+    expect(policy.struckSince("NO_FACE", 5_000)).toBe(false);
+  });
+
+  it("strikes a held object once more after a minute, then only holds it", () => {
+    const policy = createStrikePolicy();
+    const rules = { incident: true, startedAt: 0, restrikeAfterMs: 60_000, maxRestrikes: 1 };
+    const held = { ...rules, ongoing: true };
+
+    expect(policy.admit("PROHIBITED_OBJECT", { ...rules, now: 0 })).toBe("raised");
+    expect(policy.admit("PROHIBITED_OBJECT", { ...held, now: 30_000 })).toBe("cooldown");
+    expect(policy.admit("PROHIBITED_OBJECT", { ...held, now: 60_000 })).toBe("raised");
+    expect(policy.admit("PROHIBITED_OBJECT", { ...held, now: 120_000 })).toBe("held");
+    expect(policy.admit("PROHIBITED_OBJECT", { ...held, now: 600_000 })).toBe("held");
+  });
+
+  it("starts the allowance over when the object is brought back", () => {
+    const policy = createStrikePolicy();
+    const rules = { incident: true, restrikeAfterMs: 60_000, maxRestrikes: 1 };
+
+    policy.admit("PROHIBITED_OBJECT", { ...rules, startedAt: 0, now: 0 });
+    policy.admit("PROHIBITED_OBJECT", { ...rules, ongoing: true, startedAt: 0, now: 60_000 });
+    expect(policy.admit("PROHIBITED_OBJECT", { ...rules, startedAt: 200_000, now: 200_000 })).toBe(
+      "raised",
+    );
+    expect(
+      policy.admit("PROHIBITED_OBJECT", {
+        ...rules,
+        ongoing: true,
+        startedAt: 200_000,
+        now: 260_000,
+      }),
+    ).toBe("raised");
   });
 });

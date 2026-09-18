@@ -85,11 +85,11 @@ export function sendUnloadFlush(url, payload) {
 // The area floor drops sub-pixel boxes without touching real detections, and
 // maxBaselineAreaRatio stops something filling the lens from passing as
 // furniture. Class ids are the 80-class COCO set the detector reports.
+// Phones and laptops are never part of the room, so neither earns furniture
+// grace. A clear phone is often on screen for one frame, so it strikes on one.
 const PROHIBITED_OBJECTS = {
-  // A phone is never part of the room, so it can't earn furniture status the
-  // way a monitor or a bookshelf can.
-  "cell phone": { classId: 67, canBaseline: false, minAreaRatio: 0.004 },
-  laptop: { classId: 63, minAreaRatio: 0.005, maxBaselineAreaRatio: 0.25 },
+  "cell phone": { classId: 67, canBaseline: false, minAreaRatio: 0.004, instantConfidence: 0.6 },
+  laptop: { classId: 63, canBaseline: false, minAreaRatio: 0.005 },
   tv: { classId: 62, minAreaRatio: 0.01, maxBaselineAreaRatio: 0.25 },
   book: { classId: 73, minAreaRatio: 0.01, maxBaselineAreaRatio: 0.25 },
 };
@@ -173,8 +173,15 @@ function groupByLabel(classified) {
   return [...groups.values()];
 }
 
+// Every object in view shares one incident: one strike when they appear, and
+// one more if they are still there a minute later.
+export const OBJECT_INCIDENT = "PROHIBITED_OBJECT";
+export const HELD_OBJECT_RESTRIKE_MS = 60_000;
+
 function objectViolation({ label, best, count }) {
   const isEnvironment = ENVIRONMENT_STATES.has(best.state);
+  const instantAt = PROHIBITED_OBJECTS[label]?.instantConfidence;
+  const confidence = best.object?.confidence ?? best.object?.score ?? 0;
 
   return {
     type: "PROHIBITED_OBJECT",
@@ -187,8 +194,36 @@ function objectViolation({ label, best, count }) {
     shadow: SHADOW_LABELS.has(label),
     incident: true,
     remindWhileHeld: true,
-    ...(isEnvironment ? { countsAsViolation: false } : {}),
+    ...(isEnvironment
+      ? { countsAsViolation: false }
+      : {
+          instant: instantAt !== undefined && confidence >= instantAt,
+          restrikeAfterMs: HELD_OBJECT_RESTRIKE_MS,
+          maxRestrikes: 1,
+        }),
   };
+}
+
+const isStrikeableObject = (violation) =>
+  violation.type === OBJECT_INCIDENT && !violation.shadow && violation.countsAsViolation !== false;
+
+export const incidentKeyOf = (violation) =>
+  isStrikeableObject(violation) ? OBJECT_INCIDENT : (violation.key ?? violation.type);
+
+// A phone and a laptop confirming together are one act, so they strike once and
+// the warning names both.
+export function mergeObjectViolations(confirmed) {
+  const objects = confirmed.filter(isStrikeableObject);
+  if (objects.length < 2) return confirmed;
+
+  const merged = {
+    ...objects[0],
+    labels: objects.map((violation) => violation.label),
+    keys: objects.map((violation) => violation.key),
+  };
+  return confirmed.flatMap((violation) =>
+    violation === objects[0] ? [merged] : objects.includes(violation) ? [] : [violation],
+  );
 }
 
 /**
@@ -345,6 +380,7 @@ export function useProctoringSystem(
 
     return {
       label: canonicalLabel(detection),
+      ...(violation.labels ? { labels: violation.labels } : {}),
       confidence: detection.confidence ?? detection.score,
       area_ratio: detection.area_ratio,
       ...(violation.count > 1 ? { count: violation.count } : {}),
@@ -391,8 +427,9 @@ export function useProctoringSystem(
   function dispatchViolations(confirmed, frameQuality, now) {
     let raised = false;
 
-    for (const violation of confirmed) {
+    for (const violation of mergeObjectViolations(confirmed)) {
       const key = violation.key ?? violation.type;
+      const incidentKey = incidentKeyOf(violation);
 
       if (violation.shadow) {
         recordDecision(violation, "shadow", frameQuality);
@@ -407,17 +444,20 @@ export function useProctoringSystem(
 
       // The monitor owns cooldowns and the strike floor for every source, and
       // reports back whether the evidence was actually spent.
-      const startedAt = incidentsRef.current.startedAt(key);
+      const startedAt = incidentsRef.current.startedAt(incidentKey);
       const outcome = onViolationRef.current?.({
         ...violation,
+        strikeKey: incidentKey,
         ongoing: startedAt < now,
         incidentStartedAt: startedAt,
         detail: detectionDetail(violation, frameQuality),
       });
 
       if (outcome === "raised" || outcome === "at_limit" || outcome === "warned") {
-        stabilizerRef.current.commit(key);
-        struckIncidentsRef.current.set(key, startedAt);
+        for (const committed of violation.keys ?? [key]) {
+          stabilizerRef.current.commit(committed);
+          struckIncidentsRef.current.set(committed, startedAt);
+        }
         raised = true;
         logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
       }
@@ -487,22 +527,7 @@ export function useProctoringSystem(
 
       const detected = detectViolations(cleanResult, classified);
       const confirmed = stabilizerRef.current.push(detected);
-      incidentsRef.current.observe(
-        detected.map((v) => v.key ?? v.type),
-        now,
-      );
-
-      // A held phone often drops out of a single frame, so a miss lets the burst
-      // finish instead of falling straight back to the slow cadence.
-      const worthBursting = detected.some((violation) => BURST_TYPES.has(violation.type));
-      if (worthBursting) {
-        if (burstsUsedRef.current < MAX_BURSTS) {
-          burstRemainingRef.current = BURST_SAMPLES;
-          burstsUsedRef.current += 1;
-        }
-      } else if (!detected.length && burstRemainingRef.current === 0) {
-        burstsUsedRef.current = 0;
-      }
+      incidentsRef.current.observe(detected.map(incidentKeyOf), now);
 
       // Re-check isActive after the async call — the session may have ended
       // (auto-submit, normal submit) while we were waiting for the response.
@@ -517,11 +542,41 @@ export function useProctoringSystem(
       // A commit clears the window, so the same object right after its strike
       // would otherwise log as a fresh, unconfirmed sighting.
       const struck = struckIncidentsRef.current;
+      // Per label, so a phone joining a laptop that already struck is still new evidence.
+      const isHeld = (violation) => {
+        const key = violation.key ?? violation.type;
+        return (
+          struck.has(key) &&
+          struck.get(key) === incidentsRef.current.startedAt(incidentKeyOf(violation))
+        );
+      };
       for (const violation of detected) {
         if (confirmed.includes(violation)) continue;
-        const key = violation.key ?? violation.type;
-        const held = struck.has(key) && struck.get(key) === incidentsRef.current.startedAt(key);
-        recordDecision(violation, held ? "held" : "unconfirmed", cleanResult.frame_quality);
+        recordDecision(
+          violation,
+          isHeld(violation) ? "held" : "unconfirmed",
+          cleanResult.frame_quality,
+        );
+      }
+
+      // Only evidence still waiting to confirm earns a quick second look. A muted
+      // or already struck laptop used to spend the whole budget, so a phone shown
+      // later never got one.
+      const worthBursting = detected.some(
+        (violation) =>
+          BURST_TYPES.has(violation.type) &&
+          !violation.shadow &&
+          violation.countsAsViolation !== false &&
+          !confirmed.includes(violation) &&
+          !isHeld(violation),
+      );
+      if (worthBursting) {
+        if (burstsUsedRef.current < MAX_BURSTS) {
+          burstRemainingRef.current = BURST_SAMPLES;
+          burstsUsedRef.current += 1;
+        }
+      } else if (burstRemainingRef.current === 0) {
+        burstsUsedRef.current = 0;
       }
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);

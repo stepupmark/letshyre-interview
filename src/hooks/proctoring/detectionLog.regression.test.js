@@ -10,8 +10,8 @@ import { createViolationStabilizer } from "@/lib/violationStabilizer";
 
 /**
  * Replays a real session that produced no warnings at all despite a phone being
- * on camera. The two laptops in it are fixed background objects, so they warn
- * until their grace runs out; the phone was brought into frame, so it must strike.
+ * on camera. Laptops get no furniture grace, and a clear phone strikes on the one
+ * frame the 5s cadence caught.
  */
 
 const TICK_MS = 5_000;
@@ -47,21 +47,19 @@ function replay(sequence) {
 const atFiveSeconds = frames.map((frame, i) => ({ frame, at: i * TICK_MS }));
 
 describe("detection log regression", () => {
-  it("gives the laptops that were there from the start their grace, then strikes", () => {
+  it("strikes the laptops as soon as they confirm instead of granting a grace", () => {
     const strikes = replay(atFiveSeconds).filter(
       (o) => o.confirmed?.label === "laptop" && o.confirmed.countsAsViolation !== false,
     );
-    expect(strikes.length).toBeGreaterThan(0);
-    expect(strikes.every((o) => o.at > 30_000)).toBe(true);
+    expect(strikes[0].at).toBe(TICK_MS);
   });
 
-  it("treats those laptops as environment rather than ignoring them", () => {
-    const warnings = replay(atFiveSeconds).filter(
-      (o) => o.detected?.type === "PROHIBITED_OBJECT" && o.detected.countsAsViolation === false,
-    );
-    expect(warnings.length).toBeGreaterThan(0);
-    expect(warnings[0].detected.label).toBe("laptop");
-    expect(warnings[0].detected.countsAsViolation).toBe(false);
+  it("never treats a laptop as part of the room", () => {
+    const states = replay(atFiveSeconds)
+      .filter((o) => o.detected?.label === "laptop")
+      .map((o) => o.detected.state);
+    expect(states).not.toContain("baseline");
+    expect(states).not.toContain("pending");
   });
 
   it("sees the phone as introduced, not part of the room", () => {
@@ -70,9 +68,9 @@ describe("detection log regression", () => {
     expect(phoneTicks[0].detected.type).toBe("PROHIBITED_OBJECT");
   });
 
-  it("cannot confirm the phone from the single frame a 5s cadence caught", () => {
+  it("confirms the clear phone from the single frame a 5s cadence caught", () => {
     const confirmed = replay(atFiveSeconds).filter((o) => o.confirmed?.label === "cell phone");
-    expect(confirmed).toHaveLength(0);
+    expect(confirmed.map((o) => o.at)).toEqual([3 * TICK_MS]);
   });
 
   it("confirms the phone once burst sampling supplies a second look", () => {
@@ -155,9 +153,9 @@ describe("phone present on the first observation", () => {
     expect(outcomes()[0].detected.countsAsViolation).toBeUndefined();
   });
 
-  it("confirms by the second observation instead of the fourth", () => {
+  it("confirms on the first observation", () => {
     const raisedAt = outcomes().findIndex((o) => o.confirmed);
-    expect(raisedAt).toBe(1);
+    expect(raisedAt).toBe(0);
   });
 
   it("keeps one evidence window rather than splitting on the state flip", () => {

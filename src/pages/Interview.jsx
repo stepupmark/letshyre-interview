@@ -310,6 +310,7 @@ export function Interview() {
         descriptionKey={violationInfo.descriptionKey}
         imagePath={violationInfo.imagePath}
         label={violationInfo.label}
+        labels={violationInfo.labels}
         finalWarning={violationInfo.finalWarning}
       />
     </div>

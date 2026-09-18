@@ -12,7 +12,15 @@ vi.mock("@/lib/videoCapture", () => ({
   captureSample: () => ({ frame: "frame", file: {}, capturedAt: Date.now() }),
 }));
 
-const PHONE = { label: "cell phone", class_id: 67, confidence: 0.83, area_ratio: 0.068 };
+const CLEAR_PHONE = { label: "cell phone", class_id: 67, confidence: 0.81, area_ratio: 0.013 };
+const BLURRY_PHONE = { label: "cell phone", class_id: 67, confidence: 0.49, area_ratio: 0.036 };
+const LAPTOP = {
+  label: "laptop",
+  class_id: 63,
+  confidence: 0.85,
+  area_ratio: 0.008,
+  bbox: [194, 147, 239, 187],
+};
 
 const frame = (objects = [], confidenceScore = 0.9) => ({
   success: true,
@@ -47,6 +55,9 @@ function start(onViolation = vi.fn(() => "raised"), onSample = vi.fn()) {
 const decisions = (type) =>
   events.filter((e) => e.type === type && e.source === "ai").map((e) => e.outcome);
 
+const namesPhone = (violation) =>
+  violation.label === "cell phone" || violation.labels?.includes("cell phone");
+
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(0);
@@ -62,7 +73,7 @@ afterEach(() => {
 
 describe("useProctoringSystem sampling", () => {
   it("keeps bursting through a missed frame so a held phone confirms in seconds", async () => {
-    replay([frame([PHONE]), frame(), frame([PHONE])]);
+    replay([frame([BLURRY_PHONE]), frame(), frame([BLURRY_PHONE])]);
     const { onViolation } = start();
 
     await vi.advanceTimersByTimeAsync(7_000);
@@ -73,7 +84,7 @@ describe("useProctoringSystem sampling", () => {
   });
 
   it("returns to the normal cadence once the burst is spent", async () => {
-    replay([frame([PHONE]), frame(), frame()]);
+    replay([frame([BLURRY_PHONE]), frame(), frame()]);
     start();
 
     await vi.advanceTimersByTimeAsync(12_000);
@@ -81,8 +92,49 @@ describe("useProctoringSystem sampling", () => {
     expect(calls).toEqual([5_000, 6_000, 7_000, 12_000]);
   });
 
+  it("strikes a clear phone on the one frame it was seen", async () => {
+    replay([frame([CLEAR_PHONE])]);
+    const { onViolation } = start();
+
+    await vi.advanceTimersByTimeAsync(12_000);
+
+    expect(onViolation).toHaveBeenCalledTimes(1);
+    expect(onViolation.mock.calls[0][0]).toMatchObject({
+      label: "cell phone",
+      strikeKey: "PROHIBITED_OBJECT",
+    });
+  });
+
+  it("still takes a quick second look at a phone while a laptop never leaves view", async () => {
+    const laptopOnly = Array.from({ length: 8 }, () => frame([LAPTOP]));
+    replay([
+      ...laptopOnly,
+      frame([LAPTOP, BLURRY_PHONE]),
+      frame([LAPTOP, BLURRY_PHONE]),
+      ...laptopOnly,
+    ]);
+    const { onViolation } = start();
+
+    await vi.advanceTimersByTimeAsync(120_000);
+
+    const phoneSeenAt = calls[laptopOnly.length];
+    expect(calls[laptopOnly.length + 1]).toBe(phoneSeenAt + 1_000);
+    expect(onViolation.mock.calls.some(([violation]) => namesPhone(violation))).toBe(true);
+  });
+
+  it("counts a phone and a laptop confirmed in the same frame as one violation", async () => {
+    replay([frame([LAPTOP, BLURRY_PHONE]), frame([LAPTOP, BLURRY_PHONE])]);
+    const { onViolation } = start();
+
+    await vi.advanceTimersByTimeAsync(6_000);
+
+    expect(onViolation).toHaveBeenCalledTimes(1);
+    expect(onViolation.mock.calls[0][0]).toMatchObject({ strikeKey: "PROHIBITED_OBJECT" });
+    expect(onViolation.mock.calls[0][0].labels.sort()).toEqual(["cell phone", "laptop"]);
+  });
+
   it("logs the phone still in view after its strike as held", async () => {
-    replay([frame([PHONE]), frame([PHONE]), frame([PHONE])]);
+    replay([frame([BLURRY_PHONE]), frame([BLURRY_PHONE]), frame([BLURRY_PHONE])]);
     start();
 
     await vi.advanceTimersByTimeAsync(7_000);
@@ -91,12 +143,20 @@ describe("useProctoringSystem sampling", () => {
   });
 
   it("logs a phone that returns later as a new sighting", async () => {
-    replay([frame([PHONE]), frame([PHONE]), frame(), frame(), frame(), frame(), frame([PHONE])]);
+    replay([
+      frame([BLURRY_PHONE]),
+      frame([BLURRY_PHONE]),
+      frame(),
+      frame(),
+      frame(),
+      frame(),
+      frame([BLURRY_PHONE]),
+    ]);
     start();
 
-    await vi.advanceTimersByTimeAsync(23_000);
+    await vi.advanceTimersByTimeAsync(27_000);
 
-    expect(calls.at(-1)).toBe(23_000);
+    expect(calls.at(-1)).toBe(27_000);
     expect(decisions("PROHIBITED_OBJECT")).toEqual(["unconfirmed", "unconfirmed"]);
   });
 
