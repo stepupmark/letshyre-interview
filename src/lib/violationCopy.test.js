@@ -1,4 +1,4 @@
-import { objectNameKey, violationCopy } from "./violationCopy";
+import { objectNameKey, violationCopy, violationTitle } from "./violationCopy";
 
 describe("objectNameKey", () => {
   it("maps detector labels to camelCase copy keys", () => {
@@ -62,5 +62,26 @@ describe("violationCopy", () => {
 
   it("returns null for unknown violation types", () => {
     expect(violationCopy("UNKNOWN_TYPE")).toBeNull();
+  });
+});
+
+describe("violationTitle", () => {
+  const t = (key, { object } = {}) =>
+    ({ "violations.objects.laptop": "laptop" })[key] ?? object ?? key;
+
+  it("names the device behind a generic device title", () => {
+    expect(
+      violationTitle(t, { titleKey: "violations.prohibitedObject.title", label: "laptop" }, "en"),
+    ).toBe("violations.prohibitedObject.title (laptop)");
+  });
+
+  it("keeps every other title as it is", () => {
+    expect(violationTitle(t, { titleKey: "violations.multipleFaces.title" }, "en")).toBe(
+      "violations.multipleFaces.title",
+    );
+  });
+
+  it("falls back to the default title", () => {
+    expect(violationTitle(t, {}, "en")).toBe("violationWarning.defaultTitle");
   });
 });

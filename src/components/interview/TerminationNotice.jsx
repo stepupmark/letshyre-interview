@@ -2,27 +2,17 @@ import { useTranslation } from "react-i18next";
 import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTerminationCopy, TERMINATION_REASONS } from "@/lib/terminationReasons";
-import { objectName } from "@/lib/violationCopy";
+import { violationTitle } from "@/lib/violationCopy";
 import { FACE_MISMATCH_LIMIT, MAX_INTERNET_DISCONNECTS, MAX_VIOLATIONS } from "@/config/interview";
 
 // These titles are generic, so the list names what was actually seen.
-const OBJECT_TITLES = new Set([
-  "violations.prohibitedObject.title",
-  "violations.multipleDevices.title",
-]);
-
 export default function TerminationNotice({ reason, secondsLeft, onAcknowledge, strikes = [] }) {
   const { t, i18n } = useTranslation("interview");
   const { titleKey, descriptionKey, pillKey, imagePath, punitive } = getTerminationCopy(reason);
 
   const summary = reason === TERMINATION_REASONS.VIOLATION_LIMIT ? strikes : [];
   const final = summary.at(-1);
-  const strikeTitle = (strike) => {
-    const title = t(strike.titleKey || "violationWarning.defaultTitle");
-    return OBJECT_TITLES.has(strike.titleKey)
-      ? `${title} (${objectName(t, strike, i18n.language)})`
-      : title;
-  };
+  const strikeTitle = (strike) => violationTitle(t, strike, i18n.language);
 
   // i18next ignores the counts a given message doesn't interpolate.
   const counts = {

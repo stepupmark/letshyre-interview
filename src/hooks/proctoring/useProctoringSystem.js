@@ -707,7 +707,7 @@ export function useProctoringSystem(
         detail: detectionDetail(violation, frameQuality),
       });
 
-      if (outcome === "raised" || outcome === "at_limit" || outcome === "warned") {
+      if (outcome === "raised" || outcome === "at_limit" || outcome === "queued") {
         for (const committed of violation.keys ?? [key]) {
           stabilizerRef.current.commit(committed);
           struckIncidentsRef.current.set(committed, startedAt);

@@ -40,6 +40,8 @@
     "defaultTitle": "Avviso di cambio finestra",
     "defaultDescription": "L'uscita dalla schermata del colloquio viene registrata come violazione",
     "defaultButtonText": "Ho capito, torna al colloquio",
+    "alsoDetected": "Rilevato anche",
+    "stillDetected": "Ancora rilevato",
     "finalWarning": "Questo è il tuo ultimo avviso. Un'altra violazione terminerà il colloquio."
   },
   "autoSubmitLoader": {

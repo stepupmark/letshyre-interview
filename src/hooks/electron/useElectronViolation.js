@@ -57,6 +57,8 @@ export function useElectronViolation({ onHardBlock, onSoftBlock }) {
     if (!isElectron) return;
 
     function handler(violation) {
+      // Tells Electron this page got it; an unacknowledged hard block is sent again.
+      window.electronAPI.acknowledgeViolation?.();
       try {
         if (violation.isHardBlock) {
           onHardRef.current?.(violation);

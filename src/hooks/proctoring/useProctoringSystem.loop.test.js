@@ -161,6 +161,15 @@ describe("useProctoringSystem sampling", () => {
     expect(onViolation.mock.calls[0][0].labels.sort()).toEqual(["cell phone", "laptop"]);
   });
 
+  it("treats a phone queued behind another strike as spent evidence", async () => {
+    replay([frame([BLURRY_PHONE]), frame([BLURRY_PHONE]), frame([BLURRY_PHONE])]);
+    start(vi.fn(() => "queued"));
+
+    await vi.advanceTimersByTimeAsync(7_000);
+
+    expect(decisions("PROHIBITED_OBJECT")).toEqual(["unconfirmed", "held"]);
+  });
+
   it("logs the phone still in view after its strike as held", async () => {
     replay([frame([BLURRY_PHONE]), frame([BLURRY_PHONE]), frame([BLURRY_PHONE])]);
     start();

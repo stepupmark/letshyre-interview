@@ -93,3 +93,16 @@ export function objectName(t, { label, labels } = {}, language) {
     return names.join(", ");
   }
 }
+
+const GENERIC_OBJECT_TITLES = new Set([
+  "violations.prohibitedObject.title",
+  "violations.multipleDevices.title",
+]);
+
+// "Prohibited Device Detected (laptop)": the generic device titles need the name.
+export function violationTitle(t, { titleKey, label, labels } = {}, language) {
+  const title = t(titleKey || "violationWarning.defaultTitle");
+  return GENERIC_OBJECT_TITLES.has(titleKey)
+    ? `${title} (${objectName(t, { label, labels }, language)})`
+    : title;
+}

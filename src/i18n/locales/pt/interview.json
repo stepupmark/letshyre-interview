@@ -40,6 +40,8 @@
     "defaultTitle": "Aviso de troca de janela",
     "defaultDescription": "Sair da tela da entrevista está sendo registrado como uma violação",
     "defaultButtonText": "Entendi, voltar à entrevista",
+    "alsoDetected": "Também detectado",
+    "stillDetected": "Ainda detectado",
     "finalWarning": "Este é o seu aviso final. Mais uma violação encerrará a sua entrevista."
   },
   "autoSubmitLoader": {

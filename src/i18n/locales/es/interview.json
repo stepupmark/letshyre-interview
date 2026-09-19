@@ -40,6 +40,8 @@
     "defaultTitle": "Advertencia de cambio de ventana",
     "defaultDescription": "Salir de la pantalla de la entrevista se está registrando como una infracción",
     "defaultButtonText": "Entendido, volver a la entrevista",
+    "alsoDetected": "También se detectó",
+    "stillDetected": "Se sigue detectando",
     "finalWarning": "Esta es su advertencia final. Una infracción más finalizará su entrevista."
   },
   "autoSubmitLoader": {

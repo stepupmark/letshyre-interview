@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
-import { objectName } from "@/lib/violationCopy";
+import { objectName, violationTitle } from "@/lib/violationCopy";
 
 export default function ViolationWarning({
   isOpen = false,
@@ -16,6 +16,7 @@ export default function ViolationWarning({
   labels,
   buttonText,
   finalWarning,
+  alsoDetected = [],
 }) {
   const { t, i18n } = useTranslation("interview");
   const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
@@ -38,6 +39,7 @@ export default function ViolationWarning({
         showCloseButton={false}
         className="w-[420px] rounded-lg border-0 bg-[#f8f8f8] p-0 shadow-2xl overflow-hidden"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <div className="relative p-5">
           {/* Top Row */}
@@ -65,12 +67,27 @@ export default function ViolationWarning({
           </div>
 
           {/* Content */}
-          <div className="text-center">
+          <div className="text-center" aria-live="polite">
             <h2 className="text-lg font-semibold">{resolvedTitle}</h2>
 
             <p className="mx-auto mt-1.5 text-md leading-6 text-slate-500 font-medium">
               {resolvedDescription}
             </p>
+
+            {alsoDetected.length > 0 && (
+              <div className="mx-auto mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                  {t("violationWarning.alsoDetected")}
+                </p>
+                <ul className="mt-1 space-y-0.5 text-sm font-medium text-amber-800">
+                  {alsoDetected.map((item) => (
+                    <li key={violationTitle(t, item, i18n.language)}>
+                      {violationTitle(t, item, i18n.language)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {isFinalWarning && (
               <p className="mx-auto mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600">

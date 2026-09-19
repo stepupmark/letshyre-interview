@@ -40,6 +40,8 @@
     "defaultTitle": "Waarschuwing: venster gewisseld",
     "defaultDescription": "Het verlaten van het interviewscherm wordt geregistreerd als een overtreding",
     "defaultButtonText": "Ik begrijp het, terug naar interview",
+    "alsoDetected": "Ook gedetecteerd",
+    "stillDetected": "Nog steeds gedetecteerd",
     "finalWarning": "Dit is uw laatste waarschuwing. Nog één overtreding beëindigt uw interview."
   },
   "autoSubmitLoader": {

@@ -40,6 +40,8 @@
     "defaultTitle": "Warnung: Fensterwechsel",
     "defaultDescription": "Das Verlassen des Interviewbildschirms wird als Verstoß protokolliert",
     "defaultButtonText": "Verstanden, zurück zum Interview",
+    "alsoDetected": "Außerdem erkannt",
+    "stillDetected": "Weiterhin erkannt",
     "finalWarning": "Dies ist Ihre letzte Warnung. Ein weiterer Verstoß beendet Ihr Interview."
   },
   "autoSubmitLoader": {

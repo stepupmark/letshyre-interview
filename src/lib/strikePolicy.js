@@ -8,8 +8,9 @@ const COOLDOWN_MS = 30_000;
 // Repeats of the same violation back off. A condition that never stopped is not
 // a repeat, so it holds the base cooldown instead of sliding into silence.
 const MAX_COOLDOWN_MS = 120_000;
-// Minimum cooldown between distinct strikes.
-const MIN_STRIKE_INTERVAL_MS = 15_000;
+// After a strike the candidate gets this long to read the warning and react
+// before another can land. Whatever is held back meanwhile lands after it.
+export const REACTION_WINDOW_MS = 10_000;
 // Periodic re-evaluation interval for sustained incidents.
 const INCIDENT_RESTRIKE_MS = 30_000;
 
@@ -21,7 +22,7 @@ export function createStrikePolicy(options = {}) {
   const {
     cooldownMs = COOLDOWN_MS,
     maxCooldownMs = MAX_COOLDOWN_MS,
-    minStrikeIntervalMs = MIN_STRIKE_INTERVAL_MS,
+    reactionWindowMs = REACTION_WINDOW_MS,
     restrikeMs = INCIDENT_RESTRIKE_MS,
   } = options;
 
@@ -30,7 +31,6 @@ export function createStrikePolicy(options = {}) {
   let restrikes = new Map();
   let repeats = new Map();
   let lastStrikeAt = null;
-  let suppressUntil = 0;
 
   function record(type, now, countsAsStrike, ongoing) {
     lastRaisedAt.set(type, now);
@@ -53,22 +53,27 @@ export function createStrikePolicy(options = {}) {
         startedAt,
         restrikeAfterMs = restrikeMs,
         maxRestrikes = Infinity,
+        // Strikes already waiting go first, so a newcomer can't jump the queue.
+        defer = false,
         now = Date.now(),
       } = {},
     ) {
       const perIncident = incident && countsAsStrike;
       const struck = struckAt.get(type);
+      const holdStrike =
+        countsAsStrike &&
+        (defer || (lastStrikeAt !== null && now - lastStrikeAt < reactionWindowMs));
 
       // The holds below stop one act from striking twice. Bringing an object
-      // back is a second act, so a new incident goes straight through.
+      // back is a second act, so a new incident only waits for the reaction window.
       const newIncident =
         struck === undefined || (startedAt === undefined ? !ongoing : struck < startedAt);
       if (perIncident && newIncident) {
+        if (holdStrike) return "reaction_window";
         restrikes.set(type, 0);
         return record(type, now, true, false);
       }
 
-      if (now < suppressUntil) return "suppressed";
       if (perIncident && (restrikes.get(type) ?? 0) >= maxRestrikes) return "held";
 
       const previous = perIncident ? struck : lastRaisedAt.get(type);
@@ -79,30 +84,20 @@ export function createStrikePolicy(options = {}) {
         if (now - previous < wait) return "cooldown";
       }
 
-      if (countsAsStrike && lastStrikeAt !== null && now - lastStrikeAt < minStrikeIntervalMs) {
-        return "strike_interval";
-      }
+      if (holdStrike) return "reaction_window";
 
       if (perIncident) restrikes.set(type, (restrikes.get(type) ?? 0) + 1);
       return record(type, now, countsAsStrike, ongoing);
     },
 
-    // When a strike held back only by the gap or a suppression can next land.
+    // When a strike held back by the reaction window can next land.
     nextStrikeAt() {
-      const afterGap = lastStrikeAt === null ? 0 : lastStrikeAt + minStrikeIntervalMs;
-      return Math.max(afterGap, suppressUntil);
+      return lastStrikeAt === null ? 0 : lastStrikeAt + reactionWindowMs;
     },
 
     struckSince(type, startedAt) {
       const at = struckAt.get(type);
       return at !== undefined && (startedAt === undefined || at >= startedAt);
-    },
-
-    // Used after the modal closes itself rather than by a candidate action: the
-    // open modal was the only thing holding back the next strike, so releasing
-    // it needs to leave a gap behind.
-    suppressFor(ms, now = Date.now()) {
-      suppressUntil = Math.max(suppressUntil, now + ms);
     },
 
     reset() {
@@ -111,7 +106,6 @@ export function createStrikePolicy(options = {}) {
       restrikes = new Map();
       repeats = new Map();
       lastStrikeAt = null;
-      suppressUntil = 0;
     },
   };
 }

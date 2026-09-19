@@ -6,6 +6,7 @@ import PostInterviewHeader from "@components/interview/PostInterviewHeader";
 import LeftPanel from "@components/interview/LeftPanel";
 import QuestionRenderer from "@components/interview/QuestionRenderer";
 import ViolationWarning from "@components/interview/ViolationWarning";
+import HeldViolationBanner from "@components/interview/HeldViolationBanner";
 import FullscreenPrompt from "@components/interview/FullscreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -53,6 +54,8 @@ export function Interview() {
   const {
     showTabWarning,
     violationInfo,
+    alsoDetected,
+    heldViolations,
     strikes,
     dismissWarning,
     needsFullscreen,
@@ -291,6 +294,7 @@ export function Interview() {
             {/* RIGHT PANEL */}
             <section className="min-w-0 overflow-y-auto">
               <div className="min-h-full rounded-[28px] bg-[#f5f7fc] p-6 shadow-sm">
+                {!showTabWarning && <HeldViolationBanner items={heldViolations} />}
                 <ErrorBoundary>
                   <QuestionRenderer
                     question={question}
@@ -318,6 +322,7 @@ export function Interview() {
         label={violationInfo.label}
         labels={violationInfo.labels}
         finalWarning={violationInfo.finalWarning}
+        alsoDetected={alsoDetected}
       />
     </div>
   );

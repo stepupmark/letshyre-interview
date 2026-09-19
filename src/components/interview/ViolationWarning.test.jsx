@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import ViolationWarning from "./ViolationWarning";
@@ -46,5 +46,36 @@ describe("ViolationWarning", () => {
 
     expect(screen.getByText("कई प्रतिबंधित डिवाइस का पता चला")).toBeInTheDocument();
     expect(screen.getByText(/फ़ोन .* लैपटॉप/)).toBeInTheDocument();
+  });
+
+  it("lists what else was detected under the current warning", () => {
+    renderWarning({
+      titleKey: "violations.cellPhone.title",
+      descriptionKey: "violations.cellPhone.description",
+      alsoDetected: [
+        { titleKey: "violations.multipleFaces.title" },
+        { titleKey: "violations.prohibitedObject.title", label: "laptop" },
+      ],
+    });
+
+    expect(screen.getByText("Also detected")).toBeInTheDocument();
+    expect(screen.getByText("Multiple People Detected")).toBeInTheDocument();
+    expect(screen.getByText("Prohibited Device Detected (laptop)")).toBeInTheDocument();
+  });
+
+  it("leaves the list out when nothing else was detected", () => {
+    renderWarning({ titleKey: "violations.cellPhone.title" });
+    expect(screen.queryByText("Also detected")).not.toBeInTheDocument();
+  });
+
+  it("only closes from its button, not from Esc", () => {
+    const onClose = vi.fn();
+    renderWarning({ titleKey: "violations.cellPhone.title", onClose });
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button"));
+    expect(onClose).toHaveBeenCalled();
   });
 });

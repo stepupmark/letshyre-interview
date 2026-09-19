@@ -227,7 +227,8 @@ Detection is deliberately conservative — false strikes are worse than missed o
   no-face/multi-face/objects, 3 for gaze/eyes).
 - **Confidence floor** — prohibited objects (`cell phone`, `book`, `tablet`) need ≥ 0.6
   confidence. Laptops are not prohibited; the candidate is sitting at one.
-- **Rate limits** — a 30s per-type cooldown plus a 15s floor between any two strikes.
+- **Rate limits** — a 30s per-type cooldown plus a 10s reaction window after every
+  strike. Anything confirmed during the window is queued and lands after it, oldest first.
 - **Soft violations** (gaze, eyes closed) show a toast and never count as a strike.
 - **Degraded mode** — after 3 consecutive detection failures the loop backs off
   exponentially (to 40s) and the candidate is told checks are temporarily unavailable.

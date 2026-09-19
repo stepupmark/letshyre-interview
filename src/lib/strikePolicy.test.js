@@ -29,11 +29,11 @@ describe("createStrikePolicy", () => {
     expect(policy.admit("TAB_SWITCH", { now: 92_000 })).toBe("raised");
   });
 
-  it("keeps a floor between strikes of different types", () => {
+  it("holds a strike of another type for the reaction window", () => {
     const policy = createStrikePolicy();
     policy.admit("FULLSCREEN_EXIT", { now: 0 });
-    expect(policy.admit("WINDOW_RESIZE", { now: 1_300 })).toBe("strike_interval");
-    expect(policy.admit("WINDOW_RESIZE", { now: 16_000 })).toBe("raised");
+    expect(policy.admit("WINDOW_RESIZE", { now: 1_300 })).toBe("reaction_window");
+    expect(policy.admit("WINDOW_RESIZE", { now: 10_000 })).toBe("raised");
   });
 
   it("lets a warn-only violation through the strike floor", () => {
@@ -48,27 +48,24 @@ describe("createStrikePolicy", () => {
     expect(policy.admit("TAB_SWITCH", { now: 1_000 })).toBe("raised");
   });
 
-  it("suppresses everything for the requested gap", () => {
+  it("defers a strike that would otherwise land, so queued ones go first", () => {
     const policy = createStrikePolicy();
-    policy.suppressFor(10_000, 0);
-    expect(policy.admit("TAB_SWITCH", { now: 5_000 })).toBe("suppressed");
-    expect(policy.admit("TAB_SWITCH", { now: 11_000 })).toBe("raised");
+    expect(policy.admit("TAB_SWITCH", { defer: true, now: 0 })).toBe("reaction_window");
+    expect(policy.admit("TAB_SWITCH", { now: 0 })).toBe("raised");
   });
 
-  it("never shortens an existing suppression", () => {
+  it("never defers a warning that costs nothing", () => {
     const policy = createStrikePolicy();
-    policy.suppressFor(10_000, 0);
-    policy.suppressFor(1_000, 0);
-    expect(policy.admit("TAB_SWITCH", { now: 5_000 })).toBe("suppressed");
+    expect(policy.admit("FACE_MISMATCH", { countsAsStrike: false, defer: true, now: 0 })).toBe(
+      "raised",
+    );
   });
 
   it("reports when a held-back strike can next land", () => {
     const policy = createStrikePolicy();
     expect(policy.nextStrikeAt()).toBe(0);
     policy.admit("TAB_SWITCH", { now: 1_000 });
-    expect(policy.nextStrikeAt()).toBe(16_000);
-    policy.suppressFor(20_000, 1_000);
-    expect(policy.nextStrikeAt()).toBe(21_000);
+    expect(policy.nextStrikeAt()).toBe(11_000);
   });
 
   it("does not start the gap from a warn-only violation", () => {
@@ -85,8 +82,9 @@ describe("createStrikePolicy", () => {
     expect(leave(0, 0)).toBe("raised");
     expect(leave(0, 5)).toBe("held");
     expect(leave(0, 60_000)).toBe("held");
-    expect(leave(3_000, 3_000)).toBe("raised");
-    expect(leave(4_000, 4_000)).toBe("raised");
+    expect(leave(70_000, 70_000)).toBe("raised");
+    expect(leave(71_000, 71_000)).toBe("reaction_window");
+    expect(leave(71_000, 80_000)).toBe("raised");
   });
 
   it("forgets everything on reset", () => {
@@ -111,22 +109,23 @@ describe("createStrikePolicy", () => {
     expect(policy.admit("NO_FACE", { now: 90_000 })).toBe("raised");
   });
 
-  it("strikes a newly introduced object through every hold", () => {
+  it("holds a newly introduced object only until the reaction window ends", () => {
     const policy = createStrikePolicy();
     policy.admit("NO_FACE", { now: 0 });
-    policy.suppressFor(10_000, 0);
     const phone = "PROHIBITED_OBJECT:cell phone";
-    expect(policy.admit(phone, { incident: true, startedAt: 1_000, now: 1_000 })).toBe("raised");
+    const introduced = { incident: true, startedAt: 1_000 };
+    expect(policy.admit(phone, { ...introduced, now: 1_000 })).toBe("reaction_window");
+    expect(policy.admit(phone, { ...introduced, now: 10_000 })).toBe("raised");
   });
 
-  it("still keeps the strike floor for an object that stayed in view", () => {
+  it("holds the restrike of an object in view for the reaction window too", () => {
     const policy = createStrikePolicy();
     const phone = "PROHIBITED_OBJECT:cell phone";
-    const held = { incident: true, ongoing: true, startedAt: 0, restrikeAfterMs: 60_000 };
+    const held = { incident: true, ongoing: true, startedAt: 0, restrikeAfterMs: 30_000 };
     policy.admit(phone, { incident: true, startedAt: 0, now: 0 });
-    policy.admit("TAB_SWITCH", { now: 55_000 });
-    expect(policy.admit(phone, { ...held, now: 60_000 })).toBe("strike_interval");
-    expect(policy.admit(phone, { ...held, now: 70_000 })).toBe("raised");
+    policy.admit("TAB_SWITCH", { now: 25_000 });
+    expect(policy.admit(phone, { ...held, now: 30_000 })).toBe("reaction_window");
+    expect(policy.admit(phone, { ...held, now: 35_000 })).toBe("raised");
   });
 
   it("re-strikes an object that stays in view on a fixed interval", () => {

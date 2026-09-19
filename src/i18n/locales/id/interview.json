@@ -40,6 +40,8 @@
     "defaultTitle": "Peringatan Perpindahan Jendela",
     "defaultDescription": "Berpindah dari layar wawancara sedang dicatat sebagai pelanggaran",
     "defaultButtonText": "Saya Mengerti, Kembali ke Wawancara",
+    "alsoDetected": "Juga Terdeteksi",
+    "stillDetected": "Masih Terdeteksi",
     "finalWarning": "Ini peringatan terakhir Anda. Satu pelanggaran lagi akan mengakhiri wawancara Anda."
   },
   "autoSubmitLoader": {

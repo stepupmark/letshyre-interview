@@ -40,6 +40,8 @@
     "defaultTitle": "Window Switch Warning",
     "defaultDescription": "Navigating away from the interview screen is being logged as a violation",
     "defaultButtonText": "I Understand, Return to Interview",
+    "alsoDetected": "Also detected",
+    "stillDetected": "Still detected",
     "finalWarning": "This is your final warning. One more violation will end your interview."
   },
   "autoSubmitLoader": {

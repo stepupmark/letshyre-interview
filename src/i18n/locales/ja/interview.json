@@ -40,6 +40,8 @@
     "defaultTitle": "ウィンドウ切り替え警告",
     "defaultDescription": "面接画面から離れる操作は違反として記録されています",
     "defaultButtonText": "理解しました。面接に戻ります",
+    "alsoDetected": "他にも検出されました",
+    "stillDetected": "引き続き検出されています",
     "finalWarning": "これが最終警告です。次に違反があると面接は終了します。"
   },
   "autoSubmitLoader": {

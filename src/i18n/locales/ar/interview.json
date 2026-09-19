@@ -40,6 +40,8 @@
     "defaultTitle": "تحذير تبديل النافذة",
     "defaultDescription": "يتم تسجيل الانتقال بعيدًا عن شاشة المقابلة كمخالفة",
     "defaultButtonText": "فهمت، العودة إلى المقابلة",
+    "alsoDetected": "تم اكتشاف ما يلي أيضًا",
+    "stillDetected": "لا يزال قائمًا",
     "finalWarning": "هذا هو تحذيرك الأخير. أي مخالفة أخرى ستُنهي مقابلتك."
   },
   "autoSubmitLoader": {

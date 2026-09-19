@@ -10,16 +10,17 @@ import { recordViolationEvent } from "@/lib/violationLog";
 const RESIZE_TOLERANCE_PX = 40;
 const RESIZE_CONFIRM_MS = 1_000;
 
-// A counted modal blocks every further violation while it is open, so leaving
-// it up would mute proctoring for as long as the candidate likes.
+// The warning only informs; the strike policy decides what counts. It still
+// closes itself so it can't sit over the question for the rest of the interview.
 const AUTO_DISMISS_MS = 20_000;
-// Closing it on a timer gives back the guard that was holding the next strike,
-// so leave a gap rather than letting the next event land immediately.
-const AUTO_DISMISS_GRACE_MS = 10_000;
 
-// An object kept in view is re-checked every few seconds; the candidate only
-// needs reminding this often.
-export const REMINDER_INTERVAL_MS = 30_000;
+// An object or a switched-off camera is re-reported every few seconds while it
+// lasts. Once reports stop for this long it is treated as gone.
+export const HELD_TTL_MS = 12_000;
+
+// Identity warnings run to their own limit and the next one may end the
+// interview, so they always show, even over a warning already open.
+const ALWAYS_SHOWN = new Set(["FACE_MISMATCH"]);
 
 // Leaving fullscreen resizes the window, so the resize handler fires right
 // behind fullscreenchange. Without this the candidate is struck twice for one
@@ -90,7 +91,6 @@ function electronViolation(event) {
   return {
     type: `ELECTRON_${key.toUpperCase()}`,
     source: "electron",
-    discrete: true,
     titleKey: `violations.electron.${key}.title`,
     descriptionKey: `violations.electron.${key}.description`,
     imagePath: ELECTRON_IMAGES[key] ?? "/window-switch.png",
@@ -122,25 +122,26 @@ export function useViolationMonitor({
     counts: true,
   });
   const [strikes, setStrikes] = useState([]);
+  // Conditions still in view after their strike, and what else is going on
+  // while a warning is open.
+  const [heldViolations, setHeldViolations] = useState([]);
+  const [alsoDetected, setAlsoDetected] = useState([]);
 
   const { t } = useTranslation("interview");
   const tRef = useRef(t);
 
   const isWarningOpenRef = useRef(false);
-  const lastReminderRef = useRef(new Map());
-  // Only a modal that just added a strike holds back other violations. One shown
-  // for a held-back strike must not, or a phone kept in view would keep it open
-  // and no strike could ever land.
-  const openBlocksRef = useRef(false);
+  const shownKeyRef = useRef(null);
+  const heldRef = useRef(new Map());
 
   // Buffer Electron blocks that arrived before isActive was true. Flushed by the
   // effect below once the session loads.
   const pendingElectronViolationRef = useRef(null);
   const pendingHardBlockRef = useRef(false);
 
-  // One-off acts held back only by the gap between strikes, keyed by strike key
-  // and raised one at a time once the gap is over.
-  const retryRef = useRef({ pending: new Map(), timer: null });
+  // Strikes held back by the reaction window, one per strike key, landed in the
+  // order they started once the window is over.
+  const queueRef = useRef({ pending: new Map(), timer: null });
   const raiseRef = useRef(null);
 
   const isActiveRef = useRef(isActive);
@@ -162,34 +163,73 @@ export function useViolationMonitor({
     tRef.current = t;
   });
 
-  const scheduleRetry = useCallback(function schedule() {
-    const retry = retryRef.current;
-    if (retry.timer || !retry.pending.size) return;
-    // Closing the modal reschedules.
-    if (isWarningOpenRef.current && openBlocksRef.current) return;
+  const refreshAlsoDetected = useCallback(() => {
+    const others = new Map();
+    for (const [key, { violation }] of queueRef.current.pending) others.set(key, violation);
+    for (const [key, { entry }] of heldRef.current) if (!others.has(key)) others.set(key, entry);
+    others.delete(shownKeyRef.current);
+    setAlsoDetected(
+      [...others.values()].map(({ titleKey, label, labels }) => ({ titleKey, label, labels })),
+    );
+  }, []);
+
+  const publishHeld = useCallback(() => {
+    setHeldViolations([...heldRef.current.values()].map(({ entry }) => entry));
+    refreshAlsoDetected();
+  }, [refreshAlsoDetected]);
+
+  const trackHeld = useCallback(
+    (key, { titleKey, descriptionKey, label, labels }) => {
+      const held = heldRef.current;
+      const known = held.get(key);
+      clearTimeout(known?.timer);
+      const changed =
+        !known ||
+        known.entry.titleKey !== titleKey ||
+        known.entry.label !== label ||
+        String(known.entry.labels) !== String(labels);
+      const entry = changed ? { key, titleKey, descriptionKey, label, labels } : known.entry;
+      const timer = setTimeout(() => {
+        held.delete(key);
+        publishHeld();
+      }, HELD_TTL_MS);
+      held.set(key, { entry, timer });
+      if (changed) publishHeld();
+    },
+    [publishHeld],
+  );
+
+  const clearHeld = useCallback(() => {
+    for (const { timer } of heldRef.current.values()) clearTimeout(timer);
+    heldRef.current.clear();
+    setHeldViolations([]);
+  }, []);
+
+  const scheduleNext = useCallback(function schedule() {
+    const queue = queueRef.current;
+    if (queue.timer || !queue.pending.size) return;
 
     const wait = Math.max(0, policyRef.current.nextStrikeAt() - Date.now());
-    retry.timer = setTimeout(() => {
-      retry.timer = null;
+    queue.timer = setTimeout(() => {
+      queue.timer = null;
       if (!isActiveRef.current) {
-        retry.pending.clear();
+        queue.pending.clear();
         return;
       }
-      const [key, violation] = retry.pending.entries().next().value;
-      retry.pending.delete(key);
-      raiseRef.current(violation);
+      const [[key, { violation }]] = [...queue.pending].sort(([, a], [, b]) => a.at - b.at);
+      queue.pending.delete(key);
+      raiseRef.current(violation, { replay: true });
       schedule();
     }, wait);
   }, []);
 
   // Single gate for every violation, whatever raised it. Returns the outcome so
   // the AI loop knows whether its evidence was actually spent.
-  // countsAsViolation=false shows the modal without adding a strike, and a
-  // held-back strike only shows one when remindWhileHeld is set. A discrete act
-  // happens once and is never re-reported, so it waits out the gap instead of
-  // being dropped.
+  // countsAsViolation=false shows the modal without adding a strike. A strike
+  // held back by the reaction window is queued and lands after it, even if the
+  // condition has stopped by then: it was already confirmed.
   const raiseViolation = useCallback(
-    (violation) => {
+    (violation, { replay = false } = {}) => {
       const {
         type,
         strikeKey,
@@ -207,7 +247,6 @@ export function useViolationMonitor({
         restrikeAfterMs,
         maxRestrikes,
         remindWhileHeld = false,
-        discrete = false,
         finalWarning,
       } = violation;
       const key = strikeKey ?? type ?? titleKey;
@@ -226,9 +265,9 @@ export function useViolationMonitor({
         return outcome;
       };
 
-      const show = (counts, violationCount, blocking = counts) => {
+      const show = (counts, violationCount) => {
         isWarningOpenRef.current = true;
-        openBlocksRef.current = blocking;
+        shownKeyRef.current = key;
         setViolationInfo({
           titleKey,
           descriptionKey,
@@ -240,26 +279,31 @@ export function useViolationMonitor({
           finalWarning,
         });
         setShowTabWarning(true);
+        refreshAlsoDetected();
       };
 
-      // An event trailing an act that already struck has nothing left to retry.
-      const retryLater = () => {
-        if (!discrete || !countsAsViolation) return false;
+      // An event trailing an act that already struck has nothing left to land.
+      const queue = () => {
+        if (!countsAsViolation) return false;
         if (incident && policyRef.current.struckSince(key, incidentStartedAt)) return false;
-        retryRef.current.pending.set(key, violation);
-        scheduleRetry();
+        const { pending } = queueRef.current;
+        if (!pending.has(key)) pending.set(key, { violation, at: incidentStartedAt ?? Date.now() });
+        refreshAlsoDetected();
+        scheduleNext();
         return true;
       };
 
       if (!isActiveRef.current) return report("inactive");
 
-      const warningOpen = isWarningOpenRef.current;
-      if (warningOpen && (openBlocksRef.current || !countsAsViolation)) {
-        if (openBlocksRef.current && retryLater()) {
-          return report("modal_open", undefined, { queued: true });
-        }
-        return report("modal_open");
+      if (remindWhileHeld && countsAsViolation && titleKey) trackHeld(key, violation);
+
+      if (ALWAYS_SHOWN.has(type)) {
+        show(countsAsViolation, sessionViolationsRef.current);
+        return report("raised");
       }
+
+      // A warning that costs nothing never replaces the one on screen.
+      if (isWarningOpenRef.current && !countsAsViolation) return report("modal_open");
 
       const outcome = policyRef.current.admit(key, {
         countsAsStrike: countsAsViolation,
@@ -268,34 +312,18 @@ export function useViolationMonitor({
         startedAt: incidentStartedAt,
         restrikeAfterMs,
         maxRestrikes,
+        defer: !replay && queueRef.current.pending.size > 0,
       });
 
-      if ((outcome === "strike_interval" || outcome === "suppressed") && retryLater()) {
-        return report(outcome, undefined, { queued: true });
+      if (outcome === "reaction_window" && queue()) {
+        return report("queued", undefined, { held_back: outcome });
       }
+      if (outcome !== "raised") return report(outcome);
 
-      if (outcome !== "raised") {
-        // Only an object in view gets a reminder. A held-back absence or tab
-        // switch re-showing on every sample reads as strikes that never count.
-        if (warningOpen || !countsAsViolation || !remindWhileHeld || !titleKey) {
-          return report(outcome);
-        }
-        const now = Date.now();
-        if (now - (lastReminderRef.current.get(key) ?? -Infinity) < REMINDER_INTERVAL_MS) {
-          return report(outcome);
-        }
-        lastReminderRef.current.set(key, now);
-        // An object still in view after its strike shows that strike's count, so
-        // the candidate can see it was not skipped.
-        const counted = incident && policyRef.current.struckSince(key, incidentStartedAt);
-        show(counted, sessionViolationsRef.current, false);
-        return report("warned", undefined, { held_back: outcome });
-      }
-
+      queueRef.current.pending.delete(key);
       const violationCount = countsAsViolation
         ? incrementViolationRef.current()
         : sessionViolationsRef.current;
-      if (remindWhileHeld) lastReminderRef.current.set(key, Date.now());
 
       if (countsAsViolation && violationCount > 0) {
         const strike = {
@@ -317,17 +345,22 @@ export function useViolationMonitor({
       // top of it would promise a way back that no longer exists. The ref has to
       // be released here or nothing ever clears it.
       if (countsAsViolation && violationCount >= MAX_VIOLATIONS) {
+        const held = queueRef.current;
+        clearTimeout(held.timer);
+        held.timer = null;
+        held.pending.clear();
         isWarningOpenRef.current = false;
-        openBlocksRef.current = false;
+        shownKeyRef.current = null;
         setShowTabWarning(false);
         return report("at_limit", violationCount);
       }
 
-      // Replaces a warning already on screen when a strike becomes admissible.
+      // A new strike replaces whatever warning is on screen.
       show(countsAsViolation, violationCount);
+      scheduleNext();
       return report("raised", violationCount);
     },
-    [scheduleRetry],
+    [refreshAlsoDetected, scheduleNext, trackHeld],
   );
 
   useEffect(() => {
@@ -336,22 +369,23 @@ export function useViolationMonitor({
 
   // Nothing held back may land once the session is over.
   useEffect(() => {
-    const retry = retryRef.current;
+    const queue = queueRef.current;
     const drop = () => {
-      clearTimeout(retry.timer);
-      retry.timer = null;
-      retry.pending.clear();
+      clearTimeout(queue.timer);
+      queue.timer = null;
+      queue.pending.clear();
+      clearHeld();
     };
     if (!isActive) drop();
     return drop;
-  }, [isActive]);
+  }, [isActive, clearHeld]);
 
   // Auto-dismiss any open violation warning when session ends
   // (e.g., auto-submit triggered while a warning dialog was open)
   useEffect(() => {
     if (!isActive && showTabWarning) {
       isWarningOpenRef.current = false;
-      openBlocksRef.current = false;
+      shownKeyRef.current = null;
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setShowTabWarning(false));
     }
@@ -369,10 +403,9 @@ export function useViolationMonitor({
   // Reset the ref IMMEDIATELY, before enterFullScreen can re-trigger.
   const closeWarning = useCallback(() => {
     isWarningOpenRef.current = false;
-    openBlocksRef.current = false;
+    shownKeyRef.current = null;
     setShowTabWarning(false);
-    scheduleRetry();
-  }, [scheduleRetry]);
+  }, []);
 
   const dismissWarning = useCallback(() => {
     closeWarning();
@@ -386,7 +419,6 @@ export function useViolationMonitor({
     if (!showTabWarning) return;
 
     const timer = setTimeout(() => {
-      if (openBlocksRef.current) policyRef.current.suppressFor(AUTO_DISMISS_GRACE_MS);
       closeWarning();
       if (!document.fullscreenElement) setNeedsFullscreen(true);
     }, AUTO_DISMISS_MS);
@@ -402,8 +434,10 @@ export function useViolationMonitor({
   const handleAiViolation = useCallback(
     (violation) => {
       if (!isActiveRef.current) return;
-      // Gaze and blinking are noisy, so they nudge rather than strike.
+      // Gaze and blinking are noisy, so they nudge rather than strike. A nudge
+      // over an open warning is noise; the next frame brings it back if needed.
       if (violation.soft) {
+        if (isWarningOpenRef.current) return "soft";
         toast.warning(tRef.current(violation.titleKey), {
           description: tRef.current(violation.descriptionKey),
         });
@@ -526,7 +560,6 @@ export function useViolationMonitor({
         incident: true,
         incidentStartedAt: leftWindow.startedAt,
         maxRestrikes: 0,
-        discrete: true,
       });
     };
 
@@ -581,15 +614,23 @@ export function useViolationMonitor({
 
     const handleFullscreenChange = () => {
       lastFullscreenChangeRef.current = Date.now();
-      if (!document.fullscreenElement) {
-        leaveWindow({
-          type: "FULLSCREEN_EXIT",
-          source: "fullscreen_exit",
-          titleKey: "violations.fullscreenExit.title",
-          descriptionKey: "violations.fullscreenExit.description",
-          imagePath: "/window-switch.png",
-        });
+      if (document.fullscreenElement) {
+        // Chromium only: Esc then has to be held to leave fullscreen. The desktop
+        // app locks every key so Alt+Tab and the Windows key stay in the page;
+        // narrowing it to Escape here would undo that.
+        navigator.keyboard?.lock?.(window.electronAPI ? undefined : ["Escape"])?.catch(() => {});
+        return;
       }
+      // Esc pressed while reading a warning drops fullscreen without leaving the
+      // page, and closing the warning restores it.
+      if (isWarningOpenRef.current && !document.hidden && document.hasFocus()) return;
+      leaveWindow({
+        type: "FULLSCREEN_EXIT",
+        source: "fullscreen_exit",
+        titleKey: "violations.fullscreenExit.title",
+        descriptionKey: "violations.fullscreenExit.description",
+        imagePath: "/window-switch.png",
+      });
     };
 
     let resizeTimer = null;
@@ -654,6 +695,8 @@ export function useViolationMonitor({
   return {
     showTabWarning,
     violationInfo,
+    alsoDetected,
+    heldViolations,
     strikes,
     dismissWarning,
     needsFullscreen,

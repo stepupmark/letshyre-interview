@@ -40,6 +40,8 @@
     "defaultTitle": "창 전환 경고",
     "defaultDescription": "인터뷰 화면을 벗어나는 행위는 위반 사항으로 기록됩니다",
     "defaultButtonText": "확인했습니다, 인터뷰로 돌아가기",
+    "alsoDetected": "추가 감지됨",
+    "stillDetected": "계속 감지됨",
     "finalWarning": "마지막 경고입니다. 한 번 더 위반하면 면접이 종료됩니다."
   },
   "autoSubmitLoader": {

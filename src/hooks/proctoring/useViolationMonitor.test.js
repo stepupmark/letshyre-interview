@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import {
   getElectronViolationKey,
-  REMINDER_INTERVAL_MS,
+  HELD_TTL_MS,
   useViolationMonitor,
   whilePermissionPrompt,
 } from "./useViolationMonitor";
@@ -157,7 +157,7 @@ describe("useViolationMonitor", () => {
     expect(result.current.violationInfo.titleKey).toBe("violations.fullscreenExit.title");
   });
 
-  it("only raises the first violation while a warning is already open", () => {
+  it("queues a second violation instead of showing it over the first", () => {
     const { result, incrementViolation } = setup();
 
     act(() => {
@@ -337,20 +337,52 @@ describe("useViolationMonitor modal lifecycle", () => {
     expect(result.current.showTabWarning).toBe(false);
   });
 
-  it("holds the next strike for a grace period after closing itself", () => {
+  it("lands a violation raised under an open warning once the reaction window ends", () => {
+    const { result, incrementViolation } = setup();
+    const people = { ...hardViolation, type: "MULTIPLE_FACES", titleKey: "multipleFaces" };
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => vi.advanceTimersByTime(5_000));
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleAiViolation(people);
+    });
+    expect(outcome).toBe("queued");
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.showTabWarning).toBe(true);
+    expect(result.current.violationInfo.titleKey).toBe("multipleFaces");
+  });
+
+  it.each([
+    ["closed straight away", true],
+    ["left open", false],
+  ])("gives the same reaction window when the warning is %s", (_, close) => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    if (close) act(() => result.current.dismissWarning());
+    act(() => vi.advanceTimersByTime(1_000));
+    act(() => result.current.handleAiViolation({ ...hardViolation, type: "TAB_SWITCH" }));
+
+    act(() => vi.advanceTimersByTime(8_999));
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    act(() => vi.advanceTimersByTime(1));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not add a grace after a warning closes itself", () => {
     const { result, incrementViolation } = setup();
 
     act(() => result.current.handleAiViolation(hardViolation));
     act(() => vi.advanceTimersByTime(20_000));
-
-    let outcome;
-    act(() => {
-      outcome = result.current.handleAiViolation(hardViolation);
-    });
-
-    expect(outcome).toBe("suppressed");
-    expect(incrementViolation).toHaveBeenCalledTimes(1);
     expect(result.current.showTabWarning).toBe(false);
+
+    act(() => result.current.handleAiViolation({ ...hardViolation, type: "TAB_SWITCH" }));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 
   it("shows nothing for a held-back strike that is not an object in view", () => {
@@ -469,7 +501,7 @@ describe("useViolationMonitor modal lifecycle", () => {
     });
 
     expect(first).toBe("raised");
-    expect(second).toBe("modal_open");
+    expect(second).toBe("cooldown");
   });
 
   it("carries the detected object through to the modal", () => {
@@ -521,64 +553,66 @@ describe("useViolationMonitor modal lifecycle", () => {
     maxRestrikes: 1,
   };
 
-  it("strikes each newly introduced object even inside the strike gap", () => {
+  it("lands a newly introduced object once the reaction window ends", () => {
     const { result, incrementViolation } = setup();
 
     act(() => result.current.handleAiViolation(phoneIncident));
     act(() => result.current.dismissWarning());
     act(() => result.current.handleAiViolation(laptopIncident));
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
 
+    act(() => vi.advanceTimersByTime(10_000));
     expect(incrementViolation).toHaveBeenCalledTimes(2);
     expect(result.current.violationInfo).toMatchObject({ label: "laptop", counts: true });
   });
 
-  it("shows the existing count while an object stays in view without blocking", () => {
+  it("keeps a banner up instead of the warning while an object stays in view", () => {
     const { result, incrementViolation } = setup();
 
-    act(() => result.current.handleAiViolation(phoneIncident));
+    act(() => result.current.handleAiViolation(objectsInView));
     act(() => result.current.dismissWarning());
-    act(() => vi.advanceTimersByTime(REMINDER_INTERVAL_MS));
+    act(() => vi.advanceTimersByTime(5_000));
 
     let outcome;
     act(() => {
-      outcome = result.current.handleAiViolation({
-        ...phoneIncident,
-        ongoing: true,
-        maxRestrikes: 0,
-      });
+      outcome = result.current.handleAiViolation({ ...objectsInView, ongoing: true });
     });
 
-    expect(outcome).toBe("warned");
+    expect(outcome).toBe("cooldown");
     expect(incrementViolation).toHaveBeenCalledTimes(1);
-    expect(result.current.violationInfo.counts).toBe(true);
-
-    act(() => result.current.handleAiViolation(laptopIncident));
-    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.showTabWarning).toBe(false);
+    expect(result.current.heldViolations).toEqual([
+      expect.objectContaining({ key: "PROHIBITED_OBJECT", label: "cell phone" }),
+    ]);
   });
 
-  it("strikes an object kept in view once more after 30s, then reminds every 30s", () => {
+  it("takes the banner down once the object stops being reported", () => {
+    const { result } = setup();
+
+    act(() => result.current.handleAiViolation(objectsInView));
+    act(() => vi.advanceTimersByTime(HELD_TTL_MS - 1));
+    expect(result.current.heldViolations).toHaveLength(1);
+
+    act(() => vi.advanceTimersByTime(1));
+    expect(result.current.heldViolations).toEqual([]);
+  });
+
+  it("strikes an object kept in view once more after 30s, then only keeps the banner", () => {
     const { result, incrementViolation } = setup();
-    const outcomes = [];
+    const raisedAt = [];
 
     for (let ms = 0; ms <= 180_000; ms += 5_000) {
       act(() => {
         const outcome = result.current.handleAiViolation({ ...objectsInView, ongoing: ms > 0 });
-        if (outcome === "raised" || outcome === "warned") outcomes.push([ms, outcome]);
+        if (outcome === "raised") raisedAt.push(ms);
       });
       act(() => result.current.dismissWarning());
       act(() => vi.advanceTimersByTime(5_000));
     }
 
-    expect(outcomes).toEqual([
-      [0, "raised"],
-      [30_000, "raised"],
-      [60_000, "warned"],
-      [90_000, "warned"],
-      [120_000, "warned"],
-      [150_000, "warned"],
-      [180_000, "warned"],
-    ]);
+    expect(raisedAt).toEqual([0, 30_000]);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.heldViolations).toHaveLength(1);
   });
 
   it("lands the second strike right after an unanswered warning closes itself", () => {
@@ -624,6 +658,155 @@ describe("useViolationMonitor modal lifecycle", () => {
 
     expect(shown).toEqual([0, 30_000]);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("lists what else is going on under the open warning", () => {
+    const { result } = setup();
+    const people = {
+      type: "MULTIPLE_FACES",
+      incident: true,
+      incidentStartedAt: 2_000,
+      titleKey: "violations.multipleFaces.title",
+    };
+
+    act(() => result.current.handleAiViolation(objectsInView));
+    act(() => vi.advanceTimersByTime(2_000));
+    act(() => result.current.handleAiViolation(people));
+    expect(result.current.alsoDetected).toEqual([
+      expect.objectContaining({ titleKey: "violations.multipleFaces.title" }),
+    ]);
+
+    act(() => vi.advanceTimersByTime(3_000));
+    act(() => result.current.handleAiViolation({ ...objectsInView, ongoing: true }));
+    act(() => vi.advanceTimersByTime(5_000));
+
+    expect(result.current.violationInfo.titleKey).toBe("violations.multipleFaces.title");
+    expect(result.current.alsoDetected).toEqual([
+      expect.objectContaining({
+        titleKey: "violations.prohibitedObject.title",
+        label: "cell phone",
+      }),
+    ]);
+  });
+
+  it("shows an identity warning straight away over an open warning", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(objectsInView));
+    act(() =>
+      result.current.handleAiViolation({
+        type: "FACE_MISMATCH",
+        titleKey: "violations.faceMismatch.title",
+        descriptionKey: "violations.faceMismatch.description",
+        countsAsViolation: false,
+        finalWarning: true,
+      }),
+    );
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.showTabWarning).toBe(true);
+    expect(result.current.violationInfo).toMatchObject({
+      titleKey: "violations.faceMismatch.title",
+      counts: false,
+      finalWarning: true,
+    });
+  });
+
+  it("holds back soft nudges while a warning is open", () => {
+    const { result } = setup();
+
+    act(() => result.current.handleAiViolation(objectsInView));
+    act(() =>
+      result.current.handleAiViolation({ soft: true, titleKey: "violations.notLooking.title" }),
+    );
+    expect(toast.warning).not.toHaveBeenCalled();
+
+    act(() => result.current.dismissWarning());
+    act(() =>
+      result.current.handleAiViolation({ soft: true, titleKey: "violations.notLooking.title" }),
+    );
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("useViolationMonitor strike queue", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const incidentOf = (type, startedAt) => ({
+    type,
+    incident: true,
+    incidentStartedAt: startedAt,
+    titleKey: type,
+    descriptionKey: "d",
+  });
+
+  it("still counts a violation that stopped before the window ended", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(incidentOf("PROHIBITED_OBJECT", 0)));
+    act(() => vi.advanceTimersByTime(3_000));
+    act(() => result.current.handleAiViolation(incidentOf("MULTIPLE_FACES", 3_000)));
+    act(() => vi.advanceTimersByTime(7_000));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.titleKey).toBe("MULTIPLE_FACES");
+  });
+
+  it("lands held strikes one window apart in the order they started", () => {
+    const { result, incrementViolation } = setup({ startCount: -10 });
+
+    act(() => result.current.handleAiViolation(incidentOf("NO_FACE", 0)));
+    act(() => vi.advanceTimersByTime(6_000));
+    act(() => result.current.handleAiViolation(incidentOf("MULTIPLE_FACES", 4_000)));
+    act(() => vi.advanceTimersByTime(1_000));
+    act(() => result.current.handleAiViolation(incidentOf("PROHIBITED_OBJECT", 2_000)));
+
+    act(() => vi.advanceTimersByTime(3_000));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.titleKey).toBe("PROHIBITED_OBJECT");
+
+    act(() => vi.advanceTimersByTime(9_999));
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    act(() => vi.advanceTimersByTime(1));
+    expect(incrementViolation).toHaveBeenCalledTimes(3);
+    expect(result.current.violationInfo.titleKey).toBe("MULTIPLE_FACES");
+  });
+
+  it("does not let a newcomer jump ahead of a strike already waiting", () => {
+    const { result, incrementViolation } = setup({ startCount: -10 });
+
+    act(() => result.current.handleAiViolation(incidentOf("NO_FACE", 0)));
+    act(() => vi.advanceTimersByTime(5_000));
+    act(() => result.current.handleAiViolation(incidentOf("MULTIPLE_FACES", 5_000)));
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(result.current.violationInfo.titleKey).toBe("MULTIPLE_FACES");
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleAiViolation(incidentOf("CAMERA_OFF", 10_000));
+    });
+    expect(outcome).toBe("queued");
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("counts nothing more once the strike limit is reached", () => {
+    const { result, incrementViolation } = setup({ startCount: MAX_VIOLATIONS - 2 });
+
+    act(() => result.current.handleAiViolation(incidentOf("NO_FACE", 0)));
+    act(() => vi.advanceTimersByTime(2_000));
+    act(() => result.current.handleAiViolation(incidentOf("MULTIPLE_FACES", 2_000)));
+    act(() => result.current.handleAiViolation(incidentOf("CAMERA_OFF", 2_000)));
+    act(() => vi.advanceTimersByTime(60_000));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.showTabWarning).toBe(false);
   });
 });
 
@@ -806,7 +989,7 @@ describe("useViolationMonitor leaving the window", () => {
     expect(result.current.violationInfo.titleKey).toBe("violations.fullscreenExit.title");
   });
 
-  it("strikes every leave after coming back, straight through the strike gap", () => {
+  it("strikes every leave after coming back, each once its reaction window ends", () => {
     const { result, incrementViolation } = setup();
 
     hide();
@@ -814,7 +997,9 @@ describe("useViolationMonitor leaving the window", () => {
     act(() => result.current.dismissWarning());
     wait(1_000);
     hide();
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
 
+    wait(9_000);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
     expect(result.current.showTabWarning).toBe(true);
 
@@ -822,6 +1007,7 @@ describe("useViolationMonitor leaving the window", () => {
     act(() => result.current.dismissWarning());
     wait(1_000);
     hide();
+    wait(9_000);
 
     expect(incrementViolation).toHaveBeenCalledTimes(3);
   });
@@ -835,6 +1021,7 @@ describe("useViolationMonitor leaving the window", () => {
 
     wait(5_000);
     hide();
+    wait(5_000);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
     expect(lastStrike(result).titleKey).toBe("violations.tabSwitch.title");
 
@@ -842,7 +1029,7 @@ describe("useViolationMonitor leaving the window", () => {
     act(() => result.current.dismissWarning());
     wait(1_000);
     blur();
-    wait(2_000);
+    wait(9_000);
 
     expect(incrementViolation).toHaveBeenCalledTimes(3);
     expect(lastStrike(result).titleKey).toBe("violations.windowFocus.title");
@@ -857,7 +1044,7 @@ describe("useViolationMonitor leaving the window", () => {
     act(() => result.current.dismissWarning());
     wait(1_000);
     shrink();
-    wait(1_300);
+    wait(9_000);
 
     expect(incrementViolation).toHaveBeenCalledTimes(2);
     expect(result.current.violationInfo.titleKey).toBe("violations.windowResize.title");
@@ -933,6 +1120,46 @@ describe("useViolationMonitor leaving the window", () => {
     expect(incrementViolation).toHaveBeenCalledTimes(1);
   });
 
+  it("does not strike Esc dropping fullscreen while the candidate reads a warning", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation({ titleKey: "t", descriptionKey: "d" }));
+    exitFullscreen();
+    wait(60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks for Esc to be held to leave fullscreen where the browser allows it", () => {
+    const lock = vi.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, "keyboard", { value: { lock }, configurable: true });
+    setup();
+
+    act(() => {
+      setFullscreen(true);
+      document.dispatchEvent(new Event("fullscreenchange"));
+    });
+
+    expect(lock).toHaveBeenCalledWith(["Escape"]);
+    delete navigator.keyboard;
+  });
+
+  it("locks every key inside the desktop app so Alt+Tab and the Windows key stay in the page", () => {
+    const lock = vi.fn(() => Promise.resolve());
+    Object.defineProperty(navigator, "keyboard", { value: { lock }, configurable: true });
+    window.electronAPI = {};
+    setup();
+
+    act(() => {
+      setFullscreen(true);
+      document.dispatchEvent(new Event("fullscreenchange"));
+    });
+
+    expect(lock).toHaveBeenCalledWith(undefined);
+    delete navigator.keyboard;
+    delete window.electronAPI;
+  });
+
   it("stops watching focus once unmounted", () => {
     const { unmount, incrementViolation } = setup();
 
@@ -975,7 +1202,7 @@ describe("useViolationMonitor held-back acts", () => {
     act(() => result.current.dismissWarning());
   }
 
-  it("raises a desktop-app block held back by the strike gap once the gap ends", () => {
+  it("raises a desktop-app block held back by the reaction window once it ends", () => {
     const { result, incrementViolation } = setup();
 
     strikeAndDismiss(result);
@@ -984,9 +1211,9 @@ describe("useViolationMonitor held-back acts", () => {
     act(() => {
       outcome = result.current.handleElectronViolation(hdmi);
     });
-    expect(outcome).toBe("strike_interval");
+    expect(outcome).toBe("queued");
 
-    wait(9_999);
+    wait(4_999);
     expect(incrementViolation).toHaveBeenCalledTimes(1);
 
     wait(1);
@@ -994,7 +1221,7 @@ describe("useViolationMonitor held-back acts", () => {
     expect(result.current.violationInfo.titleKey).toBe("violations.electron.externalDisplay.title");
   });
 
-  it("raises repeats of one block once and different blocks a gap apart", () => {
+  it("raises repeats of one block once and different blocks a window apart", () => {
     // Kept clear of the strike limit so every warning is shown.
     const { result, incrementViolation } = setup({ startCount: -10 });
 
@@ -1004,12 +1231,12 @@ describe("useViolationMonitor held-back acts", () => {
     act(() => result.current.handleElectronViolation(mirroring));
     act(() => result.current.handleElectronViolation(hdmi));
 
-    wait(10_000);
+    wait(5_000);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
     expect(result.current.violationInfo.titleKey).toBe("violations.electron.externalDisplay.title");
 
     act(() => result.current.dismissWarning());
-    wait(14_999);
+    wait(9_999);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
 
     wait(1);
@@ -1021,25 +1248,7 @@ describe("useViolationMonitor held-back acts", () => {
     expect(incrementViolation).toHaveBeenCalledTimes(3);
   });
 
-  it("waits out the grace after a warning closes itself", () => {
-    const { result, incrementViolation } = setup();
-
-    act(() => result.current.handleAiViolation(noFace));
-    wait(22_000);
-    let outcome;
-    act(() => {
-      outcome = result.current.handleElectronViolation(hdmi);
-    });
-    expect(outcome).toBe("suppressed");
-
-    wait(7_999);
-    expect(incrementViolation).toHaveBeenCalledTimes(1);
-
-    wait(1);
-    expect(incrementViolation).toHaveBeenCalledTimes(2);
-  });
-
-  it("raises a leave made while the last warning was open once it closes", () => {
+  it("raises a leave made while the last warning was open once the window ends", () => {
     const { result, incrementViolation } = setup();
 
     act(() => setHidden(true));
@@ -1051,8 +1260,7 @@ describe("useViolationMonitor held-back acts", () => {
     act(() => setHidden(true));
     expect(incrementViolation).toHaveBeenCalledTimes(1);
 
-    act(() => result.current.dismissWarning());
-    wait(13_999);
+    wait(8_999);
     expect(incrementViolation).toHaveBeenCalledTimes(1);
 
     wait(1);
@@ -1085,7 +1293,7 @@ describe("useViolationMonitor held-back acts", () => {
     expect(incrementViolation).toHaveBeenCalledTimes(1);
   });
 
-  it("still drops an AI condition caught in the gap, since it is re-reported", () => {
+  it("lands an AI condition caught in the window without it being reported again", () => {
     const { result, incrementViolation } = setup();
 
     strikeAndDismiss(result);
@@ -1093,7 +1301,7 @@ describe("useViolationMonitor held-back acts", () => {
     act(() => result.current.handleAiViolation({ ...noFace, type: "MULTIPLE_FACES" }));
     wait(60_000);
 
-    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 });
 
