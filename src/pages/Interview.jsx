@@ -27,6 +27,7 @@ import { useElectronScreenRecording } from "@hooks/electron/useElectronScreenRec
 import { useRegisterFace } from "@mutations/useRegisterFace";
 import { dataUrlToFile } from "@/lib/videoCapture";
 import { logger } from "@/lib/logger";
+import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 
 export function Interview() {
   const {
@@ -58,11 +59,13 @@ export function Interview() {
     restoreFullscreen,
     handleAiViolation,
     handleElectronViolation,
+    handleElectronHardBlock,
   } = useViolationMonitor({
     isActive,
     incrementViolation,
     sessionViolations: session?.violations ?? 0,
     sessionId: session?.session_id,
+    onHardBlock: () => autoSubmit(TERMINATION_REASONS.ELECTRON_SECURITY),
   });
 
   const videoRef = useRef(null);
@@ -159,7 +162,7 @@ export function Interview() {
   }, [isProctoringDegraded, isVerificationUnavailable]);
 
   useElectronViolation({
-    onHardBlock: handleElectronViolation,
+    onHardBlock: handleElectronHardBlock,
     onSoftBlock: handleElectronViolation,
   });
 

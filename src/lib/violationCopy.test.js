@@ -47,6 +47,19 @@ describe("violationCopy", () => {
     });
   });
 
+  it("gives camera-off and looking-away their own counted copy", () => {
+    expect(violationCopy("CAMERA_OFF")).toEqual({
+      titleKey: "violations.cameraOff.title",
+      descriptionKey: "violations.cameraOff.description",
+      imagePath: "/no-candidate.png",
+    });
+    expect(violationCopy("LOOKING_AWAY")).toEqual({
+      titleKey: "violations.lookingAway.title",
+      descriptionKey: "violations.lookingAway.description",
+      imagePath: "/no-candidate.png",
+    });
+  });
+
   it("returns null for unknown violation types", () => {
     expect(violationCopy("UNKNOWN_TYPE")).toBeNull();
   });

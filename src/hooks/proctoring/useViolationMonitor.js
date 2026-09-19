@@ -26,6 +26,26 @@ export const REMINDER_INTERVAL_MS = 30_000;
 // action.
 const CASCADE_WINDOW_MS = 2_000;
 
+// Tab switches, fullscreen exits, resizes and focus loss are all one offence:
+// leaving the interview. They share a strike key so one act strikes once, and
+// each leave after coming back is a new incident that strikes straight away.
+const LEFT_WINDOW = "LEFT_WINDOW";
+// Brief focus blips (OS notifications, a stray click on the taskbar) are not a leave.
+const FOCUS_CONFIRM_MS = 2_000;
+
+let permissionPrompts = 0;
+
+// A browser mic/camera prompt takes focus from the page, and answering it is
+// not leaving the interview.
+export async function whilePermissionPrompt(request) {
+  permissionPrompts += 1;
+  try {
+    return await request;
+  } finally {
+    permissionPrompts -= 1;
+  }
+}
+
 const STRIKES_KEY = "interview_strikes";
 
 // Kept per session so a reload mid-interview doesn't drop the earlier strikes
@@ -65,9 +85,12 @@ const ELECTRON_IMAGES = {
   screenSharing: "/laptop.png",
 };
 
-function electronViolationCopy(event) {
+function electronViolation(event) {
   const key = getElectronViolationKey(event);
   return {
+    type: `ELECTRON_${key.toUpperCase()}`,
+    source: "electron",
+    discrete: true,
     titleKey: `violations.electron.${key}.title`,
     descriptionKey: `violations.electron.${key}.description`,
     imagePath: ELECTRON_IMAGES[key] ?? "/window-switch.png",
@@ -76,15 +99,16 @@ function electronViolationCopy(event) {
 
 /**
  * Owns the violation-warning modal (state + raise/dismiss), the anti-cheat DOM
- * listeners that raise it (tab switch, fullscreen exit, window resize,
- * copy/paste/right-click), and the Electron hard/soft-block bridge. Split out
- * of the interview page so that component stays focused on layout/rendering.
+ * listeners that raise it (tab switch, fullscreen exit, window resize, focus
+ * loss, copy/paste/right-click), and the Electron hard/soft-block bridge. Split
+ * out of the interview page so that component stays focused on layout/rendering.
  */
 export function useViolationMonitor({
   isActive,
   incrementViolation,
   sessionViolations,
   sessionId,
+  onHardBlock,
 }) {
   const policyRef = useRef(createStrikePolicy());
   const lastFullscreenChangeRef = useRef(0);
@@ -109,15 +133,22 @@ export function useViolationMonitor({
   // and no strike could ever land.
   const openBlocksRef = useRef(false);
 
-  // Buffers an Electron hard-block that arrived before isActive was true.
-  // Flushed by the effect below once the session loads.
+  // Buffer Electron blocks that arrived before isActive was true. Flushed by the
+  // effect below once the session loads.
   const pendingElectronViolationRef = useRef(null);
+  const pendingHardBlockRef = useRef(false);
+
+  // One-off acts held back only by the gap between strikes, keyed by strike key
+  // and raised one at a time once the gap is over.
+  const retryRef = useRef({ pending: new Map(), timer: null });
+  const raiseRef = useRef(null);
 
   const isActiveRef = useRef(isActive);
   const incrementViolationRef = useRef(incrementViolation);
   // Mirror the live violation count for warn-only modals that must NOT increment.
   const sessionViolationsRef = useRef(sessionViolations);
   const sessionIdRef = useRef(sessionId);
+  const onHardBlockRef = useRef(onHardBlock);
 
   // Keep the refs read by the once-registered listeners in sync with the latest
   // render values. Synced in an effect (not during render) so a discarded
@@ -127,38 +158,65 @@ export function useViolationMonitor({
     incrementViolationRef.current = incrementViolation;
     sessionViolationsRef.current = sessionViolations;
     sessionIdRef.current = sessionId;
+    onHardBlockRef.current = onHardBlock;
     tRef.current = t;
   });
+
+  const scheduleRetry = useCallback(function schedule() {
+    const retry = retryRef.current;
+    if (retry.timer || !retry.pending.size) return;
+    // Closing the modal reschedules.
+    if (isWarningOpenRef.current && openBlocksRef.current) return;
+
+    const wait = Math.max(0, policyRef.current.nextStrikeAt() - Date.now());
+    retry.timer = setTimeout(() => {
+      retry.timer = null;
+      if (!isActiveRef.current) {
+        retry.pending.clear();
+        return;
+      }
+      const [key, violation] = retry.pending.entries().next().value;
+      retry.pending.delete(key);
+      raiseRef.current(violation);
+      schedule();
+    }, wait);
+  }, []);
 
   // Single gate for every violation, whatever raised it. Returns the outcome so
   // the AI loop knows whether its evidence was actually spent.
   // countsAsViolation=false shows the modal without adding a strike, and a
-  // held-back strike only shows one when remindWhileHeld is set.
+  // held-back strike only shows one when remindWhileHeld is set. A discrete act
+  // happens once and is never re-reported, so it waits out the gap instead of
+  // being dropped.
   const raiseViolation = useCallback(
-    ({
-      type,
-      source,
-      label,
-      labels,
-      detail,
-      titleKey,
-      descriptionKey,
-      imagePath,
-      countsAsViolation = true,
-      ongoing = false,
-      incident = false,
-      incidentStartedAt,
-      restrikeAfterMs,
-      maxRestrikes,
-      remindWhileHeld = false,
-      finalWarning,
-    }) => {
-      const key = type ?? titleKey;
+    (violation) => {
+      const {
+        type,
+        strikeKey,
+        source,
+        label,
+        labels,
+        detail,
+        titleKey,
+        descriptionKey,
+        imagePath,
+        countsAsViolation = true,
+        ongoing = false,
+        incident = false,
+        incidentStartedAt,
+        restrikeAfterMs,
+        maxRestrikes,
+        remindWhileHeld = false,
+        discrete = false,
+        finalWarning,
+      } = violation;
+      const key = strikeKey ?? type ?? titleKey;
 
       const report = (outcome, violationCount, extra) => {
         recordViolationEvent({
           source,
-          type: key,
+          type: type ?? key,
+          ...(strikeKey ? { strike_key: strikeKey } : {}),
           outcome,
           ...(label ? { label } : {}),
           ...(detail ?? {}),
@@ -184,10 +242,22 @@ export function useViolationMonitor({
         setShowTabWarning(true);
       };
 
+      // An event trailing an act that already struck has nothing left to retry.
+      const retryLater = () => {
+        if (!discrete || !countsAsViolation) return false;
+        if (incident && policyRef.current.struckSince(key, incidentStartedAt)) return false;
+        retryRef.current.pending.set(key, violation);
+        scheduleRetry();
+        return true;
+      };
+
       if (!isActiveRef.current) return report("inactive");
 
       const warningOpen = isWarningOpenRef.current;
       if (warningOpen && (openBlocksRef.current || !countsAsViolation)) {
+        if (openBlocksRef.current && retryLater()) {
+          return report("modal_open", undefined, { queued: true });
+        }
         return report("modal_open");
       }
 
@@ -199,6 +269,10 @@ export function useViolationMonitor({
         restrikeAfterMs,
         maxRestrikes,
       });
+
+      if ((outcome === "strike_interval" || outcome === "suppressed") && retryLater()) {
+        return report(outcome, undefined, { queued: true });
+      }
 
       if (outcome !== "raised") {
         // Only an object in view gets a reminder. A held-back absence or tab
@@ -253,8 +327,24 @@ export function useViolationMonitor({
       show(countsAsViolation, violationCount);
       return report("raised", violationCount);
     },
-    [],
+    [scheduleRetry],
   );
+
+  useEffect(() => {
+    raiseRef.current = raiseViolation;
+  }, [raiseViolation]);
+
+  // Nothing held back may land once the session is over.
+  useEffect(() => {
+    const retry = retryRef.current;
+    const drop = () => {
+      clearTimeout(retry.timer);
+      retry.timer = null;
+      retry.pending.clear();
+    };
+    if (!isActive) drop();
+    return drop;
+  }, [isActive]);
 
   // Auto-dismiss any open violation warning when session ends
   // (e.g., auto-submit triggered while a warning dialog was open)
@@ -281,7 +371,8 @@ export function useViolationMonitor({
     isWarningOpenRef.current = false;
     openBlocksRef.current = false;
     setShowTabWarning(false);
-  }, []);
+    scheduleRetry();
+  }, [scheduleRetry]);
 
   const dismissWarning = useCallback(() => {
     closeWarning();
@@ -295,9 +386,8 @@ export function useViolationMonitor({
     if (!showTabWarning) return;
 
     const timer = setTimeout(() => {
-      const wasStrike = openBlocksRef.current;
+      if (openBlocksRef.current) policyRef.current.suppressFor(AUTO_DISMISS_GRACE_MS);
       closeWarning();
-      if (wasStrike) policyRef.current.suppressFor(AUTO_DISMISS_GRACE_MS);
       if (!document.fullscreenElement) setNeedsFullscreen(true);
     }, AUTO_DISMISS_MS);
 
@@ -348,25 +438,41 @@ export function useViolationMonitor({
         pendingElectronViolationRef.current = violation;
         return "buffered";
       }
-      return raiseViolation({
-        type: `ELECTRON_${getElectronViolationKey(violation.event).toUpperCase()}`,
-        source: "electron",
-        ...electronViolationCopy(violation.event),
-      });
+      return raiseViolation(electronViolation(violation.event));
     },
     [raiseViolation],
   );
 
-  // Flush any violation that arrived before the session was ready.
+  // A hard block ends the interview rather than adding a strike.
+  const handleElectronHardBlock = useCallback((violation) => {
+    const active = isActiveRef.current;
+    recordViolationEvent({
+      source: "electron",
+      type: electronViolation(violation?.event).type,
+      outcome: active ? "terminated" : "buffered",
+      hard_block: true,
+    });
+    if (!active) {
+      pendingHardBlockRef.current = true;
+      return "buffered";
+    }
+    onHardBlockRef.current?.();
+    return "terminated";
+  }, []);
+
+  // Flush anything that arrived before the session was ready.
   useEffect(() => {
-    if (isActive && pendingElectronViolationRef.current) {
+    if (!isActive) return;
+    if (pendingHardBlockRef.current) {
+      pendingHardBlockRef.current = false;
+      pendingElectronViolationRef.current = null;
+      onHardBlockRef.current?.();
+      return;
+    }
+    if (pendingElectronViolationRef.current) {
       const v = pendingElectronViolationRef.current;
       pendingElectronViolationRef.current = null;
-      raiseViolation({
-        type: `ELECTRON_${getElectronViolationKey(v.event).toUpperCase()}`,
-        source: "electron",
-        ...electronViolationCopy(v.event),
-      });
+      raiseViolation(electronViolation(v.event));
     }
   }, [isActive, raiseViolation]);
 
@@ -399,22 +505,84 @@ export function useViolationMonitor({
   // isActive and incrementViolation are read via isActiveRef / incrementViolationRef
   // so handlers always use current values without any re-registration on state change.
   useEffect(() => {
+    // The current leave. It stays open while the candidate is away, and a leave
+    // made while still on the page (a fullscreen exit, a resize) stays joinable
+    // for the cascade window so the events one act fires strike once.
+    let leftWindow = null;
+
+    const leaveWindow = (violation, at = Date.now()) => {
+      const away = document.hidden || !document.hasFocus();
+      const joins = leftWindow && (leftWindow.away || at - leftWindow.lastAt < CASCADE_WINDOW_MS);
+      leftWindow = joins
+        ? {
+            startedAt: leftWindow.startedAt,
+            lastAt: Math.max(leftWindow.lastAt, at),
+            away: leftWindow.away || away,
+          }
+        : { startedAt: at, lastAt: at, away };
+      raiseViolation({
+        ...violation,
+        strikeKey: LEFT_WINDOW,
+        incident: true,
+        incidentStartedAt: leftWindow.startedAt,
+        maxRestrikes: 0,
+        discrete: true,
+      });
+    };
+
+    const cameBack = () => {
+      leftWindow = null;
+    };
+
+    let focusTimer = null;
+
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        raiseViolation({
-          type: "TAB_SWITCH",
-          source: "tab_switch",
-          titleKey: "violations.tabSwitch.title",
-          descriptionKey: "violations.tabSwitch.description",
-          imagePath: "/window-switch.png",
-        });
+      if (!document.hidden) {
+        if (document.hasFocus()) cameBack();
+        return;
       }
+      clearTimeout(focusTimer);
+      leaveWindow({
+        type: "TAB_SWITCH",
+        source: "tab_switch",
+        titleKey: "violations.tabSwitch.title",
+        descriptionKey: "violations.tabSwitch.description",
+        imagePath: "/window-switch.png",
+      });
+    };
+
+    // Another app over a still-visible page never hides the tab, so focus is the
+    // only sign the candidate left.
+    const handleBlur = () => {
+      if (document.hidden || permissionPrompts > 0) return;
+      const leftAt = Date.now();
+      clearTimeout(focusTimer);
+      focusTimer = setTimeout(() => {
+        focusTimer = null;
+        if (document.hidden || document.hasFocus() || permissionPrompts > 0) return;
+        leaveWindow(
+          {
+            type: "WINDOW_FOCUS",
+            source: "window_focus",
+            titleKey: "violations.windowFocus.title",
+            descriptionKey: "violations.windowFocus.description",
+            imagePath: "/window-switch.png",
+          },
+          leftAt,
+        );
+      }, FOCUS_CONFIRM_MS);
+    };
+
+    const handleFocus = () => {
+      clearTimeout(focusTimer);
+      focusTimer = null;
+      if (!document.hidden) cameBack();
     };
 
     const handleFullscreenChange = () => {
       lastFullscreenChangeRef.current = Date.now();
       if (!document.fullscreenElement) {
-        raiseViolation({
+        leaveWindow({
           type: "FULLSCREEN_EXIT",
           source: "fullscreen_exit",
           titleKey: "violations.fullscreenExit.title",
@@ -453,7 +621,7 @@ export function useViolationMonitor({
         confirmTimer = setTimeout(() => {
           if (!isWindowShrunk()) return;
           if (Date.now() - lastFullscreenChangeRef.current < CASCADE_WINDOW_MS) return;
-          raiseViolation({
+          leaveWindow({
             type: "WINDOW_RESIZE",
             source: "window_resize",
             titleKey: "violations.windowResize.title",
@@ -467,13 +635,18 @@ export function useViolationMonitor({
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     window.addEventListener("resize", handleResize);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
       if (resizeTimer) clearTimeout(resizeTimer);
       if (confirmTimer) clearTimeout(confirmTimer);
+      clearTimeout(focusTimer);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ↑ intentional empty deps — raiseViolation reads isActive/incrementViolation via refs
@@ -487,5 +660,6 @@ export function useViolationMonitor({
     restoreFullscreen,
     handleAiViolation,
     handleElectronViolation,
+    handleElectronHardBlock,
   };
 }

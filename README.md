@@ -80,7 +80,9 @@ Copy `.env.example` → `.env`. **Never** add a trailing slash to a URL value.
 | `VITE_AI_FACE_MISMATCH_LIMIT` | – | `2` | Consecutive face mismatches before auto-submit |
 | `VITE_AI_MAX_INTERNET_DISCONNECTS` | – | `3` | Network drops before auto-submit |
 | `VITE_AI_INTERVIEW_DURATION_MINUTES` | – | `15` | Interview length |
-| `VITE_AI_TERMINATION_NOTICE_SECONDS` | – | `8` | How long the termination notice holds |
+| `VITE_AI_TERMINATION_NOTICE_SECONDS` | – | `12` | How long the termination notice holds |
+| `VITE_AI_HELD_RESTRIKE_SECONDS` | – | `30` | Object or camera-off still there this long adds one more strike |
+| `VITE_AI_SHADOW_RULES` | – | `gaze` | Rules logged but never shown or counted; `none` enforces all |
 | `VITE_DEBUG_LOGS` | – | `false` | `"true"` keeps verbose logs in a production build |
 
 All tunables resolve through [`src/config/interview.js`](src/config/interview.js), which

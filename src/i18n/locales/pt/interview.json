@@ -117,6 +117,18 @@
       "title": "Olhos fechados detectados",
       "description": "Mantenha os olhos abertos e permaneça concentrado durante a entrevista."
     },
+    "windowFocus": {
+      "title": "Janela da entrevista inativa",
+      "description": "Você clicou fora da janela da entrevista. Mantenha a janela da entrevista ativa o tempo todo."
+    },
+    "cameraOff": {
+      "title": "Câmera desligada",
+      "description": "A sua câmera parou de enviar vídeo. Ligue-a novamente para continuar a entrevista."
+    },
+    "lookingAway": {
+      "title": "Olhar desviado por muito tempo",
+      "description": "Você desviou o olhar da tela por muito tempo. Mantenha a atenção na entrevista."
+    },
     "electron": {
       "externalDisplay": {
         "title": "Monitor externo detectado",

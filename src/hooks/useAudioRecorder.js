@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { logger } from "@/lib/logger";
 import { recordViolationEvent } from "@/lib/violationLog";
+import { whilePermissionPrompt } from "@/hooks/proctoring/useViolationMonitor";
 
 const MIME_TYPES = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", "audio/wav"];
 // A freshly opened mic delivers silence for a moment, which clipped the first word.
@@ -245,7 +246,9 @@ export function useAudioRecorder() {
     setStatus("starting");
 
     const open = (id) =>
-      navigator.mediaDevices.getUserMedia({ audio: id ? { deviceId: { exact: id } } : true });
+      whilePermissionPrompt(
+        navigator.mediaDevices.getUserMedia({ audio: id ? { deviceId: { exact: id } } : true }),
+      );
     const preferred = deviceIdRef.current || devicesRef.current[0]?.deviceId || "";
 
     let stream;

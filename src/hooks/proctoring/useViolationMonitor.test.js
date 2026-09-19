@@ -3,6 +3,7 @@ import {
   getElectronViolationKey,
   REMINDER_INTERVAL_MS,
   useViolationMonitor,
+  whilePermissionPrompt,
 } from "./useViolationMonitor";
 import { MAX_VIOLATIONS } from "@/config/interview";
 
@@ -16,12 +17,12 @@ vi.mock("sonner", () => ({
 
 import { toast } from "sonner";
 
-function setup({ isActive = true, sessionViolations = 0, startCount = 0 } = {}) {
+function setup({ isActive = true, sessionViolations = 0, startCount = 0, onHardBlock } = {}) {
   let count = startCount;
   const incrementViolation = vi.fn(() => (count += 1));
 
   const utils = renderHook((props) => useViolationMonitor(props), {
-    initialProps: { isActive, incrementViolation, sessionViolations },
+    initialProps: { isActive, incrementViolation, sessionViolations, onHardBlock },
   });
 
   return { ...utils, incrementViolation };
@@ -516,7 +517,7 @@ describe("useViolationMonitor modal lifecycle", () => {
     ...phoneIncident,
     strikeKey: "PROHIBITED_OBJECT",
     incidentStartedAt: 0,
-    restrikeAfterMs: 60_000,
+    restrikeAfterMs: 30_000,
     maxRestrikes: 1,
   };
 
@@ -543,8 +544,7 @@ describe("useViolationMonitor modal lifecycle", () => {
       outcome = result.current.handleAiViolation({
         ...phoneIncident,
         ongoing: true,
-        restrikeAfterMs: 60_000,
-        maxRestrikes: 1,
+        maxRestrikes: 0,
       });
     });
 
@@ -556,7 +556,7 @@ describe("useViolationMonitor modal lifecycle", () => {
     expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 
-  it("reminds about an object kept in view every 30s and strikes it once more after a minute", () => {
+  it("strikes an object kept in view once more after 30s, then reminds every 30s", () => {
     const { result, incrementViolation } = setup();
     const outcomes = [];
 
@@ -571,13 +571,30 @@ describe("useViolationMonitor modal lifecycle", () => {
 
     expect(outcomes).toEqual([
       [0, "raised"],
-      [30_000, "warned"],
-      [60_000, "raised"],
+      [30_000, "raised"],
+      [60_000, "warned"],
       [90_000, "warned"],
       [120_000, "warned"],
       [150_000, "warned"],
       [180_000, "warned"],
     ]);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("lands the second strike right after an unanswered warning closes itself", () => {
+    const { result, incrementViolation } = setup();
+    const raisedAt = [];
+
+    for (let ms = 0; ms <= 40_000; ms += 5_000) {
+      act(() => {
+        if (result.current.handleAiViolation({ ...objectsInView, ongoing: ms > 0 }) === "raised") {
+          raisedAt.push(ms);
+        }
+      });
+      act(() => vi.advanceTimersByTime(5_000));
+    }
+
+    expect(raisedAt).toEqual([0, 30_000]);
     expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 
@@ -685,5 +702,436 @@ describe("useViolationMonitor strike summary", () => {
     strike(result, { ...tabSwitch, countsAsViolation: false });
 
     expect(result.current.strikes).toEqual([]);
+  });
+});
+
+describe("useViolationMonitor leaving the window", () => {
+  let focused;
+
+  function setHidden(hidden) {
+    Object.defineProperty(document, "hidden", { value: hidden, configurable: true });
+  }
+
+  function setFullscreen(active) {
+    Object.defineProperty(document, "fullscreenElement", {
+      value: active ? {} : null,
+      configurable: true,
+    });
+  }
+
+  function setViewport({ width, height }) {
+    Object.defineProperty(window, "innerWidth", { value: width, configurable: true });
+    Object.defineProperty(window, "innerHeight", { value: height, configurable: true });
+  }
+
+  const blur = () =>
+    act(() => {
+      focused = false;
+      window.dispatchEvent(new Event("blur"));
+    });
+  const hide = () =>
+    act(() => {
+      focused = false;
+      setHidden(true);
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+  const comeBack = () =>
+    act(() => {
+      focused = true;
+      setHidden(false);
+      document.dispatchEvent(new Event("visibilitychange"));
+      window.dispatchEvent(new Event("focus"));
+    });
+  const exitFullscreen = () =>
+    act(() => {
+      setFullscreen(false);
+      document.dispatchEvent(new Event("fullscreenchange"));
+    });
+  const shrink = () =>
+    act(() => {
+      setViewport({ width: 600, height: 400 });
+      window.dispatchEvent(new Event("resize"));
+    });
+  const wait = (ms) => act(() => vi.advanceTimersByTime(ms));
+  const lastStrike = (result) => result.current.strikes.at(-1);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    focused = true;
+    vi.spyOn(document, "hasFocus").mockImplementation(() => focused);
+    Object.defineProperty(window.screen, "availWidth", { value: 1000, configurable: true });
+    Object.defineProperty(window.screen, "availHeight", { value: 800, configurable: true });
+    setViewport({ width: 1000, height: 800 });
+    setFullscreen(true);
+    setHidden(false);
+  });
+
+  afterEach(() => {
+    document.hasFocus.mockRestore();
+    setFullscreen(false);
+    setHidden(false);
+    vi.useRealTimers();
+  });
+
+  it("strikes once for a tab switch that also exits fullscreen and shrinks the window", () => {
+    const { result, incrementViolation } = setup();
+
+    blur();
+    hide();
+    act(() => result.current.dismissWarning());
+    exitFullscreen();
+    wait(3_000);
+    shrink();
+    wait(60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo).toMatchObject({
+      titleKey: "violations.tabSwitch.title",
+      descriptionKey: "violations.tabSwitch.description",
+      imagePath: "/window-switch.png",
+    });
+  });
+
+  it("strikes once for a fullscreen exit that lands just before the tab hides", () => {
+    const { result, incrementViolation } = setup();
+
+    exitFullscreen();
+    act(() => result.current.dismissWarning());
+    wait(500);
+    hide();
+    wait(60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo.titleKey).toBe("violations.fullscreenExit.title");
+  });
+
+  it("strikes every leave after coming back, straight through the strike gap", () => {
+    const { result, incrementViolation } = setup();
+
+    hide();
+    comeBack();
+    act(() => result.current.dismissWarning());
+    wait(1_000);
+    hide();
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.showTabWarning).toBe(true);
+
+    comeBack();
+    act(() => result.current.dismissWarning());
+    wait(1_000);
+    hide();
+
+    expect(incrementViolation).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not let staying out of fullscreen make later leaves free", () => {
+    const { result, incrementViolation } = setup();
+
+    exitFullscreen();
+    expect(lastStrike(result).titleKey).toBe("violations.fullscreenExit.title");
+    act(() => result.current.dismissWarning());
+
+    wait(5_000);
+    hide();
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(lastStrike(result).titleKey).toBe("violations.tabSwitch.title");
+
+    comeBack();
+    act(() => result.current.dismissWarning());
+    wait(1_000);
+    blur();
+    wait(2_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(3);
+    expect(lastStrike(result).titleKey).toBe("violations.windowFocus.title");
+  });
+
+  it("strikes a separate resize after the candidate is back", () => {
+    const { result, incrementViolation } = setup();
+    setFullscreen(false);
+
+    hide();
+    comeBack();
+    act(() => result.current.dismissWarning());
+    wait(1_000);
+    shrink();
+    wait(1_300);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.titleKey).toBe("violations.windowResize.title");
+  });
+
+  it("strikes a page that stays visible but loses focus for two seconds", () => {
+    const { result, incrementViolation } = setup();
+
+    blur();
+    wait(1_999);
+    expect(incrementViolation).not.toHaveBeenCalled();
+
+    wait(1);
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo).toMatchObject({
+      titleKey: "violations.windowFocus.title",
+      descriptionKey: "violations.windowFocus.description",
+      imagePath: "/window-switch.png",
+    });
+  });
+
+  it("ignores focus that comes back within two seconds", () => {
+    const { incrementViolation } = setup();
+
+    blur();
+    wait(1_000);
+    comeBack();
+    wait(5_000);
+
+    expect(incrementViolation).not.toHaveBeenCalled();
+  });
+
+  it("leaves a hidden page to the tab-switch strike", () => {
+    const { result, incrementViolation } = setup();
+
+    blur();
+    hide();
+    wait(5_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo.titleKey).toBe("violations.tabSwitch.title");
+  });
+
+  it("strikes focus loss once while the candidate stays away", () => {
+    const { result, incrementViolation } = setup();
+
+    blur();
+    wait(2_000);
+    act(() => result.current.dismissWarning());
+    exitFullscreen();
+    wait(60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores focus lost to a permission prompt", async () => {
+    const { incrementViolation } = setup();
+    let answer;
+    const prompt = whilePermissionPrompt(new Promise((resolve) => (answer = resolve)));
+
+    blur();
+    wait(5_000);
+    expect(incrementViolation).not.toHaveBeenCalled();
+
+    await act(async () => {
+      answer();
+      await prompt;
+    });
+    comeBack();
+    blur();
+    wait(2_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops watching focus once unmounted", () => {
+    const { unmount, incrementViolation } = setup();
+
+    blur();
+    unmount();
+    wait(5_000);
+    window.dispatchEvent(new Event("blur"));
+    wait(5_000);
+
+    expect(incrementViolation).not.toHaveBeenCalled();
+  });
+});
+
+describe("useViolationMonitor held-back acts", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+    vi.useRealTimers();
+  });
+
+  const hdmi = { event: "HDMI cable connected" };
+  const mirroring = { event: "Screen mirroring active" };
+  const noFace = {
+    type: "NO_FACE",
+    titleKey: "violations.noFace.title",
+    descriptionKey: "violations.noFace.description",
+  };
+  const wait = (ms) => act(() => vi.advanceTimersByTime(ms));
+  const setHidden = (hidden) => {
+    Object.defineProperty(document, "hidden", { value: hidden, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  };
+
+  function strikeAndDismiss(result) {
+    act(() => result.current.handleAiViolation(noFace));
+    act(() => result.current.dismissWarning());
+  }
+
+  it("raises a desktop-app block held back by the strike gap once the gap ends", () => {
+    const { result, incrementViolation } = setup();
+
+    strikeAndDismiss(result);
+    wait(5_000);
+    let outcome;
+    act(() => {
+      outcome = result.current.handleElectronViolation(hdmi);
+    });
+    expect(outcome).toBe("strike_interval");
+
+    wait(9_999);
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+
+    wait(1);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.titleKey).toBe("violations.electron.externalDisplay.title");
+  });
+
+  it("raises repeats of one block once and different blocks a gap apart", () => {
+    // Kept clear of the strike limit so every warning is shown.
+    const { result, incrementViolation } = setup({ startCount: -10 });
+
+    strikeAndDismiss(result);
+    wait(5_000);
+    act(() => result.current.handleElectronViolation(hdmi));
+    act(() => result.current.handleElectronViolation(mirroring));
+    act(() => result.current.handleElectronViolation(hdmi));
+
+    wait(10_000);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.titleKey).toBe("violations.electron.externalDisplay.title");
+
+    act(() => result.current.dismissWarning());
+    wait(14_999);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+
+    wait(1);
+    expect(incrementViolation).toHaveBeenCalledTimes(3);
+    expect(result.current.violationInfo.titleKey).toBe("violations.electron.screenSharing.title");
+
+    act(() => result.current.dismissWarning());
+    wait(60_000);
+    expect(incrementViolation).toHaveBeenCalledTimes(3);
+  });
+
+  it("waits out the grace after a warning closes itself", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleAiViolation(noFace));
+    wait(22_000);
+    let outcome;
+    act(() => {
+      outcome = result.current.handleElectronViolation(hdmi);
+    });
+    expect(outcome).toBe("suppressed");
+
+    wait(7_999);
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+
+    wait(1);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("raises a leave made while the last warning was open once it closes", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => setHidden(true));
+    act(() => {
+      setHidden(false);
+      window.dispatchEvent(new Event("focus"));
+    });
+    wait(1_000);
+    act(() => setHidden(true));
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+
+    act(() => result.current.dismissWarning());
+    wait(13_999);
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+
+    wait(1);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.titleKey).toBe("violations.tabSwitch.title");
+  });
+
+  it("does not retry the trailing events of a leave that already struck", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => {
+      setHidden(true);
+      document.dispatchEvent(new Event("fullscreenchange"));
+    });
+    act(() => result.current.dismissWarning());
+    wait(60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("drops whatever is held back once the session ends", () => {
+    const { result, rerender, incrementViolation } = setup();
+
+    strikeAndDismiss(result);
+    wait(5_000);
+    act(() => result.current.handleElectronViolation(hdmi));
+    rerender({ isActive: false, incrementViolation, sessionViolations: 1 });
+    wait(60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("still drops an AI condition caught in the gap, since it is re-reported", () => {
+    const { result, incrementViolation } = setup();
+
+    strikeAndDismiss(result);
+    wait(5_000);
+    act(() => result.current.handleAiViolation({ ...noFace, type: "MULTIPLE_FACES" }));
+    wait(60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("useViolationMonitor desktop-app hard blocks", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const hardBlock = { event: "Security agent stopped", isHardBlock: true };
+
+  it("ends the interview instead of adding a strike", () => {
+    const onHardBlock = vi.fn();
+    const { result, incrementViolation } = setup({ onHardBlock });
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleElectronHardBlock(hardBlock);
+    });
+
+    expect(outcome).toBe("terminated");
+    expect(onHardBlock).toHaveBeenCalledTimes(1);
+    expect(incrementViolation).not.toHaveBeenCalled();
+    expect(result.current.showTabWarning).toBe(false);
+  });
+
+  it("ends the interview once active for a block that arrived while loading", () => {
+    const onHardBlock = vi.fn();
+    const { result, rerender, incrementViolation } = setup({ isActive: false, onHardBlock });
+
+    act(() => {
+      result.current.handleElectronViolation({ event: "HDMI cable connected" });
+      result.current.handleElectronHardBlock(hardBlock);
+    });
+    expect(onHardBlock).not.toHaveBeenCalled();
+
+    rerender({ isActive: true, incrementViolation, sessionViolations: 0, onHardBlock });
+
+    expect(onHardBlock).toHaveBeenCalledTimes(1);
+    expect(incrementViolation).not.toHaveBeenCalled();
   });
 });

@@ -62,6 +62,33 @@ describe("createStrikePolicy", () => {
     expect(policy.admit("TAB_SWITCH", { now: 5_000 })).toBe("suppressed");
   });
 
+  it("reports when a held-back strike can next land", () => {
+    const policy = createStrikePolicy();
+    expect(policy.nextStrikeAt()).toBe(0);
+    policy.admit("TAB_SWITCH", { now: 1_000 });
+    expect(policy.nextStrikeAt()).toBe(16_000);
+    policy.suppressFor(20_000, 1_000);
+    expect(policy.nextStrikeAt()).toBe(21_000);
+  });
+
+  it("does not start the gap from a warn-only violation", () => {
+    const policy = createStrikePolicy();
+    policy.admit("MULTIPLE_FACES", { now: 1_000, countsAsStrike: false });
+    expect(policy.nextStrikeAt()).toBe(0);
+  });
+
+  it("strikes every new leave of one shared key once, however many events it raises", () => {
+    const policy = createStrikePolicy();
+    const leave = (startedAt, now) =>
+      policy.admit("LEFT_WINDOW", { incident: true, startedAt, maxRestrikes: 0, now });
+
+    expect(leave(0, 0)).toBe("raised");
+    expect(leave(0, 5)).toBe("held");
+    expect(leave(0, 60_000)).toBe("held");
+    expect(leave(3_000, 3_000)).toBe("raised");
+    expect(leave(4_000, 4_000)).toBe("raised");
+  });
+
   it("forgets everything on reset", () => {
     const policy = createStrikePolicy();
     policy.admit("TAB_SWITCH", { now: 0 });

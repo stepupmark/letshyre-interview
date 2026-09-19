@@ -117,6 +117,18 @@
       "title": "눈 감음 감지됨",
       "description": "면접 중에는 눈을 뜨고 집중해 주세요."
     },
+    "windowFocus": {
+      "title": "면접 창 비활성화됨",
+      "description": "면접 창 바깥을 클릭했습니다. 면접 창을 항상 활성 상태로 유지해 주세요."
+    },
+    "cameraOff": {
+      "title": "카메라 꺼짐",
+      "description": "카메라 영상이 전송되지 않고 있습니다. 면접을 계속하려면 카메라를 다시 켜 주세요."
+    },
+    "lookingAway": {
+      "title": "장시간 시선 이탈",
+      "description": "화면에서 너무 오랫동안 시선을 돌렸습니다. 면접에 집중해 주세요."
+    },
     "electron": {
       "externalDisplay": {
         "title": "외부 디스플레이 감지됨",

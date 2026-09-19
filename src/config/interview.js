@@ -29,6 +29,10 @@ export const TERMINATION_NOTICE_SECONDS = num(
   12,
 );
 
+// How long a prohibited object or a switched-off camera can stay before it
+// costs one more strike.
+export const HELD_RESTRIKE_SECONDS = num(import.meta.env.VITE_AI_HELD_RESTRIKE_SECONDS, 30);
+
 // Interview length in minutes.
 export const INTERVIEW_DURATION_MINUTES = num(
   import.meta.env.VITE_AI_INTERVIEW_DURATION_MINUTES,
@@ -53,6 +57,16 @@ export const SHADOW_LABELS = new Set(
     .split(",")
     .map((label) => label.trim().toLowerCase())
     .filter((label) => label && !(PROHIBIT_LAPTOP && label === "laptop")),
+);
+
+// Behaviour rules (not labels) logged but never shown or counted, for the same
+// reason. "gaze" is the long look-away strike. An empty value keeps the default
+// so an unset CI variable can't switch enforcement on; use "none" to enforce.
+export const SHADOW_RULES = new Set(
+  (import.meta.env.VITE_AI_SHADOW_RULES || "gaze")
+    .split(",")
+    .map((rule) => rule.trim().toLowerCase())
+    .filter(Boolean),
 );
 
 // sessionStorage key holding the in-progress interview session. Shared so the

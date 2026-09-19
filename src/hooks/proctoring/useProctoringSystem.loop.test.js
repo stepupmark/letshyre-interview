@@ -8,8 +8,17 @@ vi.mock("@/services/proctoring.api", () => ({
   submitProctoringLogs: vi.fn(),
 }));
 
+const camera = vi.hoisted(() => ({ ready: true }));
+const shadowRules = vi.hoisted(() => new Set());
+
 vi.mock("@/lib/videoCapture", () => ({
-  captureSample: () => ({ frame: "frame", file: {}, capturedAt: Date.now() }),
+  captureSample: () => (camera.ready ? { frame: "frame", file: {}, capturedAt: Date.now() } : null),
+  isVideoReady: () => camera.ready,
+}));
+
+vi.mock("@/config/interview", async (importOriginal) => ({
+  ...(await importOriginal()),
+  SHADOW_RULES: shadowRules,
 }));
 
 const CLEAR_PHONE = { label: "cell phone", class_id: 67, confidence: 0.81, area_ratio: 0.013 };
@@ -45,9 +54,9 @@ function replay(responses) {
   });
 }
 
-function start(onViolation = vi.fn(() => "raised"), onSample = vi.fn()) {
+function start(onViolation = vi.fn(() => "raised"), onSample = vi.fn(), video = {}) {
   renderHook(() =>
-    useProctoringSystem({ current: {} }, "i1", "s1", true, "token", onViolation, onSample),
+    useProctoringSystem({ current: video }, "i1", "s1", true, "token", onViolation, onSample),
   );
   return { onViolation, onSample };
 }
@@ -64,6 +73,9 @@ beforeEach(() => {
   calls = [];
   events = [];
   unsubscribe = subscribeToViolationLog((event) => events.push(event));
+  camera.ready = true;
+  shadowRules.clear();
+  shadowRules.add("gaze");
 });
 
 afterEach(() => {
@@ -102,6 +114,8 @@ describe("useProctoringSystem sampling", () => {
     expect(onViolation.mock.calls[0][0]).toMatchObject({
       label: "cell phone",
       strikeKey: "PROHIBITED_OBJECT",
+      restrikeAfterMs: 30_000,
+      maxRestrikes: 1,
     });
   });
 
@@ -256,5 +270,229 @@ describe("useProctoringSystem sampling", () => {
       expect(onViolation).not.toHaveBeenCalled();
       expect(decisions("NO_FACE")).toEqual(["unconfirmed", "grace", "unconfirmed", "grace"]);
     });
+  });
+});
+
+const FAINT_PHONE = { label: "cell phone", class_id: 67, confidence: 0.25, area_ratio: 0.02 };
+const FAINT_LAPTOP = { label: "laptop", class_id: 63, confidence: 0.28, area_ratio: 0.02 };
+const notLooking = () => ({ ...frame(), looking_at_camera: false });
+
+const ofType = (onViolation, type) =>
+  onViolation.mock.calls.map(([violation]) => violation).filter((v) => v.type === type);
+
+const softAware = () => vi.fn((violation) => (violation.soft ? "soft" : "raised"));
+
+const pressKey = () => window.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
+
+describe("suspicion sampling", () => {
+  it("samples every 2s for 20s after a phone too faint to count", async () => {
+    replay([frame([FAINT_PHONE])]);
+    const { onViolation } = start();
+
+    await vi.advanceTimersByTimeAsync(30_000);
+
+    expect(calls).toEqual([
+      5_000, 7_000, 9_000, 11_000, 13_000, 15_000, 17_000, 19_000, 21_000, 23_000, 25_000, 30_000,
+    ]);
+    expect(onViolation).not.toHaveBeenCalled();
+  });
+
+  it("keeps the 1s confirmation burst ahead of it", async () => {
+    replay([frame([BLURRY_PHONE, FAINT_LAPTOP]), frame(), frame()]);
+    start();
+
+    await vi.advanceTimersByTimeAsync(9_000);
+
+    expect(calls).toEqual([5_000, 6_000, 7_000, 9_000]);
+  });
+
+  it("never shortens the backoff after a failure", async () => {
+    detectFrame.mockImplementation(async () => {
+      calls.push(Date.now());
+      if (calls.length === 1) return frame([FAINT_PHONE]);
+      throw new Error("offline");
+    });
+    start();
+
+    await vi.advanceTimersByTimeAsync(40_000);
+
+    expect(calls).toEqual([5_000, 7_000, 17_000, 37_000]);
+  });
+
+  it("samples faster after a look away", async () => {
+    replay([notLooking()]);
+    start(softAware());
+
+    await vi.advanceTimersByTimeAsync(7_000);
+
+    expect(calls).toEqual([5_000, 7_000]);
+  });
+
+  it("stays on the normal cadence for a look away while the candidate is typing", async () => {
+    replay([notLooking()]);
+    start(softAware());
+
+    await vi.advanceTimersByTimeAsync(4_000);
+    pressKey();
+    await vi.advanceTimersByTimeAsync(6_000);
+
+    expect(calls).toEqual([5_000, 10_000]);
+  });
+});
+
+describe("camera turned off", () => {
+  const liveTrack = () => ({ readyState: "live", muted: false });
+  const videoWith = (track) => ({ srcObject: { getVideoTracks: () => [track] } });
+
+  it("strikes once the camera has been off for more than 10 seconds", async () => {
+    const track = liveTrack();
+    const { onViolation } = start(undefined, undefined, videoWith(track));
+
+    await vi.advanceTimersByTimeAsync(3_000);
+    track.readyState = "ended";
+    await vi.advanceTimersByTimeAsync(11_000);
+    expect(ofType(onViolation, "CAMERA_OFF")).toHaveLength(0);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    const [strike] = ofType(onViolation, "CAMERA_OFF");
+    expect(strike).toMatchObject({
+      strikeKey: "CAMERA_OFF",
+      incident: true,
+      incidentStartedAt: 4_000,
+      restrikeAfterMs: 30_000,
+      maxRestrikes: 1,
+      titleKey: "violations.cameraOff.title",
+      descriptionKey: "violations.cameraOff.description",
+      imagePath: "/no-candidate.png",
+      detail: { reason: "track_ended" },
+    });
+    expect(strike.countsAsViolation).not.toBe(false);
+  });
+
+  it("keeps one incident while it stays off and starts a new one after it comes back", async () => {
+    const track = liveTrack();
+    const { onViolation } = start(undefined, undefined, videoWith(track));
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    track.muted = true;
+    await vi.advanceTimersByTimeAsync(22_000);
+    track.muted = false;
+    await vi.advanceTimersByTimeAsync(2_000);
+    track.muted = true;
+    await vi.advanceTimersByTimeAsync(12_000);
+
+    const starts = ofType(onViolation, "CAMERA_OFF").map((v) => v.incidentStartedAt);
+    expect(starts).toEqual([2_000, 2_000, 2_000, 26_000]);
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: "CAMERA_OFF", outcome: "recovered" }),
+    );
+  });
+
+  it("costs nothing when the camera is back within 10 seconds", async () => {
+    const track = liveTrack();
+    const { onViolation } = start(undefined, undefined, videoWith(track));
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    track.readyState = "ended";
+    await vi.advanceTimersByTimeAsync(9_000);
+    track.readyState = "live";
+    await vi.advanceTimersByTimeAsync(20_000);
+
+    expect(ofType(onViolation, "CAMERA_OFF")).toHaveLength(0);
+  });
+
+  it("strikes when the video stops producing frames", async () => {
+    const { onViolation } = start(undefined, undefined, videoWith(liveTrack()));
+
+    await vi.advanceTimersByTimeAsync(2_000);
+    camera.ready = false;
+    await vi.advanceTimersByTimeAsync(12_000);
+
+    expect(ofType(onViolation, "CAMERA_OFF")[0]).toMatchObject({
+      detail: { reason: "no_frames" },
+    });
+  });
+
+  it("never treats an AI service outage as the camera being off", async () => {
+    detectFrame.mockRejectedValue(new Error("service down"));
+    const { onViolation } = start(undefined, undefined, videoWith(liveTrack()));
+
+    await vi.advanceTimersByTimeAsync(120_000);
+
+    expect(onViolation).not.toHaveBeenCalled();
+  });
+});
+
+describe("looking away", () => {
+  const lapse = () => [
+    notLooking(),
+    notLooking(),
+    notLooking(),
+    ...Array.from({ length: 5 }, () => frame()),
+  ];
+
+  it("strikes a look away held for 15 seconds, once per episode", async () => {
+    shadowRules.clear();
+    replay(Array.from({ length: 30 }, notLooking));
+    const onViolation = softAware();
+    start(onViolation);
+
+    await vi.advanceTimersByTimeAsync(19_000);
+    expect(ofType(onViolation, "LOOKING_AWAY")).toHaveLength(0);
+
+    await vi.advanceTimersByTimeAsync(40_000);
+    const strikes = ofType(onViolation, "LOOKING_AWAY");
+    expect(strikes).toHaveLength(1);
+    expect(strikes[0]).toMatchObject({
+      strikeKey: "LOOKING_AWAY",
+      incident: true,
+      incidentStartedAt: 5_000,
+      titleKey: "violations.lookingAway.title",
+      descriptionKey: "violations.lookingAway.description",
+      imagePath: "/no-candidate.png",
+      detail: { reason: "held" },
+    });
+    expect(strikes[0].countsAsViolation).not.toBe(false);
+  });
+
+  it("strikes on the fourth separate look away within two minutes", async () => {
+    shadowRules.clear();
+    replay([...lapse(), ...lapse(), ...lapse()]);
+    const onViolation = softAware();
+    start(onViolation);
+
+    await vi.advanceTimersByTimeAsync(55_000);
+    expect(ofType(onViolation, "LOOKING_AWAY")).toHaveLength(0);
+
+    replay(lapse());
+    await vi.advanceTimersByTimeAsync(20_000);
+    const strikes = ofType(onViolation, "LOOKING_AWAY");
+    expect(strikes).toHaveLength(1);
+    expect(strikes[0].detail.reason).toBe("repeated");
+  });
+
+  it("ignores looking down while the candidate is typing", async () => {
+    shadowRules.clear();
+    replay(Array.from({ length: 30 }, notLooking));
+    const onViolation = softAware();
+    start(onViolation);
+    const typing = setInterval(pressKey, 1_000);
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    clearInterval(typing);
+
+    expect(ofType(onViolation, "LOOKING_AWAY")).toHaveLength(0);
+  });
+
+  it("only logs the strike while the gaze rule is in shadow mode", async () => {
+    replay(Array.from({ length: 30 }, notLooking));
+    const onViolation = softAware();
+    start(onViolation);
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(ofType(onViolation, "LOOKING_AWAY")).toHaveLength(0);
+    expect(decisions("LOOKING_AWAY")).toEqual(["shadow"]);
+    expect(ofType(onViolation, "NOT_LOOKING").length).toBeGreaterThan(0);
   });
 });

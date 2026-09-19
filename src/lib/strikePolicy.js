@@ -87,6 +87,12 @@ export function createStrikePolicy(options = {}) {
       return record(type, now, countsAsStrike, ongoing);
     },
 
+    // When a strike held back only by the gap or a suppression can next land.
+    nextStrikeAt() {
+      const afterGap = lastStrikeAt === null ? 0 : lastStrikeAt + minStrikeIntervalMs;
+      return Math.max(afterGap, suppressUntil);
+    },
+
     struckSince(type, startedAt) {
       const at = struckAt.get(type);
       return at !== undefined && (startedAt === undefined || at >= startedAt);

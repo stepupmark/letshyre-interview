@@ -117,6 +117,18 @@
       "title": "Mata Tertutup Terdeteksi",
       "description": "Harap buka mata Anda dan tetap fokus selama wawancara."
     },
+    "windowFocus": {
+      "title": "Jendela Wawancara Tidak Aktif",
+      "description": "Anda mengklik di luar jendela wawancara. Pastikan jendela wawancara tetap aktif setiap saat."
+    },
+    "cameraOff": {
+      "title": "Kamera Dimatikan",
+      "description": "Kamera Anda berhenti mengirimkan video. Nyalakan kembali untuk melanjutkan wawancara."
+    },
+    "lookingAway": {
+      "title": "Terlalu Lama Memalingkan Pandangan",
+      "description": "Anda memalingkan pandangan dari layar terlalu lama. Tetap fokus pada wawancara."
+    },
     "electron": {
       "externalDisplay": {
         "title": "Layar Eksternal Terdeteksi",

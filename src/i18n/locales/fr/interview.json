@@ -117,6 +117,18 @@
       "title": "Yeux fermés détectés",
       "description": "Veuillez garder les yeux ouverts et rester concentré pendant l'entretien."
     },
+    "windowFocus": {
+      "title": "Fenêtre de l'entretien inactive",
+      "description": "Vous avez cliqué en dehors de la fenêtre de l'entretien. Gardez la fenêtre de l'entretien active en permanence."
+    },
+    "cameraOff": {
+      "title": "Caméra désactivée",
+      "description": "Votre caméra n'envoie plus de vidéo. Réactivez-la pour poursuivre l'entretien."
+    },
+    "lookingAway": {
+      "title": "Regard détourné trop longtemps",
+      "description": "Vous avez détourné le regard de l'écran trop longtemps. Restez concentré sur l'entretien."
+    },
     "electron": {
       "externalDisplay": {
         "title": "Écran externe détecté",

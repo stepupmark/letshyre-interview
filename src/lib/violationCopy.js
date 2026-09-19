@@ -46,6 +46,16 @@ const COPY = {
     descriptionKey: "violations.eyesClosed.description",
     soft: true,
   },
+  LOOKING_AWAY: {
+    titleKey: "violations.lookingAway.title",
+    descriptionKey: "violations.lookingAway.description",
+    imagePath: "/no-candidate.png",
+  },
+  CAMERA_OFF: {
+    titleKey: "violations.cameraOff.title",
+    descriptionKey: "violations.cameraOff.description",
+    imagePath: "/no-candidate.png",
+  },
 };
 
 export function violationCopy(type, label) {

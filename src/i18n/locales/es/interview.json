@@ -117,6 +117,18 @@
       "title": "Ojos cerrados detectados",
       "description": "Mantenga los ojos abiertos y concéntrese durante la entrevista."
     },
+    "windowFocus": {
+      "title": "Ventana de la entrevista inactiva",
+      "description": "Hizo clic fuera de la ventana de la entrevista. Mantenga la ventana de la entrevista activa en todo momento."
+    },
+    "cameraOff": {
+      "title": "Cámara apagada",
+      "description": "Su cámara dejó de enviar video. Vuelva a encenderla para continuar con la entrevista."
+    },
+    "lookingAway": {
+      "title": "Mirada apartada demasiado tiempo",
+      "description": "Apartó la mirada de la pantalla durante demasiado tiempo. Mantenga la atención en la entrevista."
+    },
     "electron": {
       "externalDisplay": {
         "title": "Pantalla externa detectada",

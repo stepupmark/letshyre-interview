@@ -1,4 +1,10 @@
-import { detectViolations, sendUnloadFlush } from "./useProctoringSystem";
+import {
+  cameraOffReason,
+  createGazeTracker,
+  detectViolations,
+  sendUnloadFlush,
+  suspicionReason,
+} from "./useProctoringSystem";
 
 const first = (result, classified) => detectViolations(result, classified)[0] ?? null;
 const types = (result, classified) => detectViolations(result, classified).map((v) => v.type);
@@ -434,6 +440,135 @@ describe("detectViolations", () => {
         titleKey: "violations.prohibitedObject.title",
       });
     });
+  });
+});
+
+describe("suspicionReason", () => {
+  const withObject = (object) => ({ ...CLEAN_RESULT, objects_detected: [object] });
+  const reason = (result, options) => suspicionReason(result, detectViolations(result), options);
+
+  it("flags a phone too faint to count as a violation", () => {
+    expect(reason(withObject({ label: "cell phone", confidence: 0.25, area_ratio: 0.02 }))).toBe(
+      "faint_object:cell phone",
+    );
+  });
+
+  it("flags a faint laptop", () => {
+    expect(reason(withObject({ label: "laptop", confidence: 0.3, area_ratio: 0.02 }))).toBe(
+      "faint_object:laptop",
+    );
+  });
+
+  it("ignores boxes below the suspicion floor or already above the violation floor", () => {
+    expect(reason(withObject({ label: "cell phone", confidence: 0.15 }))).toBeNull();
+    expect(reason(withObject({ label: "cell phone", confidence: 0.9 }))).toBeNull();
+  });
+
+  it("ignores other faint labels", () => {
+    expect(reason(withObject({ label: "book", confidence: 0.3 }))).toBeNull();
+  });
+
+  it("flags a look away unless the candidate is typing", () => {
+    const result = { ...CLEAN_RESULT, looking_at_camera: false };
+    expect(reason(result)).toBe("not_looking");
+    expect(reason(result, { typing: true })).toBeNull();
+  });
+});
+
+describe("cameraOffReason", () => {
+  const ready = { readyState: 4, paused: false, ended: false, videoWidth: 640, videoHeight: 480 };
+  const withTracks = (...tracks) => ({ ...ready, srcObject: { getVideoTracks: () => tracks } });
+  const live = { readyState: "live", muted: false };
+
+  it("is null while a live track is delivering frames", () => {
+    expect(cameraOffReason(withTracks(live), true)).toBeNull();
+  });
+
+  it("reports an ended track, which is what unplugging the camera does", () => {
+    expect(cameraOffReason(withTracks({ readyState: "ended", muted: false }), true)).toBe(
+      "track_ended",
+    );
+  });
+
+  it("reports a muted track, which is what a privacy switch does", () => {
+    expect(cameraOffReason(withTracks({ readyState: "live", muted: true }), true)).toBe(
+      "track_muted",
+    );
+  });
+
+  it("reports a stream with no video track left", () => {
+    expect(cameraOffReason(withTracks(), true)).toBe("track_ended");
+  });
+
+  it("reports a video that stopped producing frames after it had played", () => {
+    const stalled = { ...withTracks(live), readyState: 1 };
+    expect(cameraOffReason(stalled, true)).toBe("no_frames");
+  });
+
+  it("does not treat a camera that is still starting as gone", () => {
+    expect(cameraOffReason({ readyState: 0, videoWidth: 0, videoHeight: 0 }, false)).toBeNull();
+    expect(cameraOffReason(null, true)).toBeNull();
+  });
+});
+
+describe("createGazeTracker", () => {
+  const away = (tracker, now, confirmed = true, typing = false) =>
+    tracker.observe({ away: true, confirmed, typing }, now);
+  const back = (tracker, now) => tracker.observe({ away: false }, now);
+
+  it("raises once a look away has held for 15 seconds", () => {
+    const tracker = createGazeTracker();
+    for (let t = 0; t < 15_000; t += 5_000) expect(away(tracker, t)).toBeNull();
+    expect(away(tracker, 15_000)).toEqual({ startedAt: 0, reason: "held" });
+  });
+
+  it("does not raise the same streak twice once settled", () => {
+    const tracker = createGazeTracker();
+    for (let t = 0; t <= 15_000; t += 5_000) away(tracker, t);
+    tracker.settle(15_000);
+    expect(away(tracker, 20_000)).toBeNull();
+    expect(away(tracker, 40_000)).toBeNull();
+  });
+
+  it("raises on the fourth separate look away within two minutes", () => {
+    const tracker = createGazeTracker();
+    const lapses = [0, 20_000, 40_000, 60_000];
+    lapses.slice(0, 3).forEach((t) => {
+      expect(away(tracker, t)).toBeNull();
+      back(tracker, t + 5_000);
+    });
+    expect(away(tracker, 60_000)).toEqual({ startedAt: 0, reason: "repeated" });
+  });
+
+  it("counts a long look away as one lapse, not one per frame", () => {
+    const tracker = createGazeTracker();
+    for (let t = 0; t <= 12_000; t += 2_000) expect(away(tracker, t)).toBeNull();
+  });
+
+  it("forgets lapses older than two minutes", () => {
+    const tracker = createGazeTracker();
+    [0, 20_000, 40_000].forEach((t) => {
+      away(tracker, t);
+      back(tracker, t + 5_000);
+    });
+    expect(away(tracker, 130_000)).toBeNull();
+  });
+
+  it("only counts lapses the stabilizer confirmed", () => {
+    const tracker = createGazeTracker();
+    [0, 20_000, 40_000, 60_000].forEach((t) => {
+      expect(away(tracker, t, false)).toBeNull();
+      back(tracker, t + 5_000);
+    });
+  });
+
+  it("resets the streak while the candidate is typing", () => {
+    const tracker = createGazeTracker();
+    away(tracker, 0);
+    away(tracker, 5_000);
+    away(tracker, 10_000, true, true);
+    expect(away(tracker, 15_000)).toBeNull();
+    expect(away(tracker, 30_000)).toEqual({ startedAt: 15_000, reason: "held" });
   });
 });
 

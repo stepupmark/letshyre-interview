@@ -117,6 +117,18 @@
       "title": "Occhi chiusi rilevati",
       "description": "Tieni gli occhi aperti e resta concentrato durante il colloquio."
     },
+    "windowFocus": {
+      "title": "Finestra del colloquio non attiva",
+      "description": "Hai fatto clic fuori dalla finestra del colloquio. Mantieni sempre attiva la finestra del colloquio."
+    },
+    "cameraOff": {
+      "title": "Fotocamera disattivata",
+      "description": "La fotocamera ha smesso di trasmettere il video. Riattivala per continuare il colloquio."
+    },
+    "lookingAway": {
+      "title": "Sguardo distolto troppo a lungo",
+      "description": "Hai distolto lo sguardo dallo schermo troppo a lungo. Mantieni l'attenzione sul colloquio."
+    },
     "electron": {
       "externalDisplay": {
         "title": "Schermo esterno rilevato",

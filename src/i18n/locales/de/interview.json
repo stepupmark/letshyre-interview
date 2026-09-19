@@ -117,6 +117,18 @@
       "title": "Geschlossene Augen erkannt",
       "description": "Bitte halten Sie die Augen offen und bleiben Sie während des Interviews konzentriert."
     },
+    "windowFocus": {
+      "title": "Interviewfenster nicht mehr aktiv",
+      "description": "Sie haben außerhalb des Interviewfensters geklickt. Halten Sie das Interviewfenster jederzeit aktiv."
+    },
+    "cameraOff": {
+      "title": "Kamera ausgeschaltet",
+      "description": "Ihre Kamera überträgt kein Video mehr. Schalten Sie sie wieder ein, um das Interview fortzusetzen."
+    },
+    "lookingAway": {
+      "title": "Zu lange weggeschaut",
+      "description": "Sie haben zu lange vom Bildschirm weggeschaut. Bleiben Sie mit Ihrer Aufmerksamkeit beim Interview."
+    },
     "electron": {
       "externalDisplay": {
         "title": "Externer Bildschirm erkannt",

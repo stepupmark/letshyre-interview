@@ -117,6 +117,18 @@
       "title": "Gesloten ogen gedetecteerd",
       "description": "Houd uw ogen open en blijf geconcentreerd tijdens het interview."
     },
+    "windowFocus": {
+      "title": "Interviewvenster niet meer actief",
+      "description": "U hebt buiten het interviewvenster geklikt. Houd het interviewvenster altijd actief."
+    },
+    "cameraOff": {
+      "title": "Camera uitgeschakeld",
+      "description": "Uw camera verzendt geen video meer. Schakel deze weer in om het interview voort te zetten."
+    },
+    "lookingAway": {
+      "title": "Te lang weggekeken",
+      "description": "U hebt te lang van het scherm weggekeken. Houd uw aandacht bij het interview."
+    },
     "electron": {
       "externalDisplay": {
         "title": "Extern beeldscherm gedetecteerd",

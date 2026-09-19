@@ -117,6 +117,18 @@
       "title": "Eyes Closed Detected",
       "description": "Please keep your eyes open and stay focused during the interview."
     },
+    "windowFocus": {
+      "title": "Interview Window Lost Focus",
+      "description": "You clicked outside the interview window. Keep the interview window active at all times."
+    },
+    "cameraOff": {
+      "title": "Camera Turned Off",
+      "description": "Your camera stopped sending video. Turn it back on to continue the interview."
+    },
+    "lookingAway": {
+      "title": "Looking Away Too Long",
+      "description": "You looked away from the screen for too long. Keep your attention on the interview."
+    },
     "electron": {
       "externalDisplay": {
         "title": "External Display Detected",

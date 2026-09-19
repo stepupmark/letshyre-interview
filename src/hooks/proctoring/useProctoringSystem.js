@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
-import { captureSample } from "@/lib/videoCapture";
+import { captureSample, isVideoReady } from "@/lib/videoCapture";
 import { violationCopy } from "@/lib/violationCopy";
 import { createViolationStabilizer } from "@/lib/violationStabilizer";
 import { createBaselineTracker } from "@/lib/baselineTracker";
 import { createIncidentTracker } from "@/lib/incidentTracker";
-import { OBJECT_CONFIDENCE_FLOOR, PROHIBIT_LAPTOP, SHADOW_LABELS } from "@/config/interview";
+import {
+  HELD_RESTRIKE_SECONDS,
+  OBJECT_CONFIDENCE_FLOOR,
+  PROHIBIT_LAPTOP,
+  SHADOW_LABELS,
+  SHADOW_RULES,
+} from "@/config/interview";
 import { recordViolationEvent, subscribeToViolationLog } from "@/lib/violationLog";
 import { logger } from "@/lib/logger";
 
@@ -36,6 +42,25 @@ export const NO_FACE_SOFT_GUIDANCE_MS = 7_000;
 // first few misses retry fast before falling back to the normal backoff.
 const CAMERA_RETRY_MS = 1_000;
 const CAMERA_GRACE_TICKS = 3;
+
+// The camera itself going away, as opposed to the AI service failing, which
+// only ever degrades. Checked on its own clock so failure backoff can't stretch it.
+export const CAMERA_OFF_AFTER_MS = 10_000;
+const CAMERA_CHECK_MS = 1_000;
+
+// A faint phone or laptop, or a look away, samples faster for a while so a
+// quick glance at a phone can't fall between two 5s checks.
+export const SUSPICION_CONFIDENCE_FLOOR = 0.2;
+export const SUSPICION_INTERVAL_MS = 2_000;
+export const SUSPICION_WINDOW_MS = 20_000;
+const SUSPICIOUS_LABELS = new Set(["cell phone", "laptop"]);
+
+// Looking away for 15s straight, or on 4 separate occasions in 2 minutes.
+// Typing means looking at the keyboard, so a recent keypress resets the streak.
+export const LOOKING_AWAY_HOLD_MS = 15_000;
+export const LOOKING_AWAY_REPEATS = 4;
+export const LOOKING_AWAY_WINDOW_MS = 120_000;
+export const TYPING_GRACE_MS = 3_000;
 
 // Past this much unobserved time a run of evidence counts as broken.
 export const RESEED_AFTER_GAP_MS = 20_000;
@@ -177,9 +202,9 @@ function groupByLabel(classified) {
 }
 
 // Every object in view shares one incident: one strike when they appear, and
-// one more if they are still there a minute later.
+// one more if they are still there HELD_RESTRIKE_SECONDS later.
 export const OBJECT_INCIDENT = "PROHIBITED_OBJECT";
-export const HELD_OBJECT_RESTRIKE_MS = 60_000;
+export const HELD_OBJECT_RESTRIKE_MS = HELD_RESTRIKE_SECONDS * 1000;
 
 function objectViolation({ label, best, count }) {
   const isEnvironment = ENVIRONMENT_STATES.has(best.state);
@@ -356,6 +381,106 @@ export function detectViolations(result, classified) {
   return violations;
 }
 
+// Why the next few samples should come faster, or null. Never a violation itself.
+export function suspicionReason(result, detected, { typing = false } = {}) {
+  for (const object of result?.objects_detected || []) {
+    const label = canonicalLabel(object);
+    const confidence = object.confidence ?? object.score;
+    if (
+      SUSPICIOUS_LABELS.has(label) &&
+      ruleFor(object) &&
+      !SHADOW_LABELS.has(label) &&
+      confidence >= SUSPICION_CONFIDENCE_FLOOR &&
+      confidence < OBJECT_CONFIDENCE_FLOOR
+    ) {
+      return `faint_object:${label}`;
+    }
+  }
+
+  // Looking down while typing is expected and would keep sampling fast all session.
+  if (!typing && detected.some((violation) => violation.type === "NOT_LOOKING")) {
+    return "not_looking";
+  }
+  return null;
+}
+
+// Only the camera device's own state. A frame the AI service could not judge
+// says nothing about whether the camera is still there.
+export function cameraOffReason(video, hasPlayed) {
+  const tracks = video?.srcObject?.getVideoTracks?.();
+  if (tracks && !tracks.some((track) => track.readyState === "live" && !track.muted)) {
+    return tracks.some((track) => track.muted) ? "track_muted" : "track_ended";
+  }
+  // Before the first frame this is the camera still starting, not going away.
+  if (hasPlayed && video && !isVideoReady(video)) return "no_frames";
+  return null;
+}
+
+export function createGazeTracker({
+  holdMs = LOOKING_AWAY_HOLD_MS,
+  repeats = LOOKING_AWAY_REPEATS,
+  windowMs = LOOKING_AWAY_WINDOW_MS,
+} = {}) {
+  let awaySince = null;
+  let countedStreak = null;
+  let lapses = [];
+  let settledAt = -Infinity;
+
+  return {
+    // One lapse per confirmed streak, so a single long look away can't also
+    // satisfy the repeat rule on its own.
+    observe({ away, confirmed = false, typing = false }, now) {
+      lapses = lapses.filter((at) => now - at < windowMs);
+      if (!away || typing) {
+        awaySince = null;
+        return null;
+      }
+
+      awaySince ??= now;
+      if (confirmed && countedStreak !== awaySince) {
+        countedStreak = awaySince;
+        lapses.push(now);
+      }
+
+      if (awaySince > settledAt && now - awaySince >= holdMs) {
+        return { startedAt: awaySince, reason: "held" };
+      }
+      if (lapses.length >= repeats) return { startedAt: lapses[0], reason: "repeated" };
+      return null;
+    },
+
+    // Called once the episode has struck or been shadow-logged, so the streak
+    // behind it can't raise it again.
+    settle(now) {
+      settledAt = now;
+      lapses = [];
+    },
+
+    interrupt() {
+      awaySince = null;
+    },
+
+    reset() {
+      awaySince = null;
+      countedStreak = null;
+      lapses = [];
+      settledAt = -Infinity;
+    },
+  };
+}
+
+function lookingAwayViolation({ startedAt, reason }) {
+  return {
+    type: "LOOKING_AWAY",
+    ...violationCopy("LOOKING_AWAY"),
+    reason,
+    shadow: SHADOW_RULES.has("gaze"),
+    incident: true,
+    incidentStartedAt: startedAt,
+    maxRestrikes: 0,
+  };
+}
+
 /**
  * While `isActive` is true, samples the webcam every DETECT_INTERVAL_MS, sends
  * the frame to the CV detection API, hands the same sample to `onSample` for
@@ -389,6 +514,10 @@ export function useProctoringSystem(
   const incidentsRef = useRef(createIncidentTracker());
   const struckIncidentsRef = useRef(new Map());
   const lastNoFaceGuidanceRef = useRef(0);
+  const suspicionUntilRef = useRef(0);
+  const gazeRef = useRef(createGazeTracker());
+  const lastKeyAtRef = useRef(-Infinity);
+  const cameraRef = useRef({ hasPlayed: false, offSince: null, lastRaisedAt: -Infinity });
 
   const [isDegraded, setIsDegraded] = useState(false);
 
@@ -436,6 +565,7 @@ export function useProctoringSystem(
   // frames we never actually saw.
   function recordFailure(reason) {
     stabilizerRef.current.reset();
+    gazeRef.current.interrupt();
     consecutiveFailuresRef.current += 1;
 
     queueRef.current.push({
@@ -463,7 +593,12 @@ export function useProctoringSystem(
   // shows only what the camera saw, never what the client decided about it.
   function detectionDetail(violation, frameQuality) {
     const detection = violation.detection;
-    if (!detection) return { frame_quality: frameQuality };
+    if (!detection) {
+      return {
+        ...(violation.reason ? { reason: violation.reason } : {}),
+        frame_quality: frameQuality,
+      };
+    }
 
     return {
       label: canonicalLabel(detection),
@@ -511,8 +646,9 @@ export function useProctoringSystem(
 
   // Only one violation per frame reaches the candidate, but a shadowed or
   // cooled-down one must not be what stops the rest from being considered.
+  // Returns the one that was raised, if any.
   function dispatchViolations(confirmed, frameQuality, now) {
-    let raised = false;
+    let raised = null;
 
     for (const violation of mergeObjectViolations(confirmed)) {
       const key = violation.key ?? violation.type;
@@ -529,7 +665,7 @@ export function useProctoringSystem(
         continue;
       }
 
-      const startedAt = incidentsRef.current.startedAt(incidentKey);
+      const startedAt = violation.incidentStartedAt ?? incidentsRef.current.startedAt(incidentKey);
       const absenceDuration = startedAt !== undefined ? now - startedAt : 0;
 
       // Multi-tiered NO_FACE escalation:
@@ -576,10 +712,12 @@ export function useProctoringSystem(
           stabilizerRef.current.commit(committed);
           struckIncidentsRef.current.set(committed, startedAt);
         }
-        raised = true;
+        raised = violation;
         logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
       }
     }
+
+    return raised;
   }
 
   async function tick() {
@@ -650,10 +788,37 @@ export function useProctoringSystem(
       const confirmed = stabilizerRef.current.push(detected);
       incidentsRef.current.observe(detected.map(incidentKeyOf), now);
 
+      const typing = now - lastKeyAtRef.current < TYPING_GRACE_MS;
+      const isNotLooking = (violation) => violation.type === "NOT_LOOKING";
+      const lookingAway = gazeRef.current.observe(
+        { away: detected.some(isNotLooking), confirmed: confirmed.some(isNotLooking), typing },
+        now,
+      );
+
+      const suspicion = suspicionReason(cleanResult, detected, { typing });
+      if (suspicion) {
+        if (now >= suspicionUntilRef.current) {
+          logger.log(`[Proctoring] 🔎 Sampling every ${SUSPICION_INTERVAL_MS}ms: ${suspicion}`);
+          queueRef.current.push({
+            timestamp: new Date().toISOString(),
+            source: "cv_detect",
+            event_type: "suspicion_sampling",
+            payload: { reason: suspicion },
+          });
+        }
+        suspicionUntilRef.current = now + SUSPICION_WINDOW_MS;
+      }
+
       // Re-check isActive after the async call — the session may have ended
       // (auto-submit, normal submit) while we were waiting for the response.
       if (isActiveRef.current) {
-        dispatchViolations(confirmed, cleanResult.frame_quality, now);
+        const gaze = lookingAway && lookingAwayViolation(lookingAway);
+        // Ahead of the soft gaze toast, so the strike isn't shown alongside it.
+        const queue = gaze
+          ? [...confirmed.filter((v) => !v.soft), gaze, ...confirmed.filter((v) => v.soft)]
+          : confirmed;
+        const raised = dispatchViolations(queue, cleanResult.frame_quality, now);
+        if (gaze && (gaze.shadow || raised === gaze)) gazeRef.current.settle(now);
       } else {
         for (const violation of confirmed) {
           recordDecision(violation, "session_ended", cleanResult.frame_quality);
@@ -730,11 +895,58 @@ export function useProctoringSystem(
 
     const failures = consecutiveFailuresRef.current;
     const delay =
-      failures === 0
-        ? DETECT_INTERVAL_MS
-        : Math.min(DETECT_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
+      failures > 0
+        ? Math.min(DETECT_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS)
+        : Date.now() < suspicionUntilRef.current
+          ? SUSPICION_INTERVAL_MS
+          : DETECT_INTERVAL_MS;
     intervalRef.current = delay;
     timerRef.current = setTimeout(tick, delay);
+  }
+
+  function checkCamera() {
+    const now = Date.now();
+    const state = cameraRef.current;
+    const video = videoRef.current;
+    if (isVideoReady(video)) state.hasPlayed = true;
+
+    const reason = cameraOffReason(video, state.hasPlayed);
+    if (!reason) {
+      if (state.offSince !== null) {
+        logger.log("[Proctoring] 📷 Camera is back.");
+        recordViolationEvent({
+          source: "camera",
+          type: "CAMERA_OFF",
+          outcome: "recovered",
+          off_for_ms: now - state.offSince,
+        });
+      }
+      state.offSince = null;
+      return;
+    }
+
+    if (state.offSince === null) {
+      state.offSince = now;
+      logger.warn(`[Proctoring] 📷 Camera unavailable: ${reason}`);
+      recordViolationEvent({ source: "camera", type: "CAMERA_OFF", outcome: "started", reason });
+    }
+    if (now - state.offSince <= CAMERA_OFF_AFTER_MS) return;
+    // Paced like a detection tick so a held incident reminds rather than spams the log.
+    if (now - state.lastRaisedAt < DETECT_INTERVAL_MS) return;
+    state.lastRaisedAt = now;
+
+    onViolationRef.current?.({
+      type: "CAMERA_OFF",
+      ...violationCopy("CAMERA_OFF"),
+      strikeKey: "CAMERA_OFF",
+      incident: true,
+      remindWhileHeld: true,
+      restrikeAfterMs: HELD_OBJECT_RESTRIKE_MS,
+      maxRestrikes: 1,
+      ongoing: true,
+      incidentStartedAt: state.offSince,
+      detail: { reason, off_for_ms: now - state.offSince },
+    });
   }
 
   const flushRetryCountRef = useRef(0);
@@ -812,8 +1024,10 @@ export function useProctoringSystem(
   }
 
   const tickRef = useRef(tick);
+  const checkCameraRef = useRef(checkCamera);
   useEffect(() => {
     tickRef.current = tick;
+    checkCameraRef.current = checkCamera;
   });
 
   useEffect(() => {
@@ -829,6 +1043,8 @@ export function useProctoringSystem(
       incidentsRef.current.reset();
       struckIncidentsRef.current.clear();
       lastNoFaceGuidanceRef.current = 0;
+      suspicionUntilRef.current = 0;
+      gazeRef.current.reset();
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
       timerRef.current = setTimeout(() => tickRef.current(), DETECT_INTERVAL_MS);
@@ -847,6 +1063,23 @@ export function useProctoringSystem(
       }
     };
   }, [isActive]); // Only depends on isActive — no callback deps!
+
+  useEffect(() => {
+    if (!isActive) return;
+    cameraRef.current = { hasPlayed: false, offSince: null, lastRaisedAt: -Infinity };
+    const timer = setInterval(() => checkCameraRef.current(), CAMERA_CHECK_MS);
+    return () => clearInterval(timer);
+  }, [isActive]);
+
+  useEffect(() => {
+    if (!isActive) return;
+    const onKeyDown = () => {
+      lastKeyAtRef.current = Date.now();
+    };
+    // Capture phase, so an editor that stops propagation still counts as typing.
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [isActive]);
 
   const prevActiveRef = useRef(false);
   useEffect(() => {
