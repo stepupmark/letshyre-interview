@@ -35,7 +35,7 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "Tanda Keamanan: {{violationCount}}",
+    "securityFlag": "Pelanggaran {{violationCount}} dari {{total}}",
     "warning": "Peringatan",
     "defaultTitle": "Peringatan Perpindahan Jendela",
     "defaultDescription": "Berpindah dari layar wawancara sedang dicatat sebagai pelanggaran",
@@ -68,6 +68,84 @@
     "waitingSubmitting": "Mohon tunggu, jangan tutup atau muat ulang halaman ini."
   },
   "violations": {
+    "tabSwitch": {
+      "title": "Perpindahan Tab Terdeteksi",
+      "description": "Meninggalkan layar wawancara tidak diizinkan. Pelanggaran berikutnya akan mengakhiri wawancara Anda."
+    },
+    "fullscreenExit": {
+      "title": "Keluar dari Layar Penuh Terdeteksi",
+      "description": "Keluar dari layar penuh tidak diizinkan. Pelanggaran berikutnya akan mengakhiri wawancara Anda."
+    },
+    "fullscreenRestore": {
+      "title": "Layar penuh diperlukan",
+      "description": "Wawancara Anda harus tetap dalam mode layar penuh.",
+      "action": "Kembali ke layar penuh"
+    },
+    "windowResize": {
+      "title": "Perubahan Ukuran Jendela Terdeteksi",
+      "description": "Mengubah ukuran jendela atau membatalkan mode maksimal tidak diizinkan. Pelanggaran berikutnya akan mengakhiri wawancara Anda."
+    },
+    "noFace": {
+      "title": "Kandidat Tidak Terdeteksi",
+      "description": "Pastikan posisi Anda sudah tepat di depan kamera."
+    },
+    "noFaceGuidance": {
+      "title": "Jaga Wajah di Dalam Bingkai",
+      "description": "Harap jaga wajah Anda tetap di tengah bingkai."
+    },
+    "multipleFaces": {
+      "title": "Beberapa Orang Terdeteksi",
+      "description": "Hanya Anda yang boleh terlihat di layar wawancara. Pastikan tidak ada orang lain yang terlihat."
+    },
+    "prohibitedObject": {
+      "title": "Perangkat Terlarang Terdeteksi",
+      "description": "Harap singkirkan {{object}} untuk melanjutkan wawancara."
+    },
+    "multipleDevices": {
+      "title": "Beberapa Perangkat Terlarang Terdeteksi",
+      "description": "Harap singkirkan {{object}} Anda untuk melanjutkan wawancara."
+    },
+    "cellPhone": {
+      "title": "Ponsel Terdeteksi",
+      "description": "Ponsel tidak diizinkan selama wawancara. Harap singkirkan ponsel Anda untuk melanjutkan."
+    },
+    "notLooking": {
+      "title": "Lihat ke Kamera",
+      "description": "Harap arahkan pandangan Anda ke layar. Memalingkan pandangan berulang kali akan ditandai."
+    },
+    "eyesClosed": {
+      "title": "Mata Tertutup Terdeteksi",
+      "description": "Harap buka mata Anda dan tetap fokus selama wawancara."
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "Layar Eksternal Terdeteksi",
+        "description": "Layar eksternal terdeteksi. Lepaskan semua monitor eksternal untuk melanjutkan."
+      },
+      "screenSharing": {
+        "title": "Berbagi Layar Terdeteksi",
+        "description": "Berbagi layar atau pencerminan layar terdeteksi. Segera tutup semua aplikasi berbagi."
+      },
+      "securityMonitor": {
+        "title": "Monitor Keamanan Terganggu",
+        "description": "Monitor keamanan terganggu. Hal ini dapat menandakan upaya manipulasi."
+      },
+      "windowAction": {
+        "title": "Tindakan Jendela Terdeteksi",
+        "description": "Jendela wawancara diminimalkan atau ditutup. Harap selalu biarkan jendela ini tetap aktif."
+      },
+      "generic": {
+        "title": "Pelanggaran Keamanan Terdeteksi",
+        "description": "Pelanggaran kebijakan keamanan terdeteksi. Harap segera atasi."
+      }
+    },
+    "objects": {
+      "cellPhone": "ponsel",
+      "laptop": "laptop",
+      "tv": "layar",
+      "book": "buku",
+      "unknown": "perangkat terlarang"
+    },
     "faceMismatch": {
       "title": "Verifikasi Identitas Gagal",
       "description": "Kami tidak dapat memastikan bahwa ini masih Anda di kamera. Pastikan wajah Anda terlihat jelas dan cukup cahaya."
@@ -79,7 +157,9 @@
     "violationLimit": {
       "title": "Wawancara Berakhir",
       "pill": "Pelanggaran kebijakan",
-      "description": "Anda mencapai {{violations}} pelanggaran. Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
+      "description": "Anda mencapai {{violations}} pelanggaran. Wawancara Anda dikirim beserta jawaban yang telah diselesaikan.",
+      "finalReason": "Pelanggaran {{count}} dari {{total}} · Mengakhiri wawancara",
+      "allViolations": "Semua pelanggaran"
     },
     "faceMismatch": {
       "title": "Wawancara Berakhir",

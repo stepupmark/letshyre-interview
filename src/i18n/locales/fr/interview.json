@@ -35,7 +35,7 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "Signalement de sécurité : {{violationCount}}",
+    "securityFlag": "Infraction {{violationCount}} sur {{total}}",
     "warning": "Avertissement",
     "defaultTitle": "Avertissement de changement de fenêtre",
     "defaultDescription": "Le fait de quitter l'écran de l'entretien est enregistré comme une violation",
@@ -68,6 +68,84 @@
     "waitingSubmitting": "Veuillez patienter, ne fermez pas et n'actualisez pas cette page."
   },
   "violations": {
+    "tabSwitch": {
+      "title": "Changement d'onglet détecté",
+      "description": "Quitter l'écran de l'entretien n'est pas autorisé. D'autres infractions mettront fin à votre entretien."
+    },
+    "fullscreenExit": {
+      "title": "Sortie du plein écran détectée",
+      "description": "Quitter le plein écran n'est pas autorisé. D'autres infractions mettront fin à votre entretien."
+    },
+    "fullscreenRestore": {
+      "title": "Plein écran requis",
+      "description": "Votre entretien doit rester en plein écran.",
+      "action": "Revenir en plein écran"
+    },
+    "windowResize": {
+      "title": "Redimensionnement de la fenêtre détecté",
+      "description": "Redimensionner la fenêtre ou annuler son agrandissement n'est pas autorisé. D'autres infractions mettront fin à votre entretien."
+    },
+    "noFace": {
+      "title": "Candidat non détecté",
+      "description": "Assurez-vous d'être correctement placé face à la caméra."
+    },
+    "noFaceGuidance": {
+      "title": "Gardez votre visage dans le cadre",
+      "description": "Veuillez garder votre visage centré dans le cadre."
+    },
+    "multipleFaces": {
+      "title": "Plusieurs personnes détectées",
+      "description": "Vous seul devez être visible à l'écran de l'entretien. Veuillez vous assurer que personne d'autre n'est dans le champ."
+    },
+    "prohibitedObject": {
+      "title": "Appareil interdit détecté",
+      "description": "Veuillez ranger l'appareil suivant pour poursuivre l'entretien : {{object}}."
+    },
+    "multipleDevices": {
+      "title": "Appareils interdits détectés",
+      "description": "Veuillez ranger les appareils suivants pour poursuivre l'entretien : {{object}}."
+    },
+    "cellPhone": {
+      "title": "Téléphone portable détecté",
+      "description": "Les téléphones portables ne sont pas autorisés pendant l'entretien. Veuillez ranger votre téléphone pour continuer."
+    },
+    "notLooking": {
+      "title": "Regardez la caméra",
+      "description": "Veuillez garder les yeux sur l'écran. Détourner le regard de façon répétée sera signalé."
+    },
+    "eyesClosed": {
+      "title": "Yeux fermés détectés",
+      "description": "Veuillez garder les yeux ouverts et rester concentré pendant l'entretien."
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "Écran externe détecté",
+        "description": "Un écran externe a été détecté. Déconnectez tous les moniteurs externes pour continuer."
+      },
+      "screenSharing": {
+        "title": "Partage d'écran détecté",
+        "description": "Un partage ou une duplication d'écran a été détecté. Fermez immédiatement toutes les applications de partage."
+      },
+      "securityMonitor": {
+        "title": "Moniteur de sécurité interrompu",
+        "description": "Le moniteur de sécurité a été interrompu. Cela peut indiquer une tentative de manipulation."
+      },
+      "windowAction": {
+        "title": "Action sur la fenêtre détectée",
+        "description": "La fenêtre de l'entretien a été réduite ou fermée. Veuillez la garder au premier plan en permanence."
+      },
+      "generic": {
+        "title": "Infraction de sécurité détectée",
+        "description": "Une infraction à la politique de sécurité a été détectée. Veuillez la corriger immédiatement."
+      }
+    },
+    "objects": {
+      "cellPhone": "téléphone",
+      "laptop": "ordinateur portable",
+      "tv": "écran",
+      "book": "livre",
+      "unknown": "appareil interdit"
+    },
     "faceMismatch": {
       "title": "Échec de la vérification d'identité",
       "description": "Nous n'avons pas pu confirmer que c'est toujours vous devant la caméra. Veillez à ce que votre visage soit bien visible et éclairé."
@@ -79,7 +157,9 @@
     "violationLimit": {
       "title": "Entretien terminé",
       "pill": "Infractions aux règles",
-      "description": "Vous avez atteint {{violations}} infractions. Votre entretien a été soumis avec les réponses complétées."
+      "description": "Vous avez atteint {{violations}} infractions. Votre entretien a été soumis avec les réponses complétées.",
+      "finalReason": "Infraction {{count}} sur {{total}} · A mis fin à l'entretien",
+      "allViolations": "Toutes les infractions"
     },
     "faceMismatch": {
       "title": "Entretien terminé",

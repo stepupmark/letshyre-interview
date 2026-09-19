@@ -2,16 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
-import { objectNameKey } from "@/lib/violationCopy";
-
-function listNames(labels, t, language) {
-  const names = labels.map((label) => t(objectNameKey(label)));
-  try {
-    return new Intl.ListFormat(language, { type: "conjunction" }).format(names);
-  } catch {
-    return names.join(", ");
-  }
-}
+import { objectName } from "@/lib/violationCopy";
 
 export default function ViolationWarning({
   isOpen = false,
@@ -30,7 +21,7 @@ export default function ViolationWarning({
   const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
   // Naming the thing beats "prohibited device" — the candidate can only act on
   // the warning if they know what was seen.
-  const object = labels?.length > 1 ? listNames(labels, t, i18n.language) : t(objectNameKey(label));
+  const object = objectName(t, { label, labels }, i18n.language);
   const resolvedDescription = descriptionKey
     ? t(descriptionKey, { object })
     : t("violationWarning.defaultDescription", { object });

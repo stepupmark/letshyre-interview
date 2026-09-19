@@ -8,10 +8,9 @@ const COOLDOWN_MS = 30_000;
 // Repeats of the same violation back off. A condition that never stopped is not
 // a repeat, so it holds the base cooldown instead of sliding into silence.
 const MAX_COOLDOWN_MS = 120_000;
-// Floor between strikes of any type, so one bad moment can't burn two strikes.
+// Minimum cooldown between distinct strikes.
 const MIN_STRIKE_INTERVAL_MS = 15_000;
-// Prohibited objects count per incident: bringing one into view strikes, and
-// keeping it there strikes again on this interval.
+// Periodic re-evaluation interval for sustained incidents.
 const INCIDENT_RESTRIKE_MS = 30_000;
 
 export function cooldownFor(repeats, base = COOLDOWN_MS, cap = MAX_COOLDOWN_MS) {

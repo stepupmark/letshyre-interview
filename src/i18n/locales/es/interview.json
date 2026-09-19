@@ -35,7 +35,7 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "Alerta de seguridad : {{violationCount}}",
+    "securityFlag": "Infracción {{violationCount}} de {{total}}",
     "warning": "Advertencia",
     "defaultTitle": "Advertencia de cambio de ventana",
     "defaultDescription": "Salir de la pantalla de la entrevista se está registrando como una infracción",
@@ -68,6 +68,84 @@
     "waitingSubmitting": "Por favor, espera, no cierres ni actualices esta página."
   },
   "violations": {
+    "tabSwitch": {
+      "title": "Cambio de pestaña detectado",
+      "description": "No está permitido salir de la pantalla de la entrevista. Nuevas infracciones finalizarán su entrevista."
+    },
+    "fullscreenExit": {
+      "title": "Salida de pantalla completa detectada",
+      "description": "No está permitido salir de la pantalla completa. Nuevas infracciones finalizarán su entrevista."
+    },
+    "fullscreenRestore": {
+      "title": "Se requiere pantalla completa",
+      "description": "Su entrevista debe permanecer en pantalla completa.",
+      "action": "Volver a pantalla completa"
+    },
+    "windowResize": {
+      "title": "Cambio de tamaño de ventana detectado",
+      "description": "No está permitido cambiar el tamaño de la ventana ni dejar de maximizarla. Nuevas infracciones finalizarán su entrevista."
+    },
+    "noFace": {
+      "title": "Candidato no detectado",
+      "description": "Asegúrese de estar correctamente situado frente a la cámara."
+    },
+    "noFaceGuidance": {
+      "title": "Mantenga el rostro en el encuadre",
+      "description": "Mantenga su rostro centrado en el encuadre."
+    },
+    "multipleFaces": {
+      "title": "Varias personas detectadas",
+      "description": "Solo usted debe ser visible en la pantalla de la entrevista. Asegúrese de que no haya nadie más a la vista."
+    },
+    "prohibitedObject": {
+      "title": "Dispositivo prohibido detectado",
+      "description": "Retire el siguiente dispositivo para continuar con la entrevista: {{object}}."
+    },
+    "multipleDevices": {
+      "title": "Dispositivos prohibidos detectados",
+      "description": "Retire los siguientes dispositivos para continuar con la entrevista: {{object}}."
+    },
+    "cellPhone": {
+      "title": "Teléfono móvil detectado",
+      "description": "No se permiten teléfonos móviles durante la entrevista. Guarde su teléfono para continuar."
+    },
+    "notLooking": {
+      "title": "Mire a la cámara",
+      "description": "Mantenga la vista en la pantalla. Apartar la mirada repetidamente quedará registrado."
+    },
+    "eyesClosed": {
+      "title": "Ojos cerrados detectados",
+      "description": "Mantenga los ojos abiertos y concéntrese durante la entrevista."
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "Pantalla externa detectada",
+        "description": "Se detectó una pantalla externa. Desconecte todos los monitores externos para continuar."
+      },
+      "screenSharing": {
+        "title": "Uso compartido de pantalla detectado",
+        "description": "Se detectó que la pantalla se está compartiendo o duplicando. Cierre de inmediato todas las aplicaciones para compartir."
+      },
+      "securityMonitor": {
+        "title": "Monitor de seguridad interrumpido",
+        "description": "El monitor de seguridad se interrumpió. Esto puede indicar un intento de manipulación."
+      },
+      "windowAction": {
+        "title": "Acción de ventana detectada",
+        "description": "La ventana de la entrevista se minimizó o se cerró. Manténgala en primer plano en todo momento."
+      },
+      "generic": {
+        "title": "Infracción de seguridad detectada",
+        "description": "Se detectó una infracción de la política de seguridad. Resuélvala de inmediato."
+      }
+    },
+    "objects": {
+      "cellPhone": "teléfono",
+      "laptop": "portátil",
+      "tv": "pantalla",
+      "book": "libro",
+      "unknown": "dispositivo prohibido"
+    },
     "faceMismatch": {
       "title": "Verificación de identidad fallida",
       "description": "No pudimos confirmar que siga siendo usted en la cámara. Asegúrese de que su rostro esté bien visible e iluminado."
@@ -79,7 +157,9 @@
     "violationLimit": {
       "title": "Entrevista finalizada",
       "pill": "Infracciones de la política",
-      "description": "Alcanzó {{violations}} infracciones. Su entrevista se envió con las respuestas que completó."
+      "description": "Alcanzó {{violations}} infracciones. Su entrevista se envió con las respuestas que completó.",
+      "finalReason": "Infracción {{count}} de {{total}} · Finalizó la entrevista",
+      "allViolations": "Todas las infracciones"
     },
     "faceMismatch": {
       "title": "Entrevista finalizada",

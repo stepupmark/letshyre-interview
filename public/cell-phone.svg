@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 440" fill="none">
+  <path d="M96 120C126 54 216 26 302 38c72 10 104 56 170 60 76 5 134 44 136 110 2 76-50 124-120 146-82 26-156 52-240 40-86-12-158-52-176-124-16-64-2-100 24-150Z" fill="#E8F4FE"/>
+  <ellipse cx="330" cy="380" rx="140" ry="16" fill="#D4E8F9"/>
+  <!-- Phone body shadow and base -->
+  <rect x="250" y="60" width="160" height="300" rx="28" fill="#1E293B" stroke="#334155" stroke-width="4"/>
+  <!-- Phone screen bezel -->
+  <rect x="262" y="76" width="136" height="268" rx="18" fill="#0F172A"/>
+  <rect x="264" y="78" width="132" height="264" rx="16" fill="#F8FAFC"/>
+  <!-- Dynamic Island / Speaker notch -->
+  <rect x="305" y="86" width="50" height="10" rx="5" fill="#1E293B"/>
+  <circle cx="346" cy="91" r="2.5" fill="#38BDF8"/>
+  <!-- Screen UI elements -->
+  <rect x="280" y="116" width="100" height="12" rx="6" fill="#E2E8F0"/>
+  <rect x="280" y="138" width="70" height="8" rx="4" fill="#CBD5E1"/>
+  <rect x="280" y="154" width="85" height="8" rx="4" fill="#CBD5E1"/>
+  <!-- Chat or alert bubble on phone screen -->
+  <rect x="276" y="180" width="108" height="64" rx="12" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+  <rect x="288" y="196" width="60" height="8" rx="4" fill="#3B82F6"/>
+  <rect x="288" y="212" width="84" height="6" rx="3" fill="#93C5FD"/>
+  <rect x="288" y="224" width="45" height="6" rx="3" fill="#93C5FD"/>
+  <!-- Prohibited / Alert badge overlay on bottom right -->
+  <circle cx="396" cy="276" r="38" fill="#EF4444" stroke="#FFFFFF" stroke-width="4"/>
+  <!-- Prohibition diagonal slash / phone warning icon inside badge -->
+  <path d="M380 260 L412 292" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="396" cy="276" r="24" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+  <!-- Home indicator bar -->
+  <rect x="306" y="332" width="48" height="4" rx="2" fill="#94A3B8"/>
+</svg>

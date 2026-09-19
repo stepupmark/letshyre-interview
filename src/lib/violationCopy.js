@@ -6,6 +6,11 @@ const COPY = {
     descriptionKey: "violations.noFace.description",
     imagePath: "/no-candidate.png",
   },
+  NO_FACE_GUIDANCE: {
+    titleKey: "violations.noFaceGuidance.title",
+    descriptionKey: "violations.noFaceGuidance.description",
+    soft: true,
+  },
   FACE_MISMATCH: {
     titleKey: "violations.faceMismatch.title",
     descriptionKey: "violations.faceMismatch.description",
@@ -21,6 +26,16 @@ const COPY = {
     descriptionKey: "violations.prohibitedObject.description",
     imagePath: "/laptop.png",
   },
+  MULTIPLE_OBJECTS: {
+    titleKey: "violations.multipleDevices.title",
+    descriptionKey: "violations.multipleDevices.description",
+    imagePath: "/laptop.png",
+  },
+  "PROHIBITED_OBJECT:cell phone": {
+    titleKey: "violations.cellPhone.title",
+    descriptionKey: "violations.cellPhone.description",
+    imagePath: "/cell-phone.svg",
+  },
   NOT_LOOKING: {
     titleKey: "violations.notLooking.title",
     descriptionKey: "violations.notLooking.description",
@@ -33,8 +48,20 @@ const COPY = {
   },
 };
 
-export function violationCopy(type) {
-  return COPY[type] ?? null;
+export function violationCopy(type, label) {
+  if (label) {
+    const formatted = `${String(type).toUpperCase()}:${String(label).toLowerCase()}`;
+    if (COPY[formatted]) return COPY[formatted];
+  }
+  if (COPY[type]) return COPY[type];
+  if (typeof type === "string") {
+    const colonIndex = type.indexOf(":");
+    if (colonIndex !== -1) {
+      const formatted = `${type.slice(0, colonIndex).toUpperCase()}:${type.slice(colonIndex + 1).toLowerCase()}`;
+      if (COPY[formatted]) return COPY[formatted];
+    }
+  }
+  return null;
 }
 
 // Detector labels are space or snake cased while copy keys are camelCase. Any
@@ -44,4 +71,15 @@ export function objectNameKey(label) {
   const [head, ...rest] = label.toLowerCase().split(/[\s_-]+/);
   const tail = rest.map((word) => word[0].toUpperCase() + word.slice(1)).join("");
   return `violations.objects.${head}${tail}`;
+}
+
+// "phone and laptop" in the candidate's language when several objects count as one.
+export function objectName(t, { label, labels } = {}, language) {
+  if (!(labels?.length > 1)) return t(objectNameKey(label ?? labels?.[0]));
+  const names = labels.map((each) => t(objectNameKey(each)));
+  try {
+    return new Intl.ListFormat(language, { type: "conjunction" }).format(names);
+  } catch {
+    return names.join(", ");
+  }
 }

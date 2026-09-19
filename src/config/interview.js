@@ -26,7 +26,7 @@ export const MAX_INTERNET_DISCONNECTS = num(import.meta.env.VITE_AI_MAX_INTERNET
 // its own. The candidate can acknowledge sooner; they can never delay past it.
 export const TERMINATION_NOTICE_SECONDS = num(
   import.meta.env.VITE_AI_TERMINATION_NOTICE_SECONDS,
-  8,
+  12,
 );
 
 // Interview length in minutes.

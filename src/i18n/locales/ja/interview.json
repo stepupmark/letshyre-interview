@@ -35,7 +35,7 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "セキュリティフラグ：{{violationCount}}",
+    "securityFlag": "違反 {{violationCount}} / {{total}}",
     "warning": "警告",
     "defaultTitle": "ウィンドウ切り替え警告",
     "defaultDescription": "面接画面から離れる操作は違反として記録されています",
@@ -68,6 +68,84 @@
     "waitingSubmitting": "このページを閉じたり更新したりせず、そのままお待ちください。"
   },
   "violations": {
+    "tabSwitch": {
+      "title": "タブの切り替えを検出しました",
+      "description": "面接画面から離れることは許可されていません。違反が続くと面接は終了します。"
+    },
+    "fullscreenExit": {
+      "title": "全画面表示の終了を検出しました",
+      "description": "全画面表示を終了することは許可されていません。違反が続くと面接は終了します。"
+    },
+    "fullscreenRestore": {
+      "title": "全画面表示が必要です",
+      "description": "面接中は全画面表示を維持する必要があります。",
+      "action": "全画面表示に戻る"
+    },
+    "windowResize": {
+      "title": "ウィンドウサイズの変更を検出しました",
+      "description": "ウィンドウのサイズ変更や最大化の解除は許可されていません。違反が続くと面接は終了します。"
+    },
+    "noFace": {
+      "title": "受験者が検出されません",
+      "description": "カメラの正面に正しく位置していることを確認してください。"
+    },
+    "noFaceGuidance": {
+      "title": "顔をフレーム内に収めてください",
+      "description": "顔をフレームの中央に保ってください。"
+    },
+    "multipleFaces": {
+      "title": "複数の人物を検出しました",
+      "description": "面接画面に映るのはあなただけである必要があります。他の人が映っていないことを確認してください。"
+    },
+    "prohibitedObject": {
+      "title": "禁止されている機器を検出しました",
+      "description": "面接を続けるには、{{object}}を片付けてください。"
+    },
+    "multipleDevices": {
+      "title": "禁止されている機器を複数検出しました",
+      "description": "面接を続けるには、{{object}}を片付けてください。"
+    },
+    "cellPhone": {
+      "title": "携帯電話を検出しました",
+      "description": "面接中は携帯電話を使用できません。続行するには携帯電話を片付けてください。"
+    },
+    "notLooking": {
+      "title": "カメラを見てください",
+      "description": "画面から目を離さないでください。何度も視線を外すと記録されます。"
+    },
+    "eyesClosed": {
+      "title": "目を閉じていることを検出しました",
+      "description": "面接中は目を開けて集中してください。"
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "外部ディスプレイを検出しました",
+        "description": "外部ディスプレイが検出されました。続行するには、すべての外部モニターを取り外してください。"
+      },
+      "screenSharing": {
+        "title": "画面共有を検出しました",
+        "description": "画面の共有またはミラーリングが検出されました。すべての共有アプリを直ちに終了してください。"
+      },
+      "securityMonitor": {
+        "title": "セキュリティモニターが中断されました",
+        "description": "セキュリティモニターが中断されました。不正操作の試みである可能性があります。"
+      },
+      "windowAction": {
+        "title": "ウィンドウ操作を検出しました",
+        "description": "面接ウィンドウが最小化されたか、閉じられました。常に前面に表示したままにしてください。"
+      },
+      "generic": {
+        "title": "セキュリティ違反を検出しました",
+        "description": "セキュリティポリシーの違反が検出されました。直ちに解消してください。"
+      }
+    },
+    "objects": {
+      "cellPhone": "スマートフォン",
+      "laptop": "ノートパソコン",
+      "tv": "画面",
+      "book": "本",
+      "unknown": "禁止されている機器"
+    },
     "faceMismatch": {
       "title": "本人確認に失敗しました",
       "description": "カメラに映っているのが本人かどうか確認できませんでした。顔がはっきり見えるよう、明るい場所で撮影してください。"
@@ -79,7 +157,9 @@
     "violationLimit": {
       "title": "面接終了",
       "pill": "ポリシー違反",
-      "description": "違反が{{violations}}件に達しました。回答済みの内容で面接を送信しました。"
+      "description": "違反が{{violations}}件に達しました。回答済みの内容で面接を送信しました。",
+      "finalReason": "違反 {{count}} / {{total}} · これにより面接が終了しました",
+      "allViolations": "すべての違反"
     },
     "faceMismatch": {
       "title": "面接終了",

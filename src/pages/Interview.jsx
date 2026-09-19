@@ -52,6 +52,7 @@ export function Interview() {
   const {
     showTabWarning,
     violationInfo,
+    strikes,
     dismissWarning,
     needsFullscreen,
     restoreFullscreen,
@@ -61,6 +62,7 @@ export function Interview() {
     isActive,
     incrementViolation,
     sessionViolations: session?.violations ?? 0,
+    sessionId: session?.session_id,
   });
 
   const videoRef = useRef(null);
@@ -194,6 +196,7 @@ export function Interview() {
         reason={autoSubmitReason}
         secondsLeft={terminationSecondsLeft}
         onAcknowledge={acknowledgeTermination}
+        strikes={strikes}
       />
     );
   }

@@ -92,6 +92,16 @@ describe("createStrikePolicy", () => {
     expect(policy.admit(phone, { incident: true, startedAt: 1_000, now: 1_000 })).toBe("raised");
   });
 
+  it("still keeps the strike floor for an object that stayed in view", () => {
+    const policy = createStrikePolicy();
+    const phone = "PROHIBITED_OBJECT:cell phone";
+    const held = { incident: true, ongoing: true, startedAt: 0, restrikeAfterMs: 60_000 };
+    policy.admit(phone, { incident: true, startedAt: 0, now: 0 });
+    policy.admit("TAB_SWITCH", { now: 55_000 });
+    expect(policy.admit(phone, { ...held, now: 60_000 })).toBe("strike_interval");
+    expect(policy.admit(phone, { ...held, now: 70_000 })).toBe("raised");
+  });
+
   it("re-strikes an object that stays in view on a fixed interval", () => {
     const policy = createStrikePolicy();
     const phone = "PROHIBITED_OBJECT:cell phone";
@@ -119,7 +129,7 @@ describe("createStrikePolicy", () => {
         incident: true,
         ongoing: true,
         startedAt: 0,
-        now: 1_000,
+        now: 16_000,
       }),
     ).toBe("raised");
   });

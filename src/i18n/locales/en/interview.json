@@ -89,6 +89,10 @@
       "title": "Candidate Not Detected",
       "description": "Ensure you are properly positioned in front of the camera."
     },
+    "noFaceGuidance": {
+      "title": "Keep Face in Frame",
+      "description": "Please keep your face centered in the frame."
+    },
     "multipleFaces": {
       "title": "Multiple People Detected",
       "description": "Only you should be visible on the interview screen. Please ensure no one else is in view."
@@ -96,6 +100,14 @@
     "prohibitedObject": {
       "title": "Prohibited Device Detected",
       "description": "Please put away the {{object}} to continue the interview."
+    },
+    "multipleDevices": {
+      "title": "Prohibited Devices Detected",
+      "description": "Please put away your {{object}} to continue the interview."
+    },
+    "cellPhone": {
+      "title": "Cell Phone Detected",
+      "description": "Mobile phones are not permitted during the interview. Please put away your phone to continue."
     },
     "notLooking": {
       "title": "Look at the Camera",
@@ -129,7 +141,7 @@
     },
     "objects": {
       "cellPhone": "phone",
-      "laptop": "second screen",
+      "laptop": "laptop",
       "tv": "screen",
       "book": "book",
       "unknown": "prohibited device"
@@ -145,7 +157,9 @@
     "violationLimit": {
       "title": "Interview Ended",
       "pill": "Policy violations",
-      "description": "You reached {{violations}} compliance violations. Your interview has been submitted with the answers you completed."
+      "description": "You reached {{violations}} compliance violations. Your interview has been submitted with the answers you completed.",
+      "finalReason": "Violation {{count}} of {{total}} · Ended the interview",
+      "allViolations": "All violations"
     },
     "faceMismatch": {
       "title": "Interview Ended",

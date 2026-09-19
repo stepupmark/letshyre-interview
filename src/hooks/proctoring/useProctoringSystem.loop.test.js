@@ -105,6 +105,15 @@ describe("useProctoringSystem sampling", () => {
     });
   });
 
+  it("does not strike a blurry phone seen on a single frame", async () => {
+    replay([frame([BLURRY_PHONE]), frame(), frame()]);
+    const { onViolation } = start();
+
+    await vi.advanceTimersByTimeAsync(12_000);
+
+    expect(onViolation).not.toHaveBeenCalled();
+  });
+
   it("still takes a quick second look at a phone while a laptop never leaves view", async () => {
     const laptopOnly = Array.from({ length: 8 }, () => frame([LAPTOP]));
     replay([
@@ -123,13 +132,18 @@ describe("useProctoringSystem sampling", () => {
   });
 
   it("counts a phone and a laptop confirmed in the same frame as one violation", async () => {
-    replay([frame([LAPTOP, BLURRY_PHONE]), frame([LAPTOP, BLURRY_PHONE])]);
+    const MOVED_LAPTOP = { ...LAPTOP, bbox: [212, 147, 257, 187] };
+    replay([frame([LAPTOP, BLURRY_PHONE]), frame([MOVED_LAPTOP, BLURRY_PHONE])]);
     const { onViolation } = start();
 
     await vi.advanceTimersByTimeAsync(6_000);
 
     expect(onViolation).toHaveBeenCalledTimes(1);
-    expect(onViolation.mock.calls[0][0]).toMatchObject({ strikeKey: "PROHIBITED_OBJECT" });
+    expect(onViolation.mock.calls[0][0]).toMatchObject({
+      strikeKey: "PROHIBITED_OBJECT",
+      titleKey: "violations.multipleDevices.title",
+      descriptionKey: "violations.multipleDevices.description",
+    });
     expect(onViolation.mock.calls[0][0].labels.sort()).toEqual(["cell phone", "laptop"]);
   });
 
@@ -169,5 +183,78 @@ describe("useProctoringSystem sampling", () => {
     expect(onSample).toHaveBeenCalledWith(
       expect.objectContaining({ faceCount: 1, faceConfidence: 0.64 }),
     );
+  });
+
+  describe("multi-tiered NO_FACE escalation", () => {
+    const noFace = () => ({ ...frame(), face_detected: false, face_count: 0 });
+
+    it("grants silent grace window for brief absence under 3 seconds", async () => {
+      // 5s: first absence frame (t=0 of incident)
+      // 6s: second absence frame (burst 1, duration 1s < 3s grace)
+      // 7s: candidate returns
+      replay([noFace(), noFace(), frame()]);
+      const { onViolation } = start();
+
+      await vi.advanceTimersByTimeAsync(12_000);
+
+      expect(onViolation).not.toHaveBeenCalled();
+      expect(decisions("NO_FACE")).toContain("grace");
+    });
+
+    it("issues soft visual guidance between 3s and 7s without a punitive strike", async () => {
+      // 5s: t=0
+      // 6s: t=1s (grace)
+      // 7s: t=2s (grace)
+      // 8s: t=3s (soft guidance window triggered)
+      // 9s: returns
+      replay([noFace(), noFace(), noFace(), noFace(), frame()]);
+      const { onViolation } = start();
+
+      await vi.advanceTimersByTimeAsync(12_000);
+
+      expect(onViolation).toHaveBeenCalledTimes(1);
+      expect(onViolation.mock.calls[0][0]).toMatchObject({
+        type: "NO_FACE",
+        soft: true,
+        countsAsViolation: false,
+        titleKey: "violations.noFaceGuidance.title",
+        descriptionKey: "violations.noFaceGuidance.description",
+      });
+    });
+
+    it("admits a formal proctoring strike when absence exceeds 7 seconds", async () => {
+      // Absence lasting > 7 seconds triggers formal strike admission
+      const absenceFrames = Array.from({ length: 9 }, () => noFace());
+      replay([...absenceFrames, frame()]);
+      const { onViolation } = start();
+
+      await vi.advanceTimersByTimeAsync(20_000);
+
+      // Should have received soft guidance, then formal proctoring strike
+      const calls = onViolation.mock.calls.map(([v]) => v);
+      const formalStrike = calls.find((v) => v.type === "NO_FACE" && v.soft !== true);
+
+      expect(formalStrike).toBeDefined();
+      expect(formalStrike).toMatchObject({
+        type: "NO_FACE",
+        strikeKey: "NO_FACE",
+      });
+      expect(formalStrike.countsAsViolation).not.toBe(false);
+    });
+
+    it("resets grace period when candidate returns between separate brief look-downs", async () => {
+      // Look-down 1: 2 missed frames (duration ~1s < 3s grace)
+      // Return: 2 frames with face
+      // Look-down 2: 2 missed frames (duration ~1s < 3s grace)
+      // Return: candidate back
+      replay([noFace(), noFace(), frame(), frame(), noFace(), noFace(), frame()]);
+      const { onViolation } = start();
+
+      await vi.advanceTimersByTimeAsync(20_000);
+
+      // Neither absence exceeded 3 seconds, so no warnings or strikes should have been emitted
+      expect(onViolation).not.toHaveBeenCalled();
+      expect(decisions("NO_FACE")).toEqual(["unconfirmed", "grace", "unconfirmed", "grace"]);
+    });
   });
 });

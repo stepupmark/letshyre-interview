@@ -1,14 +1,18 @@
-// An object has to be gone for two samples and at least this long before its
-// return counts as a new incident, so one missed detection can't strike twice.
 const GAP_MS = 6_000;
 const MISSES = 2;
 
+const KEY_RULES = {
+  NO_FACE: { gapMs: 1_500, misses: 1 },
+};
+
 /**
- * Remembers when each violation's current incident began. Observe a frame
- * before judging it: a violation only confirms on a later sighting, so asking
- * "was it here last frame" at that point is always yes.
+ * Tracks start timestamps for active violation incidents across frames.
  */
-export function createIncidentTracker({ gapMs = GAP_MS, misses = MISSES } = {}) {
+export function createIncidentTracker({
+  gapMs = GAP_MS,
+  misses = MISSES,
+  keyRules = KEY_RULES,
+} = {}) {
   let seen = new Map();
 
   return {
@@ -19,7 +23,9 @@ export function createIncidentTracker({ gapMs = GAP_MS, misses = MISSES } = {}) 
       }
       for (const key of present) {
         const entry = seen.get(key);
-        const returned = !entry || (entry.misses >= misses && now - entry.lastSeenAt >= gapMs);
+        const rule = keyRules[key] ?? { gapMs, misses };
+        const returned =
+          !entry || (entry.misses >= rule.misses && now - entry.lastSeenAt >= rule.gapMs);
         seen.set(key, { startedAt: returned ? now : entry.startedAt, lastSeenAt: now, misses: 0 });
       }
     },

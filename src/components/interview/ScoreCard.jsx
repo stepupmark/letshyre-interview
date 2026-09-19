@@ -110,8 +110,8 @@ export default function ScoreCard({ scorecard }) {
   const displayQuestions = [];
 
   for (const qa of question_breakdown ?? []) {
-    if (qa.type === "AUDIO" && qa.is_dummy_audio) break;
-    if (qa.type !== "AUDIO" && qa.answer_provided === "") break;
+    if (qa.type === "AUDIO" && qa.is_dummy_audio) continue;
+    if (qa.type !== "AUDIO" && qa.answer_provided === "") continue;
     displayQuestions.push(qa);
   }
 

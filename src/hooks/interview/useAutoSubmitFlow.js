@@ -105,22 +105,27 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
     }
   };
 
+  const autoSubmitRef = useRef(autoSubmit);
+  useEffect(() => {
+    autoSubmitRef.current = autoSubmit;
+  });
+
+  const isSessionActive = session?.status === SESSION_STATUS.ACTIVE;
+  const isSessionExpired = session?.status === SESSION_STATUS.EXPIRED;
+  const violations = session?.violations ?? 0;
+  const disconnectCount = session?.internet_disconnect_count ?? 0;
+  const hasScorecard = Boolean(session?.scorecard);
+
   /**
    * Auto-expire session when the timer runs out
    */
   useEffect(() => {
-    if (!session) return;
-
-    if (session.status !== SESSION_STATUS.ACTIVE) {
+    if (!isSessionActive || timeLeft > 0) {
       return;
     }
 
-    if (timeLeft > 0) {
-      return;
-    }
-
-    queueMicrotask(() => autoSubmit(TERMINATION_REASONS.TIME_EXPIRED));
-  }, [timeLeft, session?.status]);
+    queueMicrotask(() => autoSubmitRef.current(TERMINATION_REASONS.TIME_EXPIRED));
+  }, [timeLeft, isSessionActive]);
 
   /**
    * Auto-submit when violations strikes reach limit
@@ -129,42 +134,39 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
    *       are tracked separately via internet_disconnect_count.
    */
   useEffect(() => {
-    if (!session) return;
-    if (session.status !== SESSION_STATUS.ACTIVE) return;
+    if (!isSessionActive) return;
 
-    if ((session.violations || 0) >= violationsAllowed) {
-      queueMicrotask(() => autoSubmit(TERMINATION_REASONS.VIOLATION_LIMIT));
+    if (violations >= violationsAllowed) {
+      queueMicrotask(() => autoSubmitRef.current(TERMINATION_REASONS.VIOLATION_LIMIT));
     }
-  }, [session?.violations, session?.status]);
+  }, [isSessionActive, violations, violationsAllowed]);
 
   /**
    * Auto-submit when the internet disconnect count reaches its limit.
    * This is a SEPARATE category from proctoring violations.
    */
   useEffect(() => {
-    if (!session) return;
-    if (session.status !== SESSION_STATUS.ACTIVE) return;
+    if (!isSessionActive) return;
 
-    if ((session.internet_disconnect_count || 0) >= MAX_INTERNET_DISCONNECTS) {
+    if (disconnectCount >= MAX_INTERNET_DISCONNECTS) {
       logger.log(
         `[Network] 🚨 ${MAX_INTERNET_DISCONNECTS} internet disconnects reached — triggering auto-submit.`,
       );
-      queueMicrotask(() => autoSubmit(TERMINATION_REASONS.NETWORK_DISCONNECTS));
+      queueMicrotask(() => autoSubmitRef.current(TERMINATION_REASONS.NETWORK_DISCONNECTS));
     }
-  }, [session?.internet_disconnect_count, session?.status]);
+  }, [isSessionActive, disconnectCount]);
 
   /**
    * Auto-submit if session is restored/loaded in EXPIRED state but has no scorecard
    */
   useEffect(() => {
-    if (!session) return;
-    if (session.status === SESSION_STATUS.EXPIRED && !session.scorecard && !autoSubmitting) {
-      logger.log(
-        "[useAutoSubmitFlow] Restored expired session without scorecard. Auto-submitting...",
-      );
-      queueMicrotask(() => autoSubmit(autoSubmitReason || "Resuming expired session"));
-    }
-  }, [session?.status, session?.scorecard]);
+    if (!isSessionExpired || hasScorecard || autoSubmitting) return;
+
+    logger.log(
+      "[useAutoSubmitFlow] Restored expired session without scorecard. Auto-submitting...",
+    );
+    queueMicrotask(() => autoSubmitRef.current(autoSubmitReason || "Resuming expired session"));
+  }, [isSessionExpired, hasScorecard, autoSubmitting, autoSubmitReason]);
 
   /**
    * Auto-retry auto-submit when internet comes back online after a failure.
@@ -176,7 +178,7 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
 
     const handleOnlineRetry = () => {
       logger.log("[Network] 🔄 Internet restored — automatically retrying auto-submit...");
-      autoSubmit(autoSubmitReason || "Retrying after reconnection");
+      autoSubmitRef.current(autoSubmitReason || "Retrying after reconnection");
     };
 
     window.addEventListener("online", handleOnlineRetry);

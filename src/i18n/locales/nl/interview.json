@@ -35,7 +35,7 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "Beveiligingsmelding: {{violationCount}}",
+    "securityFlag": "Overtreding {{violationCount}} van {{total}}",
     "warning": "Waarschuwing",
     "defaultTitle": "Waarschuwing: venster gewisseld",
     "defaultDescription": "Het verlaten van het interviewscherm wordt geregistreerd als een overtreding",
@@ -68,6 +68,84 @@
     "waitingSubmitting": "Wacht alstublieft, sluit deze pagina niet en ververs deze niet."
   },
   "violations": {
+    "tabSwitch": {
+      "title": "Tabbladwissel gedetecteerd",
+      "description": "Het verlaten van het interviewscherm is niet toegestaan. Verdere overtredingen beëindigen uw interview."
+    },
+    "fullscreenExit": {
+      "title": "Volledig scherm verlaten gedetecteerd",
+      "description": "Het verlaten van het volledige scherm is niet toegestaan. Verdere overtredingen beëindigen uw interview."
+    },
+    "fullscreenRestore": {
+      "title": "Volledig scherm vereist",
+      "description": "Uw interview moet op volledig scherm blijven.",
+      "action": "Terug naar volledig scherm"
+    },
+    "windowResize": {
+      "title": "Wijziging van venstergrootte gedetecteerd",
+      "description": "Het wijzigen van de venstergrootte of het opheffen van de maximalisatie is niet toegestaan. Verdere overtredingen beëindigen uw interview."
+    },
+    "noFace": {
+      "title": "Kandidaat niet gedetecteerd",
+      "description": "Zorg ervoor dat u goed voor de camera zit."
+    },
+    "noFaceGuidance": {
+      "title": "Houd uw gezicht in beeld",
+      "description": "Houd uw gezicht in het midden van het beeld."
+    },
+    "multipleFaces": {
+      "title": "Meerdere personen gedetecteerd",
+      "description": "Alleen u mag zichtbaar zijn op het interviewscherm. Zorg ervoor dat er niemand anders in beeld is."
+    },
+    "prohibitedObject": {
+      "title": "Niet-toegestaan apparaat gedetecteerd",
+      "description": "Leg het volgende apparaat weg om door te gaan met het interview: {{object}}."
+    },
+    "multipleDevices": {
+      "title": "Niet-toegestane apparaten gedetecteerd",
+      "description": "Leg de volgende apparaten weg om door te gaan met het interview: {{object}}."
+    },
+    "cellPhone": {
+      "title": "Mobiele telefoon gedetecteerd",
+      "description": "Mobiele telefoons zijn niet toegestaan tijdens het interview. Leg uw telefoon weg om door te gaan."
+    },
+    "notLooking": {
+      "title": "Kijk naar de camera",
+      "description": "Houd uw ogen op het scherm gericht. Herhaaldelijk wegkijken wordt gemarkeerd."
+    },
+    "eyesClosed": {
+      "title": "Gesloten ogen gedetecteerd",
+      "description": "Houd uw ogen open en blijf geconcentreerd tijdens het interview."
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "Extern beeldscherm gedetecteerd",
+        "description": "Er is een extern beeldscherm gedetecteerd. Koppel alle externe monitoren los om door te gaan."
+      },
+      "screenSharing": {
+        "title": "Schermdeling gedetecteerd",
+        "description": "Schermdeling of schermspiegeling is gedetecteerd. Sluit onmiddellijk alle apps voor schermdeling."
+      },
+      "securityMonitor": {
+        "title": "Beveiligingsmonitor onderbroken",
+        "description": "De beveiligingsmonitor is onderbroken. Dit kan wijzen op een manipulatiepoging."
+      },
+      "windowAction": {
+        "title": "Vensteractie gedetecteerd",
+        "description": "Het interviewvenster is geminimaliseerd of gesloten. Houd het altijd op de voorgrond."
+      },
+      "generic": {
+        "title": "Beveiligingsovertreding gedetecteerd",
+        "description": "Er is een overtreding van het beveiligingsbeleid gedetecteerd. Los dit onmiddellijk op."
+      }
+    },
+    "objects": {
+      "cellPhone": "telefoon",
+      "laptop": "laptop",
+      "tv": "scherm",
+      "book": "boek",
+      "unknown": "niet-toegestaan apparaat"
+    },
     "faceMismatch": {
       "title": "Identiteitscontrole mislukt",
       "description": "We konden niet bevestigen dat u nog voor de camera zit. Zorg dat uw gezicht duidelijk zichtbaar en goed verlicht is."
@@ -79,7 +157,9 @@
     "violationLimit": {
       "title": "Interview beëindigd",
       "pill": "Beleidsovertredingen",
-      "description": "U heeft {{violations}} overtredingen bereikt. Uw interview is ingediend met de antwoorden die u heeft voltooid."
+      "description": "U heeft {{violations}} overtredingen bereikt. Uw interview is ingediend met de antwoorden die u heeft voltooid.",
+      "finalReason": "Overtreding {{count}} van {{total}} · Hierdoor is het interview beëindigd",
+      "allViolations": "Alle overtredingen"
     },
     "faceMismatch": {
       "title": "Interview beëindigd",

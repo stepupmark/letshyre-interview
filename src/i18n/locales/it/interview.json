@@ -35,7 +35,7 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "Segnalazione di sicurezza: {{violationCount}}",
+    "securityFlag": "Violazione {{violationCount}} di {{total}}",
     "warning": "Avviso",
     "defaultTitle": "Avviso di cambio finestra",
     "defaultDescription": "L'uscita dalla schermata del colloquio viene registrata come violazione",
@@ -68,6 +68,84 @@
     "waitingSubmitting": "Attenda, non chiuda né aggiorni questa pagina."
   },
   "violations": {
+    "tabSwitch": {
+      "title": "Cambio di scheda rilevato",
+      "description": "Non è consentito uscire dalla schermata del colloquio. Ulteriori violazioni termineranno il colloquio."
+    },
+    "fullscreenExit": {
+      "title": "Uscita dallo schermo intero rilevata",
+      "description": "Non è consentito uscire dalla modalità a schermo intero. Ulteriori violazioni termineranno il colloquio."
+    },
+    "fullscreenRestore": {
+      "title": "Schermo intero obbligatorio",
+      "description": "Il colloquio deve rimanere a schermo intero.",
+      "action": "Torna a schermo intero"
+    },
+    "windowResize": {
+      "title": "Ridimensionamento della finestra rilevato",
+      "description": "Non è consentito ridimensionare la finestra o annullarne l'ingrandimento. Ulteriori violazioni termineranno il colloquio."
+    },
+    "noFace": {
+      "title": "Candidato non rilevato",
+      "description": "Assicurati di essere posizionato correttamente davanti alla fotocamera."
+    },
+    "noFaceGuidance": {
+      "title": "Mantieni il viso nell'inquadratura",
+      "description": "Mantieni il viso al centro dell'inquadratura."
+    },
+    "multipleFaces": {
+      "title": "Più persone rilevate",
+      "description": "Solo tu dovresti essere visibile nella schermata del colloquio. Assicurati che nessun altro sia inquadrato."
+    },
+    "prohibitedObject": {
+      "title": "Dispositivo non consentito rilevato",
+      "description": "Metti via il seguente dispositivo per continuare il colloquio: {{object}}."
+    },
+    "multipleDevices": {
+      "title": "Dispositivi non consentiti rilevati",
+      "description": "Metti via i seguenti dispositivi per continuare il colloquio: {{object}}."
+    },
+    "cellPhone": {
+      "title": "Telefono cellulare rilevato",
+      "description": "I telefoni cellulari non sono consentiti durante il colloquio. Metti via il telefono per continuare."
+    },
+    "notLooking": {
+      "title": "Guarda la fotocamera",
+      "description": "Tieni lo sguardo sullo schermo. Distogliere lo sguardo ripetutamente verrà segnalato."
+    },
+    "eyesClosed": {
+      "title": "Occhi chiusi rilevati",
+      "description": "Tieni gli occhi aperti e resta concentrato durante il colloquio."
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "Schermo esterno rilevato",
+        "description": "È stato rilevato uno schermo esterno. Scollega tutti i monitor esterni per continuare."
+      },
+      "screenSharing": {
+        "title": "Condivisione dello schermo rilevata",
+        "description": "È stata rilevata la condivisione o la duplicazione dello schermo. Chiudi subito tutte le app di condivisione."
+      },
+      "securityMonitor": {
+        "title": "Monitor di sicurezza interrotto",
+        "description": "Il monitor di sicurezza è stato interrotto. Ciò potrebbe indicare un tentativo di manomissione."
+      },
+      "windowAction": {
+        "title": "Azione sulla finestra rilevata",
+        "description": "La finestra del colloquio è stata ridotta a icona o chiusa. Mantienila sempre in primo piano."
+      },
+      "generic": {
+        "title": "Violazione della sicurezza rilevata",
+        "description": "È stata rilevata una violazione delle regole di sicurezza. Risolvila immediatamente."
+      }
+    },
+    "objects": {
+      "cellPhone": "telefono",
+      "laptop": "computer portatile",
+      "tv": "schermo",
+      "book": "libro",
+      "unknown": "dispositivo non consentito"
+    },
     "faceMismatch": {
       "title": "Verifica dell'identità non riuscita",
       "description": "Non abbiamo potuto confermare che sei ancora tu davanti alla fotocamera. Assicurati che il viso sia ben visibile e illuminato."
@@ -79,7 +157,9 @@
     "violationLimit": {
       "title": "Colloquio terminato",
       "pill": "Violazioni delle regole",
-      "description": "Hai raggiunto {{violations}} violazioni. Il colloquio è stato inviato con le risposte completate."
+      "description": "Hai raggiunto {{violations}} violazioni. Il colloquio è stato inviato con le risposte completate.",
+      "finalReason": "Violazione {{count}} di {{total}} · Ha terminato il colloquio",
+      "allViolations": "Tutte le violazioni"
     },
     "faceMismatch": {
       "title": "Colloquio terminato",

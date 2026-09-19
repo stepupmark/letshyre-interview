@@ -40,7 +40,7 @@ Available in 19 languages.
 | Tooling | ESLint 10, Prettier 3, pnpm |
 
 **Path aliases** (`vite.config.js`, `vitest.config.js`, `jsconfig.json` — keep all three in
-sync): `@` → `src`, plus `@components`, `@pages`, `@router`, `@hooks`, `@queries`,
+sync): `@` → `src`, plus `@components`, `@pages`, `@router`, `@hooks`,
 `@mutations`, `@lib`, `@services`.
 
 ---

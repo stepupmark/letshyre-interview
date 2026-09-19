@@ -334,6 +334,107 @@ describe("detectViolations", () => {
     });
     expect(violation.type).toBe("NOT_LOOKING");
   });
+
+  describe("spatial scale filtering for MULTIPLE_FACES", () => {
+    it("filters out background posters or framed photos when secondary face area is < 25%", () => {
+      const result = {
+        ...CLEAN_RESULT,
+        faces: [
+          { bbox: [100, 100, 300, 300] }, // area = 200 * 200 = 40,000 (primary)
+          { bbox: [400, 20, 430, 50] }, // area = 30 * 30 = 900 (2.25% < 25%)
+        ],
+      };
+      const violation = first(result);
+      expect(violation).toBeNull();
+    });
+
+    it("triggers MULTIPLE_FACES when secondary face area is >= 25% of primary face area", () => {
+      const result = {
+        ...CLEAN_RESULT,
+        faces: [
+          { bbox: [100, 100, 300, 300] }, // area = 40,000 (primary)
+          { bbox: [320, 100, 480, 300] }, // area = 160 * 200 = 32,000 (80% >= 25%)
+        ],
+      };
+      const violation = first(result);
+      expect(violation?.type).toBe("MULTIPLE_FACES");
+    });
+
+    it("filters out distant background persons when area is < 25% of primary person area", () => {
+      const result = {
+        ...CLEAN_RESULT,
+        objects_detected: [
+          { label: "person", bbox: [50, 50, 450, 450] }, // area = 160,000
+          { label: "person", bbox: [500, 20, 520, 40] }, // area = 400 (0.25% < 25%)
+        ],
+      };
+      const violation = first(result);
+      expect(violation).toBeNull();
+    });
+
+    it("triggers MULTIPLE_FACES when secondary person area is >= 25% of primary person area", () => {
+      const result = {
+        ...CLEAN_RESULT,
+        objects_detected: [
+          { label: "person", bbox: [50, 50, 450, 450] }, // area = 160,000
+          { label: "person", bbox: [460, 50, 700, 450] }, // area = 240 * 400 = 96,000 (60% >= 25%)
+        ],
+      };
+      const violation = first(result);
+      expect(violation?.type).toBe("MULTIPLE_FACES");
+    });
+
+    it("falls back to raw face count when faces array lacks bounding boxes", () => {
+      const result = {
+        ...CLEAN_RESULT,
+        face_count: 2,
+        faces: [{ id: 1 }, { id: 2 }], // No bounding boxes provided
+      };
+      const violation = first(result);
+      expect(violation?.type).toBe("MULTIPLE_FACES");
+    });
+
+    it("handles string coordinates in bounding boxes safely", () => {
+      const result = {
+        ...CLEAN_RESULT,
+        faces: [
+          { bbox: ["100", "100", "300", "300"] }, // 40,000
+          { bbox: ["320", "100", "480", "300"] }, // 32,000 (80%)
+        ],
+      };
+      const violation = first(result);
+      expect(violation?.type).toBe("MULTIPLE_FACES");
+    });
+  });
+
+  describe("dedicated cell phone copy & artwork", () => {
+    it("assigns cell-phone.svg and dedicated copy to cell phone violations", () => {
+      const violation = first({
+        ...CLEAN_RESULT,
+        objects_detected: [{ label: "cell phone", confidence: 0.9, area_ratio: 0.02 }],
+      });
+      expect(violation).toMatchObject({
+        type: "PROHIBITED_OBJECT",
+        label: "cell phone",
+        imagePath: "/cell-phone.svg",
+        titleKey: "violations.cellPhone.title",
+        descriptionKey: "violations.cellPhone.description",
+      });
+    });
+
+    it("assigns laptop.png to other prohibited devices like laptops", () => {
+      const violation = first({
+        ...CLEAN_RESULT,
+        objects_detected: [{ label: "laptop", confidence: 0.9, area_ratio: 0.02 }],
+      });
+      expect(violation).toMatchObject({
+        type: "PROHIBITED_OBJECT",
+        label: "laptop",
+        imagePath: "/laptop.png",
+        titleKey: "violations.prohibitedObject.title",
+      });
+    });
+  });
 });
 
 describe("sendUnloadFlush", () => {

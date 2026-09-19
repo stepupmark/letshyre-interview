@@ -14,20 +14,23 @@ const IMAGE_QUALITY = 0.7;
 const TARGET_WIDTH = 640;
 const TARGET_HEIGHT = 480;
 
-// Hammering a struggling AI service at full rate makes it worse.
+// Exponential backoff ceiling for AI service failures.
 const MAX_BACKOFF_MS = 40_000;
 const DEGRADED_AFTER_FAILURES = 3;
 
-// A violation can appear and vanish between two 5s samples, so a candidate
-// detection pulls the next couple in close and confirmation lands a second
-// later instead of five. Soft signals are noisy and not worth the request rate.
+// Burst sampling interval and window for confirming transient detections.
 const BURST_INTERVAL_MS = 1_000;
 const BURST_SAMPLES = 2;
 export const BURST_TYPES = new Set(["PROHIBITED_OBJECT", "MULTIPLE_FACES", "NO_FACE"]);
 
-// Without a cap a phone left on the desk holds the loop at 1s for the rest of
-// the interview, at five times the request rate.
-const MAX_BURSTS = 3;
+// Cap consecutive burst requests to prevent API rate exhaustion.
+const MAX_BURSTS = 4;
+// Extended burst cap for NO_FACE to span the 0-3s grace and 3-7s guidance windows until strike (>7s)
+const MAX_NO_FACE_BURSTS = 9;
+
+// Multi-tiered NO_FACE escalation thresholds
+export const NO_FACE_SILENT_GRACE_MS = 3_000;
+export const NO_FACE_SOFT_GUIDANCE_MS = 7_000;
 
 // The camera is usually a second or two behind the session starting, so the
 // first few misses retry fast before falling back to the normal backoff.
@@ -183,9 +186,11 @@ function objectViolation({ label, best, count }) {
   const instantAt = PROHIBITED_OBJECTS[label]?.instantConfidence;
   const confidence = best.object?.confidence ?? best.object?.score ?? 0;
 
+  const copy = violationCopy("PROHIBITED_OBJECT", label) ?? violationCopy("PROHIBITED_OBJECT");
+
   return {
     type: "PROHIBITED_OBJECT",
-    ...violationCopy("PROHIBITED_OBJECT"),
+    ...copy,
     key: `PROHIBITED_OBJECT:${label}`,
     state: best.state,
     label,
@@ -218,12 +223,94 @@ export function mergeObjectViolations(confirmed) {
 
   const merged = {
     ...objects[0],
+    ...violationCopy("MULTIPLE_OBJECTS"),
     labels: objects.map((violation) => violation.label),
     keys: objects.map((violation) => violation.key),
   };
   return confirmed.flatMap((violation) =>
     violation === objects[0] ? [merged] : objects.includes(violation) ? [] : [violation],
   );
+}
+
+export const MULTIPLE_FACES_SCALE_THRESHOLD = 0.25;
+
+export function getDetectionArea(item) {
+  if (!item) return 0;
+  if (
+    typeof item.area_ratio === "number" &&
+    !Number.isNaN(item.area_ratio) &&
+    item.area_ratio > 0
+  ) {
+    return item.area_ratio;
+  }
+  if (typeof item.area === "number" && !Number.isNaN(item.area) && item.area > 0) {
+    return item.area;
+  }
+  if (Array.isArray(item.bbox) && item.bbox.length === 4) {
+    const [x1, y1, x2, y2] = item.bbox.map(Number);
+    if (!Number.isNaN(x1) && !Number.isNaN(y1) && !Number.isNaN(x2) && !Number.isNaN(y2)) {
+      return Math.abs((x2 - x1) * (y2 - y1));
+    }
+  }
+  if (Array.isArray(item.box) && item.box.length === 4) {
+    const [x1, y1, x2, y2] = item.box.map(Number);
+    if (!Number.isNaN(x1) && !Number.isNaN(y1) && !Number.isNaN(x2) && !Number.isNaN(y2)) {
+      return Math.abs((x2 - x1) * (y2 - y1));
+    }
+  }
+  if (item.bbox && typeof item.bbox === "object") {
+    const width = Number(item.bbox.width ?? 0);
+    const height = Number(item.bbox.height ?? 0);
+    if (!Number.isNaN(width) && !Number.isNaN(height)) {
+      return Math.abs(width * height);
+    }
+  }
+  return 0;
+}
+
+export function hasMultipleSignificantPeople(result) {
+  if (!result) return false;
+
+  // 1. Check face bounding boxes / detections if available
+  const faceList = result.faces ?? result.faces_detected ?? result.face_details;
+  let evaluatedFaceSpatial = false;
+  if (Array.isArray(faceList) && faceList.length > 1) {
+    const areas = faceList.map(getDetectionArea).filter((a) => a > 0).sort((a, b) => b - a);
+    if (areas.length > 1) {
+      evaluatedFaceSpatial = true;
+      const primaryArea = areas[0];
+      const hasSignificantSecondary = areas.slice(1).some(
+        (area) => area / primaryArea >= MULTIPLE_FACES_SCALE_THRESHOLD,
+      );
+      if (hasSignificantSecondary) return true;
+    }
+  }
+
+  // 2. Check person bounding boxes in objects_detected or persons
+  const personObjects = (result.objects_detected ?? []).filter(
+    (o) => o.label?.toLowerCase() === "person" || o.class_id === 0,
+  );
+  const personList = Array.isArray(result.persons) ? result.persons : personObjects;
+  let evaluatedPersonSpatial = false;
+  if (personList.length > 1) {
+    const areas = personList.map(getDetectionArea).filter((a) => a > 0).sort((a, b) => b - a);
+    if (areas.length > 1) {
+      evaluatedPersonSpatial = true;
+      const primaryArea = areas[0];
+      const hasSignificantSecondary = areas.slice(1).some(
+        (area) => area / primaryArea >= MULTIPLE_FACES_SCALE_THRESHOLD,
+      );
+      if (hasSignificantSecondary) return true;
+    }
+  }
+
+  // 3. If explicit spatial detections were provided and evaluated, do not fall back to raw counts
+  if (evaluatedFaceSpatial || evaluatedPersonSpatial) {
+    return false;
+  }
+
+  // 4. Fallback for payloads with only scalar counts or without spatial data
+  return (result.face_count ?? 0) > 1 || (result.yolo_person_count ?? 0) > 1;
 }
 
 /**
@@ -239,28 +326,27 @@ export function mergeObjectViolations(confirmed) {
 export function detectViolations(result, classified) {
   if (!result?.success) return [];
 
-  // The face model misses people who are turned away or half out of frame, so
-  // YOLO's person count gets a say too.
-  const multiplePeople = result.face_count > 1 || result.yolo_person_count > 1;
+  const multiplePeople = hasMultipleSignificantPeople(result);
   if (multiplePeople) {
     return [{ type: "MULTIPLE_FACES", ...violationCopy("MULTIPLE_FACES"), incident: true }];
   }
 
-  if (!result.face_detected) {
+  if (!result.face_detected || result.face_count === 0) {
     return [{ type: "NO_FACE", ...violationCopy("NO_FACE"), incident: true }];
   }
 
   const objects =
     classified ?? findProhibitedObjects(result).map((object) => ({ object, state: "introduced" }));
 
-  // Stable sorts, so shadowed labels fall to the back without disturbing the
-  // strikeable-first order among the rest.
-  const violations = groupByLabel(objects)
+  // Stable sorts: strikeable first, shadowed labels at the end
+  const objectViolations = groupByLabel(objects)
     .sort((a, b) => compareDetections(a.best, b.best))
     .map(objectViolation)
     .sort((a, b) => Number(a.shadow) - Number(b.shadow));
 
-  // Gaze and blinking are noisy — nudge, don't strike.
+  const violations = [...objectViolations];
+
+  // Soft-warning only for gaze and eye-closure events when candidate is visible alone.
   if (result.looking_at_camera === false) {
     violations.push({ type: "NOT_LOOKING", ...violationCopy("NOT_LOOKING") });
   } else if (result.eyes_open === false) {
@@ -302,6 +388,7 @@ export function useProctoringSystem(
   const intervalRef = useRef(DETECT_INTERVAL_MS);
   const incidentsRef = useRef(createIncidentTracker());
   const struckIncidentsRef = useRef(new Map());
+  const lastNoFaceGuidanceRef = useRef(0);
 
   const [isDegraded, setIsDegraded] = useState(false);
 
@@ -442,9 +529,40 @@ export function useProctoringSystem(
         continue;
       }
 
-      // The monitor owns cooldowns and the strike floor for every source, and
-      // reports back whether the evidence was actually spent.
       const startedAt = incidentsRef.current.startedAt(incidentKey);
+      const absenceDuration = startedAt !== undefined ? now - startedAt : 0;
+
+      // Multi-tiered NO_FACE escalation:
+      // 0–3s: Silent grace window (allows candidate to look down at notes or scratchpad without strikes)
+      // 3–7s: Soft visual guidance / HUD warning ("Please keep your face centered in frame") without issuing a punitive strike
+      // >7s: Formal proctoring strike admission
+      if (violation.type === "NO_FACE") {
+        if (absenceDuration < NO_FACE_SILENT_GRACE_MS) {
+          recordDecision(violation, "grace", frameQuality);
+          continue;
+        }
+
+        if (absenceDuration <= NO_FACE_SOFT_GUIDANCE_MS) {
+          if (now - lastNoFaceGuidanceRef.current >= 4_000) {
+            lastNoFaceGuidanceRef.current = now;
+            onViolationRef.current?.({
+              ...violation,
+              soft: true,
+              countsAsViolation: false,
+              strikeKey: incidentKey,
+              ongoing: true,
+              incidentStartedAt: startedAt,
+              titleKey: "violations.noFaceGuidance.title",
+              descriptionKey: "violations.noFaceGuidance.description",
+              detail: detectionDetail(violation, frameQuality),
+            });
+          }
+          recordDecision(violation, "guidance", frameQuality);
+          continue;
+        }
+      }
+
+      // Past 7s for NO_FACE, or any other confirmed violation:
       const outcome = onViolationRef.current?.({
         ...violation,
         strikeKey: incidentKey,
@@ -507,6 +625,9 @@ export function useProctoringSystem(
       faceCount = cleanResult.face_detected
         ? Math.max(cleanResult.face_count ?? 1, cleanResult.yolo_person_count ?? 0, 1)
         : 0;
+      if (cleanResult.face_detected && (cleanResult.face_count ?? 0) > 0) {
+        lastNoFaceGuidanceRef.current = 0;
+      }
       faceConfidence = cleanResult.confidence_score;
 
       queueRef.current.push({
@@ -567,11 +688,13 @@ export function useProctoringSystem(
           BURST_TYPES.has(violation.type) &&
           !violation.shadow &&
           violation.countsAsViolation !== false &&
-          !confirmed.includes(violation) &&
+          (!confirmed.includes(violation) || (violation.type === "NO_FACE" && !isHeld(violation))) &&
           !isHeld(violation),
       );
       if (worthBursting) {
-        if (burstsUsedRef.current < MAX_BURSTS) {
+        const hasNoFace = detected.some((v) => v.type === "NO_FACE" && !isHeld(v));
+        const maxBursts = hasNoFace ? MAX_NO_FACE_BURSTS : MAX_BURSTS;
+        if (burstsUsedRef.current < maxBursts) {
           burstRemainingRef.current = BURST_SAMPLES;
           burstsUsedRef.current += 1;
         }
@@ -688,6 +811,11 @@ export function useProctoringSystem(
     }
   }
 
+  const tickRef = useRef(tick);
+  useEffect(() => {
+    tickRef.current = tick;
+  });
+
   useEffect(() => {
     if (isActive) {
       logger.log("[Proctoring] ▶️ Interview active — starting detection loop.");
@@ -700,9 +828,10 @@ export function useProctoringSystem(
       burstsUsedRef.current = 0;
       incidentsRef.current.reset();
       struckIncidentsRef.current.clear();
+      lastNoFaceGuidanceRef.current = 0;
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
-      timerRef.current = setTimeout(tick, DETECT_INTERVAL_MS);
+      timerRef.current = setTimeout(() => tickRef.current(), DETECT_INTERVAL_MS);
     } else {
       logger.log("[Proctoring] ⏹️ Interview inactive — stopping loop.");
       if (timerRef.current) {

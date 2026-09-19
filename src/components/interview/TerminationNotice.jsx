@@ -1,16 +1,28 @@
 import { useTranslation } from "react-i18next";
 import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getTerminationCopy } from "@/lib/terminationReasons";
-import {
-  FACE_MISMATCH_LIMIT,
-  MAX_INTERNET_DISCONNECTS,
-  MAX_VIOLATIONS,
-} from "@/config/interview";
+import { getTerminationCopy, TERMINATION_REASONS } from "@/lib/terminationReasons";
+import { objectName } from "@/lib/violationCopy";
+import { FACE_MISMATCH_LIMIT, MAX_INTERNET_DISCONNECTS, MAX_VIOLATIONS } from "@/config/interview";
 
-export default function TerminationNotice({ reason, secondsLeft, onAcknowledge }) {
-  const { t } = useTranslation("interview");
+// These titles are generic, so the list names what was actually seen.
+const OBJECT_TITLES = new Set([
+  "violations.prohibitedObject.title",
+  "violations.multipleDevices.title",
+]);
+
+export default function TerminationNotice({ reason, secondsLeft, onAcknowledge, strikes = [] }) {
+  const { t, i18n } = useTranslation("interview");
   const { titleKey, descriptionKey, pillKey, imagePath, punitive } = getTerminationCopy(reason);
+
+  const summary = reason === TERMINATION_REASONS.VIOLATION_LIMIT ? strikes : [];
+  const final = summary.at(-1);
+  const strikeTitle = (strike) => {
+    const title = t(strike.titleKey || "violationWarning.defaultTitle");
+    return OBJECT_TITLES.has(strike.titleKey)
+      ? `${title} (${objectName(t, strike, i18n.language)})`
+      : title;
+  };
 
   // i18next ignores the counts a given message doesn't interpolate.
   const counts = {
@@ -47,8 +59,12 @@ export default function TerminationNotice({ reason, secondsLeft, onAcknowledge }
           </div>
 
           <div className="mt-2 flex items-center justify-center">
-            <div className="h-[220px] w-[330px]">
-              <img src={imagePath} alt="" className="h-full w-full object-contain" />
+            <div className={final ? "h-[150px] w-[260px]" : "h-[220px] w-[330px]"}>
+              <img
+                src={final?.imagePath || imagePath}
+                alt=""
+                className="h-full w-full object-contain"
+              />
             </div>
           </div>
 
@@ -78,6 +94,38 @@ export default function TerminationNotice({ reason, secondsLeft, onAcknowledge }
               {t(descriptionKey, counts)}
             </p>
           </div>
+
+          {final && (
+            <div className="mt-4 space-y-3 text-start">
+              <div className="rounded-xl border border-red-100 bg-red-50/70 px-4 py-3">
+                <p className="text-xs font-semibold text-red-500">
+                  {t("termination.violationLimit.finalReason", {
+                    count: final.count,
+                    total: MAX_VIOLATIONS,
+                  })}
+                </p>
+                <p className="mt-0.5 text-sm font-semibold text-slate-800">{strikeTitle(final)}</p>
+              </div>
+
+              {summary.length > 1 && (
+                <div className="px-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t("termination.violationLimit.allViolations")}
+                  </p>
+                  <ol className="mt-1.5 space-y-1 text-sm text-slate-600">
+                    {summary.map((strike) => (
+                      <li
+                        key={`${strike.count}-${strike.at}`}
+                        className={strike === final ? "font-semibold text-red-600" : undefined}
+                      >
+                        {strike.count}. {strikeTitle(strike)}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="mt-5 flex flex-col items-center gap-2">
             <Button

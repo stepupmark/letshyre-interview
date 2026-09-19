@@ -31,6 +31,41 @@ function isValidSession(session) {
   );
 }
 
+// The role decision made on the Electron role-selection page is injected into
+// sessionStorage ('role_selection') before React boots — it survives the "/"→
+// "/interview" redirect that strips URL query params. Falls back to legacy URL
+// params for any non-Electron web entry.
+function resolveRoleSelection() {
+  try {
+    const raw = sessionStorage.getItem("role_selection");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return parsed;
+    }
+  } catch {
+    // malformed injected value — fall through to legacy params
+  }
+
+  // Legacy fallback: role + skills via URL query params (older web flow).
+  const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const role = params.get("role") || "";
+  let skills = [];
+  const rawSkills = params.get("skills");
+  if (rawSkills) {
+    try {
+      const parsed = JSON.parse(rawSkills);
+      if (Array.isArray(parsed)) skills = parsed;
+    } catch {
+      // malformed param — ignore silently
+    }
+  }
+  return {
+    is_custom_role: true,
+    ...(role ? { selected_role: [role] } : {}),
+    ...(skills.length ? { manual_skills: skills } : {}),
+  };
+}
+
 export function useInterviewSession() {
   const [session, setSession] = useState(null);
 
@@ -39,42 +74,7 @@ export function useInterviewSession() {
   // Only used to rerender timer every second
   const [now, setNow] = useState(() => Date.now());
 
-  // The role decision made on the Electron role-selection page is injected into
-  // sessionStorage ('role_selection') before React boots — it survives the "/"→
-  // "/interview" redirect that strips URL query params. Falls back to legacy URL
-  // params for any non-Electron web entry.
-  //   Yes (keep assigned role) → { is_custom_role: false }
-  //   No  (chose a new role)   → { is_custom_role: true, selected_role[], manual_skills[] }
-  const roleSelection = useMemo(() => {
-    try {
-      const raw = sessionStorage.getItem("role_selection");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") return parsed;
-      }
-    } catch {
-      // malformed injected value — fall through to legacy params
-    }
-
-    // Legacy fallback: role + skills via URL query params (older web flow).
-    const params = new URLSearchParams(window.location.search);
-    const role = params.get("role") || "";
-    let skills = [];
-    const rawSkills = params.get("skills");
-    if (rawSkills) {
-      try {
-        const parsed = JSON.parse(rawSkills);
-        if (Array.isArray(parsed)) skills = parsed;
-      } catch {
-        // malformed param — ignore silently
-      }
-    }
-    return {
-      is_custom_role: true,
-      ...(role ? { selected_role: [role] } : {}),
-      ...(skills.length ? { manual_skills: skills } : {}),
-    };
-  }, []);
+  const [roleSelection] = useState(resolveRoleSelection);
 
   const startMutation = useStartInterviewMutation();
 
@@ -155,6 +155,11 @@ export function useInterviewSession() {
     }
   };
 
+  const startNewSessionRef = useRef(startNewSession);
+  useEffect(() => {
+    startNewSessionRef.current = startNewSession;
+  });
+
   /**
    * Initialize session ONCE
    */
@@ -224,7 +229,7 @@ export function useInterviewSession() {
          * No valid session found
          * start fresh session
          */
-        await startNewSession();
+        await startNewSessionRef.current();
       } finally {
         setLoading(false);
       }
@@ -276,16 +281,21 @@ export function useInterviewSession() {
       violationsAllowed: VIOLATIONS_ALLOWED,
     });
 
+  const isSessionActive = session?.status === SESSION_STATUS.ACTIVE;
+  const internetDisconnectCount = session?.internet_disconnect_count || 0;
+  const sessionInterviewId = session?.interview_id;
+  const sessionId = session?.session_id;
+
   /**
    * Tracks the disconnect count and toasts it. Auto-submit is triggered
    * reactively by useAutoSubmitFlow's internet_disconnect_count effect.
    */
   useEffect(() => {
-    if (!session || session.status !== SESSION_STATUS.ACTIVE) return;
+    if (!isSessionActive) return;
 
     // The strike is counted here rather than inside the setSession updater:
     // StrictMode runs that updater twice, which fired the toast twice.
-    disconnectCountRef.current = session.internet_disconnect_count || 0;
+    disconnectCountRef.current = internetDisconnectCount;
 
     const handleOffline = () => {
       disconnectCountRef.current += 1;
@@ -316,7 +326,7 @@ export function useInterviewSession() {
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
     };
-  }, [session?.status, session?.interview_id, session?.session_id]);
+  }, [isSessionActive, internetDisconnectCount, sessionInterviewId, sessionId]);
 
   /**
    * Mirror the committed violation count in a ref so concurrent increments

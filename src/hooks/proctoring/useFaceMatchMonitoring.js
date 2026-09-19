@@ -169,15 +169,13 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
 
       if (!sample?.file || inFlightRef.current) return;
 
-      // Without exactly one face the comparison can't mean anything, and a
-      // mismatch read from it would end the interview of someone who leaned away.
+      // Biometric verification executes only on single-face frames.
       if (sample.faceCount !== undefined && sample.faceCount !== 1) {
         streakRef.current = 0;
         return;
       }
 
-      // A blurred or turned face says nothing about identity either way, so it
-      // neither counts toward nor breaks a streak.
+      // Skip low-confidence faces without breaking streak.
       if (sample.faceConfidence !== undefined && sample.faceConfidence < MIN_FACE_CONFIDENCE) {
         recordViolationEvent({
           source: "face_match",
@@ -188,9 +186,7 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
         return;
       }
 
-      // A blind stretch breaks the evidence chain. The threshold follows the
-      // cadence actually in use, or a detection backoff would look like a gap
-      // on every sample and no streak could ever build.
+      // Reset verification streak if inter-frame interval exceeds gap threshold.
       const capturedAt = sample.capturedAt ?? Date.now();
       const blindAfter = Math.max(RESEED_AFTER_GAP_MS, (sample.intervalMs ?? 0) * 2);
       if (lastSampleAtRef.current && capturedAt - lastSampleAtRef.current > blindAfter) {

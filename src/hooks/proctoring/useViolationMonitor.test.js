@@ -609,3 +609,81 @@ describe("useViolationMonitor modal lifecycle", () => {
     expect(incrementViolation).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("useViolationMonitor strike summary", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function monitor(startCount = 0) {
+    let count = startCount;
+    const incrementViolation = vi.fn(() => (count += 1));
+    return renderHook(() =>
+      useViolationMonitor({
+        isActive: true,
+        incrementViolation,
+        sessionViolations: count,
+        sessionId: "s1",
+      }),
+    );
+  }
+
+  const strike = (result, violation) => {
+    act(() => result.current.handleAiViolation(violation));
+    act(() => result.current.dismissWarning());
+    act(() => vi.advanceTimersByTime(16_000));
+  };
+
+  const tabSwitch = {
+    type: "TAB_SWITCH",
+    titleKey: "violations.tabSwitch.title",
+    imagePath: "/window-switch.png",
+  };
+  const devices = {
+    type: "PROHIBITED_OBJECT",
+    titleKey: "violations.multipleDevices.title",
+    imagePath: "/laptop.png",
+    label: "cell phone",
+    labels: ["cell phone", "laptop"],
+    incident: true,
+  };
+
+  it("keeps every counted strike, including the one that ends the interview", () => {
+    const { result } = monitor();
+
+    strike(result, tabSwitch);
+    strike(result, { ...tabSwitch, type: "NO_FACE", titleKey: "violations.noFace.title" });
+    strike(result, devices);
+
+    expect(result.current.showTabWarning).toBe(false);
+    expect(result.current.strikes.map((s) => [s.count, s.titleKey])).toEqual([
+      [1, "violations.tabSwitch.title"],
+      [2, "violations.noFace.title"],
+      [MAX_VIOLATIONS, "violations.multipleDevices.title"],
+    ]);
+    expect(result.current.strikes.at(-1).labels).toEqual(["cell phone", "laptop"]);
+  });
+
+  it("keeps the strikes from before a reload", () => {
+    const earlier = [{ count: 1, at: 1, titleKey: "violations.tabSwitch.title" }];
+    sessionStorage.setItem("interview_strikes:s1", JSON.stringify(earlier));
+    const { result } = monitor(1);
+
+    strike(result, devices);
+
+    expect(result.current.strikes.map((s) => s.count)).toEqual([1, 2]);
+  });
+
+  it("leaves out warnings that did not count", () => {
+    const { result } = monitor();
+
+    strike(result, { ...tabSwitch, countsAsViolation: false });
+
+    expect(result.current.strikes).toEqual([]);
+  });
+});

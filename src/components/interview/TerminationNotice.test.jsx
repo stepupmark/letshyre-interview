@@ -55,3 +55,70 @@ describe("TerminationNotice", () => {
     expect(screen.getByText(/time's up/i)).toBeInTheDocument();
   });
 });
+
+describe("TerminationNotice violation summary", () => {
+  const strikes = [
+    { count: 1, at: 1, titleKey: "violations.tabSwitch.title" },
+    { count: 2, at: 2, titleKey: "violations.prohibitedObject.title", label: "laptop" },
+    {
+      count: 3,
+      at: 3,
+      titleKey: "violations.cellPhone.title",
+      imagePath: "/cell-phone.svg",
+      label: "cell phone",
+    },
+  ];
+
+  const renderSummary = (list = strikes, reason = TERMINATION_REASONS.VIOLATION_LIMIT) =>
+    render(
+      <TerminationNotice reason={reason} secondsLeft={5} onAcknowledge={() => {}} strikes={list} />,
+    );
+
+  it("says outright which violation ended the interview", () => {
+    renderSummary();
+
+    expect(screen.getByText("Violation 3 of 3 · Ended the interview")).toBeInTheDocument();
+    expect(screen.getAllByText("Cell Phone Detected")[0]).toBeInTheDocument();
+    expect(document.querySelector("img").getAttribute("src")).toBe("/cell-phone.svg");
+  });
+
+  it("lists every strike without timestamps and highlights the last", () => {
+    renderSummary();
+
+    const items = screen.getAllByRole("listitem");
+    expect(items.map((item) => item.textContent)).toEqual([
+      "1. Tab Switch Detected",
+      "2. Prohibited Device Detected (laptop)",
+      "3. Cell Phone Detected",
+    ]);
+    expect(items[2].className).toContain("text-red-600");
+    expect(items[0].className).not.toContain("text-red-600");
+  });
+
+  it("names both devices when they were caught together", () => {
+    renderSummary([
+      {
+        count: 3,
+        at: 1,
+        titleKey: "violations.multipleDevices.title",
+        labels: ["cell phone", "laptop"],
+      },
+    ]);
+
+    expect(screen.getByText("Prohibited Devices Detected (phone and laptop)")).toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the general message when nothing was recorded", () => {
+    renderSummary([]);
+
+    expect(screen.queryByText(/Ended the interview/)).not.toBeInTheDocument();
+    expect(screen.getByText(/compliance violations/i)).toBeInTheDocument();
+  });
+
+  it("keeps the summary off screens that aren't about violations", () => {
+    renderSummary(strikes, TERMINATION_REASONS.TIME_EXPIRED);
+
+    expect(screen.queryByText(/Ended the interview/)).not.toBeInTheDocument();
+  });
+});

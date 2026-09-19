@@ -30,6 +30,7 @@ function QuestionBody({ type, ...props }) {
     case "AUDIO":
       return <VoiceQuestion {...props} />;
     case "CODE":
+    case "CODING":
     case "PSEUDO_CODE":
     case "PSEUDOCODE_MCQ":
     case "SUDO_CODE":

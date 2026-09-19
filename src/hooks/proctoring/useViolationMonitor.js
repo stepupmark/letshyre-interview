@@ -26,6 +26,29 @@ export const REMINDER_INTERVAL_MS = 30_000;
 // action.
 const CASCADE_WINDOW_MS = 2_000;
 
+const STRIKES_KEY = "interview_strikes";
+
+// Kept per session so a reload mid-interview doesn't drop the earlier strikes
+// from the termination summary.
+export function readStrikes(sessionId) {
+  if (!sessionId) return [];
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(`${STRIKES_KEY}:${sessionId}`));
+    return Array.isArray(stored) ? stored : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStrikes(sessionId, strikes) {
+  if (!sessionId) return;
+  try {
+    sessionStorage.setItem(`${STRIKES_KEY}:${sessionId}`, JSON.stringify(strikes));
+  } catch {
+    // storage blocked: the summary still has this page's strikes
+  }
+}
+
 export function getElectronViolationKey(event = "") {
   const e = event.toLowerCase();
   if (e.includes("hdmi") || e.includes("display")) return "externalDisplay";
@@ -57,7 +80,12 @@ function electronViolationCopy(event) {
  * copy/paste/right-click), and the Electron hard/soft-block bridge. Split out
  * of the interview page so that component stays focused on layout/rendering.
  */
-export function useViolationMonitor({ isActive, incrementViolation, sessionViolations }) {
+export function useViolationMonitor({
+  isActive,
+  incrementViolation,
+  sessionViolations,
+  sessionId,
+}) {
   const policyRef = useRef(createStrikePolicy());
   const lastFullscreenChangeRef = useRef(0);
   const [needsFullscreen, setNeedsFullscreen] = useState(false);
@@ -69,6 +97,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     violationCount: 1,
     counts: true,
   });
+  const [strikes, setStrikes] = useState([]);
 
   const { t } = useTranslation("interview");
   const tRef = useRef(t);
@@ -88,6 +117,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   const incrementViolationRef = useRef(incrementViolation);
   // Mirror the live violation count for warn-only modals that must NOT increment.
   const sessionViolationsRef = useRef(sessionViolations);
+  const sessionIdRef = useRef(sessionId);
 
   // Keep the refs read by the once-registered listeners in sync with the latest
   // render values. Synced in an effect (not during render) so a discarded
@@ -96,6 +126,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
     isActiveRef.current = isActive;
     incrementViolationRef.current = incrementViolation;
     sessionViolationsRef.current = sessionViolations;
+    sessionIdRef.current = sessionId;
     tRef.current = t;
   });
 
@@ -191,6 +222,21 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
         ? incrementViolationRef.current()
         : sessionViolationsRef.current;
       if (remindWhileHeld) lastReminderRef.current.set(key, Date.now());
+
+      if (countsAsViolation && violationCount > 0) {
+        const strike = {
+          count: violationCount,
+          at: Date.now(),
+          titleKey,
+          descriptionKey,
+          imagePath,
+          label,
+          labels,
+        };
+        const all = [...readStrikes(sessionIdRef.current), strike];
+        writeStrikes(sessionIdRef.current, all);
+        setStrikes(all);
+      }
 
       // At the limit the session is already terminating, and TerminationNotice
       // owns the screen — showing a dismissible "return to interview" modal on
@@ -435,6 +481,7 @@ export function useViolationMonitor({ isActive, incrementViolation, sessionViola
   return {
     showTabWarning,
     violationInfo,
+    strikes,
     dismissWarning,
     needsFullscreen,
     restoreFullscreen,

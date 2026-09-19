@@ -41,6 +41,20 @@ describe("createIncidentTracker", () => {
     expect(tracker.startedAt("PHONE")).toBe(40_000);
   });
 
+  it("resets NO_FACE startedAt when candidate returns for >= 1.5s and 1 miss", () => {
+    const tracker = createIncidentTracker();
+    // Absence 1 starts at 0
+    tracker.observe(["NO_FACE"], 0);
+    expect(tracker.startedAt("NO_FACE")).toBe(0);
+
+    // Candidate returns: face present at 2,000ms (1 miss of NO_FACE, 2000ms >= 1500ms)
+    tracker.observe([], 2_000);
+
+    // Candidate looks down again at 3,600ms (gap of 1,600ms from lastSeenAt)
+    tracker.observe(["NO_FACE"], 3_600);
+    expect(tracker.startedAt("NO_FACE")).toBe(3_600);
+  });
+
   it("forgets everything on reset", () => {
     const tracker = createIncidentTracker();
     tracker.observe(["PHONE"], 0);

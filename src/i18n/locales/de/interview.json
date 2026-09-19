@@ -35,7 +35,7 @@
   },
   "violationWarning": {
     "rec": "REC",
-    "securityFlag": "Sicherheitsmeldung: {{violationCount}}",
+    "securityFlag": "Verstoß {{violationCount}} von {{total}}",
     "warning": "Warnung",
     "defaultTitle": "Warnung: Fensterwechsel",
     "defaultDescription": "Das Verlassen des Interviewbildschirms wird als Verstoß protokolliert",
@@ -68,6 +68,84 @@
     "waitingSubmitting": "Bitte warten Sie, schließen oder aktualisieren Sie diese Seite nicht."
   },
   "violations": {
+    "tabSwitch": {
+      "title": "Tab-Wechsel erkannt",
+      "description": "Das Verlassen des Interviewbildschirms ist nicht erlaubt. Weitere Verstöße beenden Ihr Interview."
+    },
+    "fullscreenExit": {
+      "title": "Verlassen des Vollbildmodus erkannt",
+      "description": "Das Verlassen des Vollbildmodus ist nicht erlaubt. Weitere Verstöße beenden Ihr Interview."
+    },
+    "fullscreenRestore": {
+      "title": "Vollbildmodus erforderlich",
+      "description": "Ihr Interview muss im Vollbildmodus bleiben.",
+      "action": "Zurück zum Vollbildmodus"
+    },
+    "windowResize": {
+      "title": "Änderung der Fenstergröße erkannt",
+      "description": "Das Ändern der Fenstergröße oder das Aufheben der Maximierung ist nicht erlaubt. Weitere Verstöße beenden Ihr Interview."
+    },
+    "noFace": {
+      "title": "Kandidat nicht erkannt",
+      "description": "Stellen Sie sicher, dass Sie richtig vor der Kamera positioniert sind."
+    },
+    "noFaceGuidance": {
+      "title": "Gesicht im Bild halten",
+      "description": "Bitte halten Sie Ihr Gesicht mittig im Bild."
+    },
+    "multipleFaces": {
+      "title": "Mehrere Personen erkannt",
+      "description": "Auf dem Interviewbildschirm sollten nur Sie zu sehen sein. Bitte stellen Sie sicher, dass sich niemand sonst im Bild befindet."
+    },
+    "prohibitedObject": {
+      "title": "Unzulässiges Gerät erkannt",
+      "description": "Bitte entfernen Sie dieses Gerät, um das Interview fortzusetzen: {{object}}."
+    },
+    "multipleDevices": {
+      "title": "Unzulässige Geräte erkannt",
+      "description": "Bitte entfernen Sie diese Geräte, um das Interview fortzusetzen: {{object}}."
+    },
+    "cellPhone": {
+      "title": "Handy erkannt",
+      "description": "Mobiltelefone sind während des Interviews nicht erlaubt. Bitte legen Sie Ihr Handy weg, um fortzufahren."
+    },
+    "notLooking": {
+      "title": "Schauen Sie in die Kamera",
+      "description": "Bitte richten Sie Ihren Blick auf den Bildschirm. Wiederholtes Wegschauen wird gemeldet."
+    },
+    "eyesClosed": {
+      "title": "Geschlossene Augen erkannt",
+      "description": "Bitte halten Sie die Augen offen und bleiben Sie während des Interviews konzentriert."
+    },
+    "electron": {
+      "externalDisplay": {
+        "title": "Externer Bildschirm erkannt",
+        "description": "Ein externer Bildschirm wurde erkannt. Trennen Sie alle externen Monitore, um fortzufahren."
+      },
+      "screenSharing": {
+        "title": "Bildschirmfreigabe erkannt",
+        "description": "Eine Bildschirmfreigabe oder -spiegelung wurde erkannt. Schließen Sie sofort alle Freigabe-Apps."
+      },
+      "securityMonitor": {
+        "title": "Sicherheitsmonitor unterbrochen",
+        "description": "Der Sicherheitsmonitor wurde unterbrochen. Dies kann auf einen Manipulationsversuch hindeuten."
+      },
+      "windowAction": {
+        "title": "Fensteraktion erkannt",
+        "description": "Das Interviewfenster wurde minimiert oder geschlossen. Bitte lassen Sie es jederzeit im Vordergrund."
+      },
+      "generic": {
+        "title": "Sicherheitsverstoß erkannt",
+        "description": "Ein Verstoß gegen die Sicherheitsrichtlinien wurde erkannt. Bitte beheben Sie ihn sofort."
+      }
+    },
+    "objects": {
+      "cellPhone": "Handy",
+      "laptop": "Laptop",
+      "tv": "Bildschirm",
+      "book": "Buch",
+      "unknown": "unzulässiges Gerät"
+    },
     "faceMismatch": {
       "title": "Identitätsprüfung fehlgeschlagen",
       "description": "Wir konnten nicht bestätigen, dass Sie noch vor der Kamera sind. Achten Sie auf ein gut sichtbares, gut beleuchtetes Gesicht."
@@ -79,7 +157,9 @@
     "violationLimit": {
       "title": "Interview beendet",
       "pill": "Richtlinienverstöße",
-      "description": "Sie haben {{violations}} Verstöße erreicht. Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
+      "description": "Sie haben {{violations}} Verstöße erreicht. Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht.",
+      "finalReason": "Verstoß {{count}} von {{total}} · Hat das Interview beendet",
+      "allViolations": "Alle Verstöße"
     },
     "faceMismatch": {
       "title": "Interview beendet",
