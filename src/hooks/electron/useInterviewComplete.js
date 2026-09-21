@@ -12,6 +12,7 @@ import { logger } from "@/lib/logger";
  *   isTerminated: boolean,
  *   isExpired: boolean,
  *   autoSubmitSuccess: boolean,
+ *   autoSubmitReason?: string,
  * }} sessionState
  */
 export function useInterviewComplete({
@@ -19,6 +20,7 @@ export function useInterviewComplete({
   isTerminated,
   isExpired,
   autoSubmitSuccess,
+  autoSubmitReason,
 }) {
   // Guard: fire the signal only once per session, even if state flickers
   const hasFiredRef = useRef(false);
@@ -27,17 +29,19 @@ export function useInterviewComplete({
     if (hasFiredRef.current) return;
     if (!window.electronAPI?.interviewComplete) return; // not inside Electron
 
+    // Every auto-submit freezes the session as expired first, so without the
+    // auto-submit reason a security block would be logged as "expired".
     let reason = null;
 
-    if (isCompleted)            reason = "completed";
-    else if (isExpired)         reason = "expired";
-    else if (isTerminated)      reason = "terminated";
-    else if (autoSubmitSuccess) reason = "auto-submitted";
+    if (isCompleted) reason = autoSubmitReason || "completed";
+    else if (isExpired) reason = autoSubmitReason || "expired";
+    else if (isTerminated) reason = "terminated";
+    else if (autoSubmitSuccess) reason = autoSubmitReason || "auto-submitted";
 
     if (!reason) return; // session still active — nothing to signal yet
 
     hasFiredRef.current = true;
     window.electronAPI.interviewComplete(reason);
     logger.log("[useInterviewComplete] signalled Electron — reason:", reason);
-  }, [isCompleted, isTerminated, isExpired, autoSubmitSuccess]);
+  }, [isCompleted, isTerminated, isExpired, autoSubmitSuccess, autoSubmitReason]);
 }

@@ -52,7 +52,13 @@ export function Interview() {
 
   // Signal Electron when session ends — lifts kiosk mode, restores close/minimize.
   // No-op when running in a regular browser (window.electronAPI absent).
-  useInterviewComplete({ isCompleted, isTerminated, isExpired, autoSubmitSuccess });
+  useInterviewComplete({
+    isCompleted,
+    isTerminated,
+    isExpired,
+    autoSubmitSuccess,
+    autoSubmitReason,
+  });
 
   const {
     showTabWarning,
@@ -60,6 +66,7 @@ export function Interview() {
     alsoDetected,
     heldViolations,
     strikes,
+    securityBlock,
     dismissWarning,
     needsFullscreen,
     restoreFullscreen,
@@ -211,6 +218,7 @@ export function Interview() {
         secondsLeft={terminationSecondsLeft}
         onAcknowledge={acknowledgeTermination}
         strikes={strikes}
+        securityBlock={securityBlock}
       />
     );
   }

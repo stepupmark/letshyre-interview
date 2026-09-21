@@ -148,6 +148,10 @@
         "title": "Tindakan Jendela Terdeteksi",
         "description": "Jendela wawancara diminimalkan atau ditutup. Harap selalu biarkan jendela ini tetap aktif."
       },
+      "overlay": {
+        "title": "Jendela Overlay Terdeteksi",
+        "description": "Sebuah aplikasi menampilkan jendela transparan di atas wawancara. Tutup untuk melanjutkan."
+      },
       "generic": {
         "title": "Pelanggaran Keamanan Terdeteksi",
         "description": "Pelanggaran kebijakan keamanan terdeteksi. Harap segera atasi."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Wawancara Berakhir",
       "pill": "Pelanggaran keamanan",
-      "description": "Pelanggaran kebijakan keamanan mengakhiri wawancara Anda. Wawancara dikirim beserta jawaban yang telah diselesaikan."
+      "description": "Pelanggaran kebijakan keamanan mengakhiri wawancara Anda. Wawancara dikirim beserta jawaban yang telah diselesaikan.",
+      "detected": "Terdeteksi"
     },
     "generic": {
       "title": "Wawancara Berakhir",

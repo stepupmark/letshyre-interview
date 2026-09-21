@@ -148,6 +148,10 @@
         "title": "Fensteraktion erkannt",
         "description": "Das Interviewfenster wurde minimiert oder geschlossen. Bitte lassen Sie es jederzeit im Vordergrund."
       },
+      "overlay": {
+        "title": "Überlagerungsfenster erkannt",
+        "description": "Eine App zeigt ein durchsichtiges Fenster über dem Interview an. Schließen Sie es, um fortzufahren."
+      },
       "generic": {
         "title": "Sicherheitsverstoß erkannt",
         "description": "Ein Verstoß gegen die Sicherheitsrichtlinien wurde erkannt. Bitte beheben Sie ihn sofort."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Interview beendet",
       "pill": "Sicherheitsverstoß",
-      "description": "Ein Verstoß gegen die Sicherheitsrichtlinie hat Ihr Interview beendet. Es wurde mit den bereits gegebenen Antworten eingereicht."
+      "description": "Ein Verstoß gegen die Sicherheitsrichtlinie hat Ihr Interview beendet. Es wurde mit den bereits gegebenen Antworten eingereicht.",
+      "detected": "Erkannt"
     },
     "generic": {
       "title": "Interview beendet",

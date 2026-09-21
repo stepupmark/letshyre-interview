@@ -72,6 +72,7 @@ function writeStrikes(sessionId, strikes) {
 
 export function getElectronViolationKey(event = "") {
   const e = event.toLowerCase();
+  if (e.includes("overlay")) return "overlay";
   if (e.includes("hdmi") || e.includes("display")) return "externalDisplay";
   if (e.includes("mirror") || e.includes("sharing")) return "screenSharing";
   if (e.includes("agent") || e.includes("tamper")) return "securityMonitor";
@@ -86,11 +87,12 @@ const ELECTRON_IMAGES = {
   screenSharing: "/laptop.png",
 };
 
-function electronViolation(event) {
+function electronViolation({ event, severity, count } = {}) {
   const key = getElectronViolationKey(event);
   return {
     type: `ELECTRON_${key.toUpperCase()}`,
     source: "electron",
+    detail: { event, severity, electron_count: count },
     titleKey: `violations.electron.${key}.title`,
     descriptionKey: `violations.electron.${key}.description`,
     imagePath: ELECTRON_IMAGES[key] ?? "/window-switch.png",
@@ -126,6 +128,7 @@ export function useViolationMonitor({
   // while a warning is open.
   const [heldViolations, setHeldViolations] = useState([]);
   const [alsoDetected, setAlsoDetected] = useState([]);
+  const [securityBlock, setSecurityBlock] = useState(null);
 
   const { t } = useTranslation("interview");
   const tRef = useRef(t);
@@ -472,7 +475,7 @@ export function useViolationMonitor({
         pendingElectronViolationRef.current = violation;
         return "buffered";
       }
-      return raiseViolation(electronViolation(violation.event));
+      return raiseViolation(electronViolation(violation));
     },
     [raiseViolation],
   );
@@ -480,11 +483,15 @@ export function useViolationMonitor({
   // A hard block ends the interview rather than adding a strike.
   const handleElectronHardBlock = useCallback((violation) => {
     const active = isActiveRef.current;
+    const block = electronViolation(violation);
+    const { type, detail } = block;
+    setSecurityBlock(block);
     recordViolationEvent({
       source: "electron",
-      type: electronViolation(violation?.event).type,
+      type,
       outcome: active ? "terminated" : "buffered",
       hard_block: true,
+      ...detail,
     });
     if (!active) {
       pendingHardBlockRef.current = true;
@@ -506,7 +513,7 @@ export function useViolationMonitor({
     if (pendingElectronViolationRef.current) {
       const v = pendingElectronViolationRef.current;
       pendingElectronViolationRef.current = null;
-      raiseViolation(electronViolation(v.event));
+      raiseViolation(electronViolation(v));
     }
   }, [isActive, raiseViolation]);
 
@@ -698,6 +705,7 @@ export function useViolationMonitor({
     alsoDetected,
     heldViolations,
     strikes,
+    securityBlock,
     dismissWarning,
     needsFullscreen,
     restoreFullscreen,

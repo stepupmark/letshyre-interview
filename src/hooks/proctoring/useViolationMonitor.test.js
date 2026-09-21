@@ -6,6 +6,7 @@ import {
   whilePermissionPrompt,
 } from "./useViolationMonitor";
 import { MAX_VIOLATIONS } from "@/config/interview";
+import { subscribeToViolationLog } from "@/lib/violationLog";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key) => key }),
@@ -38,6 +39,7 @@ describe("getElectronViolationKey", () => {
     ["Tamper detected", "securityMonitor"],
     ["Window minimize blocked", "windowAction"],
     ["Close attempt blocked", "windowAction"],
+    ["Suspicious transparent overlay detected: 'x.exe' (PID 1)", "overlay"],
     ["Something unexpected", "generic"],
     ["", "generic"],
   ])("maps %j to %j", (event, expected) => {
@@ -1341,5 +1343,51 @@ describe("useViolationMonitor desktop-app hard blocks", () => {
 
     expect(onHardBlock).toHaveBeenCalledTimes(1);
     expect(incrementViolation).not.toHaveBeenCalled();
+  });
+
+  it("logs what the desktop app reported and keeps it for the notice", () => {
+    const events = [];
+    const unsubscribe = subscribeToViolationLog((event) => events.push(event));
+    const { result } = setup({ onHardBlock: vi.fn() });
+
+    act(() => {
+      result.current.handleElectronHardBlock({
+        event: "Suspicious transparent overlay detected: 'x.exe' (PID 1)",
+        severity: "medium",
+        count: 2,
+        isHardBlock: true,
+      });
+    });
+    unsubscribe();
+
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        source: "electron",
+        type: "ELECTRON_OVERLAY",
+        outcome: "terminated",
+        event: "Suspicious transparent overlay detected: 'x.exe' (PID 1)",
+        severity: "medium",
+        electron_count: 2,
+      }),
+    );
+    expect(result.current.securityBlock).toMatchObject({
+      type: "ELECTRON_OVERLAY",
+      titleKey: "violations.electron.overlay.title",
+    });
+  });
+
+  it("logs the reported event on a warning too", () => {
+    const events = [];
+    const unsubscribe = subscribeToViolationLog((event) => events.push(event));
+    const { result } = setup();
+
+    act(() => {
+      result.current.handleElectronViolation({ event: "HDMI cable connected", severity: "medium" });
+    });
+    unsubscribe();
+
+    expect(events).toContainEqual(
+      expect.objectContaining({ source: "electron", event: "HDMI cable connected" }),
+    );
   });
 });

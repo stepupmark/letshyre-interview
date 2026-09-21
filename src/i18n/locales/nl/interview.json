@@ -148,6 +148,10 @@
         "title": "Vensteractie gedetecteerd",
         "description": "Het interviewvenster is geminimaliseerd of gesloten. Houd het altijd op de voorgrond."
       },
+      "overlay": {
+        "title": "Overlayvenster gedetecteerd",
+        "description": "Een app toont een doorzichtig venster boven het interview. Sluit het om verder te gaan."
+      },
       "generic": {
         "title": "Beveiligingsovertreding gedetecteerd",
         "description": "Er is een overtreding van het beveiligingsbeleid gedetecteerd. Los dit onmiddellijk op."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Interview beëindigd",
       "pill": "Beveiligingsovertreding",
-      "description": "Een overtreding van het beveiligingsbeleid heeft uw interview beëindigd. Het is ingediend met de antwoorden die u heeft voltooid."
+      "description": "Een overtreding van het beveiligingsbeleid heeft uw interview beëindigd. Het is ingediend met de antwoorden die u heeft voltooid.",
+      "detected": "Gedetecteerd"
     },
     "generic": {
       "title": "Interview beëindigd",

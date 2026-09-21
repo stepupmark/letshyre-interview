@@ -148,6 +148,10 @@
         "title": "Azione sulla finestra rilevata",
         "description": "La finestra del colloquio è stata ridotta a icona o chiusa. Mantienila sempre in primo piano."
       },
+      "overlay": {
+        "title": "Finestra sovrapposta rilevata",
+        "description": "Un'app mostra una finestra trasparente sopra il colloquio. Chiudila per continuare."
+      },
       "generic": {
         "title": "Violazione della sicurezza rilevata",
         "description": "È stata rilevata una violazione delle regole di sicurezza. Risolvila immediatamente."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Colloquio terminato",
       "pill": "Violazione di sicurezza",
-      "description": "Una violazione della politica di sicurezza ha terminato il colloquio. È stato inviato con le risposte completate."
+      "description": "Una violazione della politica di sicurezza ha terminato il colloquio. È stato inviato con le risposte completate.",
+      "detected": "Rilevato"
     },
     "generic": {
       "title": "Colloquio terminato",

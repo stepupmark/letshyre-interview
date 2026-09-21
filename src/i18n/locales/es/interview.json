@@ -148,6 +148,10 @@
         "title": "Acción de ventana detectada",
         "description": "La ventana de la entrevista se minimizó o se cerró. Manténgala en primer plano en todo momento."
       },
+      "overlay": {
+        "title": "Ventana superpuesta detectada",
+        "description": "Una aplicación muestra una ventana transparente sobre la entrevista. Ciérrala para continuar."
+      },
       "generic": {
         "title": "Infracción de seguridad detectada",
         "description": "Se detectó una infracción de la política de seguridad. Resuélvala de inmediato."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Entrevista finalizada",
       "pill": "Infracción de seguridad",
-      "description": "Una infracción de la política de seguridad finalizó su entrevista. Se envió con las respuestas que completó."
+      "description": "Una infracción de la política de seguridad finalizó su entrevista. Se envió con las respuestas que completó.",
+      "detected": "Detectado"
     },
     "generic": {
       "title": "Entrevista finalizada",

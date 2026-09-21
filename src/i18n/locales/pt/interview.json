@@ -148,6 +148,10 @@
         "title": "Ação na janela detectada",
         "description": "A janela da entrevista foi minimizada ou fechada. Mantenha-a sempre em primeiro plano."
       },
+      "overlay": {
+        "title": "Janela sobreposta detectada",
+        "description": "Um aplicativo está mostrando uma janela transparente sobre a entrevista. Feche-o para continuar."
+      },
       "generic": {
         "title": "Violação de segurança detectada",
         "description": "Foi detectada uma violação da política de segurança. Resolva-a imediatamente."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Entrevista terminada",
       "pill": "Violação de segurança",
-      "description": "Uma violação da política de segurança terminou a sua entrevista. Foi submetida com as respostas que completou."
+      "description": "Uma violação da política de segurança terminou a sua entrevista. Foi submetida com as respostas que completou.",
+      "detected": "Detectado"
     },
     "generic": {
       "title": "Entrevista terminada",

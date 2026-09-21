@@ -148,6 +148,10 @@
         "title": "Action sur la fenêtre détectée",
         "description": "La fenêtre de l'entretien a été réduite ou fermée. Veuillez la garder au premier plan en permanence."
       },
+      "overlay": {
+        "title": "Fenêtre superposée détectée",
+        "description": "Une application affiche une fenêtre transparente par-dessus l'entretien. Fermez-la pour continuer."
+      },
       "generic": {
         "title": "Infraction de sécurité détectée",
         "description": "Une infraction à la politique de sécurité a été détectée. Veuillez la corriger immédiatement."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Entretien terminé",
       "pill": "Violation de sécurité",
-      "description": "Une violation de la politique de sécurité a mis fin à votre entretien. Il a été soumis avec les réponses complétées."
+      "description": "Une violation de la politique de sécurité a mis fin à votre entretien. Il a été soumis avec les réponses complétées.",
+      "detected": "Détecté"
     },
     "generic": {
       "title": "Entretien terminé",

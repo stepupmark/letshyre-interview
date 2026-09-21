@@ -6,10 +6,22 @@ import { violationTitle } from "@/lib/violationCopy";
 import { FACE_MISMATCH_LIMIT, MAX_INTERNET_DISCONNECTS, MAX_VIOLATIONS } from "@/config/interview";
 
 // These titles are generic, so the list names what was actually seen.
-export default function TerminationNotice({ reason, secondsLeft, onAcknowledge, strikes = [] }) {
+export default function TerminationNotice({
+  reason,
+  secondsLeft,
+  onAcknowledge,
+  strikes = [],
+  securityBlock,
+}) {
   const { t, i18n } = useTranslation("interview");
   const { titleKey, descriptionKey, pillKey, imagePath, punitive } = getTerminationCopy(reason);
 
+  const detected =
+    reason === TERMINATION_REASONS.ELECTRON_SECURITY &&
+    securityBlock &&
+    securityBlock.type !== "ELECTRON_GENERIC"
+      ? securityBlock
+      : null;
   const summary = reason === TERMINATION_REASONS.VIOLATION_LIMIT ? strikes : [];
   const final = summary.at(-1);
   const strikeTitle = (strike) => violationTitle(t, strike, i18n.language);
@@ -84,6 +96,15 @@ export default function TerminationNotice({ reason, secondsLeft, onAcknowledge, 
               {t(descriptionKey, counts)}
             </p>
           </div>
+
+          {detected && (
+            <div className="mt-4 rounded-xl border border-red-100 bg-red-50/70 px-4 py-3 text-start">
+              <p className="text-xs font-semibold text-red-500">
+                {t("termination.electronSecurity.detected")}
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-slate-800">{t(detected.titleKey)}</p>
+            </div>
+          )}
 
           {final && (
             <div className="mt-4 space-y-3 text-start">

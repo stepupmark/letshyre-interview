@@ -148,6 +148,10 @@
         "title": "Window Action Detected",
         "description": "The interview window was minimized or closed. Please keep it in focus at all times."
       },
+      "overlay": {
+        "title": "Overlay Window Detected",
+        "description": "An app is showing a see-through window on top of the interview. Close it to continue."
+      },
       "generic": {
         "title": "Security Violation Detected",
         "description": "A security policy violation was detected. Please resolve it immediately."
@@ -193,7 +197,8 @@
     "electronSecurity": {
       "title": "Interview Ended",
       "pill": "Security violation",
-      "description": "A security policy violation ended your interview. It has been submitted with the answers you completed."
+      "description": "A security policy violation ended your interview. It has been submitted with the answers you completed.",
+      "detected": "Detected"
     },
     "generic": {
       "title": "Interview Ended",

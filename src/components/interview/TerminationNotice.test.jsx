@@ -122,3 +122,37 @@ describe("TerminationNotice violation summary", () => {
     expect(screen.queryByText(/Ended the interview/)).not.toBeInTheDocument();
   });
 });
+
+describe("TerminationNotice security block", () => {
+  const renderBlock = (securityBlock, reason = TERMINATION_REASONS.ELECTRON_SECURITY) =>
+    render(
+      <TerminationNotice
+        reason={reason}
+        secondsLeft={5}
+        onAcknowledge={() => {}}
+        securityBlock={securityBlock}
+      />,
+    );
+
+  it("says what the desktop app detected", () => {
+    renderBlock({ type: "ELECTRON_OVERLAY", titleKey: "violations.electron.overlay.title" });
+
+    expect(screen.getByText("Detected")).toBeInTheDocument();
+    expect(screen.getByText("Overlay Window Detected")).toBeInTheDocument();
+  });
+
+  it("adds nothing when the reason is too vague to help", () => {
+    renderBlock({ type: "ELECTRON_GENERIC", titleKey: "violations.electron.generic.title" });
+
+    expect(screen.queryByText("Detected")).not.toBeInTheDocument();
+  });
+
+  it("only shows on security endings", () => {
+    renderBlock(
+      { type: "ELECTRON_OVERLAY", titleKey: "violations.electron.overlay.title" },
+      TERMINATION_REASONS.TIME_EXPIRED,
+    );
+
+    expect(screen.queryByText("Detected")).not.toBeInTheDocument();
+  });
+});
