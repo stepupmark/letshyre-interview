@@ -20,11 +20,7 @@
     "position": "Ligne {{line}}, col. {{column}}",
     "characters": "{{count}} / {{max}} caractères",
     "pasteDisabled": "Le collage est désactivé pour cette question. Veuillez saisir votre réponse.",
-    "draftSaved": "Brouillon enregistré",
-    "confirmTitle": "Envoyer votre réponse ?",
-    "confirmBody": "Vous ne pourrez pas revenir à cette question après l'envoi.",
-    "confirmSubmit": "Envoyer la réponse",
-    "keepEditing": "Continuer à modifier"
+    "draftSaved": "Brouillon enregistré"
   },
   "voice": {
     "badge": "Question vocale",
@@ -73,7 +69,11 @@
     "submitInterview": "Soumettre l'entretien",
     "nextQuestion": "Question suivante",
     "submitFailed": "Impossible d'envoyer votre réponse.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "answersFinal": "Les réponses ne peuvent plus être modifiées une fois validées.",
+    "finalConfirmTitle": "Envoyer votre entretien ?",
+    "finalConfirmBody": "Cela met fin à votre entretien. Vous ne pourrez plus modifier vos réponses.",
+    "goBack": "Retour"
   },
   "loader": {
     "preparing": "Préparation de votre prochaine question…"

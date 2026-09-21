@@ -20,11 +20,7 @@
     "position": "Lin. {{line}}, col. {{column}}",
     "characters": "{{count}} / {{max}} caracteres",
     "pasteDisabled": "Colar está desativado nesta pergunta. Digite sua resposta.",
-    "draftSaved": "Rascunho salvo",
-    "confirmTitle": "Enviar sua resposta?",
-    "confirmBody": "Você não poderá voltar a esta pergunta depois de enviar.",
-    "confirmSubmit": "Enviar resposta",
-    "keepEditing": "Continuar editando"
+    "draftSaved": "Rascunho salvo"
   },
   "voice": {
     "badge": "Pergunta de voz",
@@ -73,7 +69,11 @@
     "submitInterview": "Enviar entrevista",
     "nextQuestion": "Próxima pergunta",
     "submitFailed": "Não foi possível enviar sua resposta.",
-    "retry": "Tentar novamente"
+    "retry": "Tentar novamente",
+    "answersFinal": "As respostas não podem ser alteradas depois de avançar.",
+    "finalConfirmTitle": "Enviar sua entrevista?",
+    "finalConfirmBody": "Isso encerra sua entrevista. Você não poderá alterar nenhuma resposta.",
+    "goBack": "Voltar"
   },
   "loader": {
     "preparing": "Preparando sua próxima pergunta…"

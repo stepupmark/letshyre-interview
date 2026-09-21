@@ -20,11 +20,7 @@
     "position": "سطر {{line}}، عمود {{column}}",
     "characters": "{{count}} / {{max}} حرف",
     "pasteDisabled": "اللصق معطّل لهذا السؤال. يرجى كتابة إجابتك.",
-    "draftSaved": "تم حفظ المسودة",
-    "confirmTitle": "هل تريد إرسال إجابتك؟",
-    "confirmBody": "لا يمكنك العودة إلى هذا السؤال بعد الإرسال.",
-    "confirmSubmit": "إرسال الإجابة",
-    "keepEditing": "متابعة التعديل"
+    "draftSaved": "تم حفظ المسودة"
   },
   "voice": {
     "badge": "سؤال صوتي",
@@ -73,7 +69,11 @@
     "submitInterview": "إرسال المقابلة",
     "nextQuestion": "السؤال التالي",
     "submitFailed": "تعذّر إرسال إجابتك.",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "answersFinal": "لا يمكن تغيير الإجابات بعد الانتقال.",
+    "finalConfirmTitle": "هل تريد إرسال المقابلة؟",
+    "finalConfirmBody": "سينهي هذا مقابلتك. لن تتمكن من تغيير أي إجابة.",
+    "goBack": "رجوع"
   },
   "loader": {
     "preparing": "جارٍ تجهيز سؤالك التالي…"

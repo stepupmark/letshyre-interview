@@ -199,25 +199,23 @@ describe("CodeQuestion submission", () => {
 
   beforeEach(() => sessionStorage.clear());
 
-  it("sends the typed code only after the candidate confirms", () => {
+  it("sends the typed code straight away", () => {
     const onSubmit = vi.fn();
     render(<CodeQuestion {...props} onSubmit={onSubmit} />);
 
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "return s[::-1]" } });
     fireEvent.click(screen.getByRole("button", { name: /next question/i }));
-    expect(onSubmit).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
     expect(onSubmit).toHaveBeenCalledWith({ code_answer: "return s[::-1]" });
   });
 
-  it("does not open the confirmation for an empty answer", () => {
+  it("does not submit an empty answer", () => {
     const onSubmit = vi.fn();
     render(<CodeQuestion {...props} onSubmit={onSubmit} />);
 
     fireEvent.click(screen.getByRole("button", { name: /next question/i }));
 
-    expect(screen.queryByRole("button", { name: "Submit answer" })).not.toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it("brings back the draft after a reload", () => {

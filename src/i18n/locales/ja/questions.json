@@ -20,11 +20,7 @@
     "position": "{{line}} 行、{{column}} 列",
     "characters": "{{count}} / {{max}} 文字",
     "pasteDisabled": "この質問では貼り付けが無効です。回答を入力してください。",
-    "draftSaved": "下書きを保存しました",
-    "confirmTitle": "回答を送信しますか？",
-    "confirmBody": "送信後はこの質問に戻れません。",
-    "confirmSubmit": "回答を送信",
-    "keepEditing": "編集を続ける"
+    "draftSaved": "下書きを保存しました"
   },
   "voice": {
     "badge": "音声問題",
@@ -73,7 +69,11 @@
     "submitInterview": "面接を提出する",
     "nextQuestion": "次の質問",
     "submitFailed": "回答を送信できませんでした。",
-    "retry": "再試行"
+    "retry": "再試行",
+    "answersFinal": "次に進むと回答は変更できません。",
+    "finalConfirmTitle": "面接を提出しますか？",
+    "finalConfirmBody": "これで面接が終了します。回答は変更できなくなります。",
+    "goBack": "戻る"
   },
   "loader": {
     "preparing": "次の質問を準備しています…"

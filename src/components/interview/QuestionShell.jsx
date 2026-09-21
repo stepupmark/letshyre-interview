@@ -41,15 +41,17 @@ export default function QuestionShell({
             <CountdownTimer endTime={endTime} />
           </div>
 
-          {/* CTA */}
-          <Button
-            onClick={onNext}
-            disabled={submitting}
-            className="h-12 rounded-xl font-bold bg-[#a9c8ff] px-7 text-slate-900 shadow-md hover:bg-[#97bcff] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? t("shell.submitting") : isLastQuestion ? t("shell.submitInterview") : t("shell.nextQuestion")}
-            <ArrowRight className=" h-4 w-4" />
-          </Button>
+          <div className="flex flex-col items-end gap-1.5">
+            <Button
+              onClick={onNext}
+              disabled={submitting}
+              className="h-12 rounded-xl font-bold bg-[#a9c8ff] px-7 text-slate-900 shadow-md hover:bg-[#97bcff] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? t("shell.submitting") : isLastQuestion ? t("shell.submitInterview") : t("shell.nextQuestion")}
+              <ArrowRight className=" h-4 w-4" />
+            </Button>
+            <p className="text-xs text-slate-500">{t("shell.answersFinal")}</p>
+          </div>
         </div>
 
         {/* Question Box */}

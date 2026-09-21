@@ -2,16 +2,6 @@ import { useId, useRef, useState } from "react";
 import QuestionShell from "../QuestionShell";
 import CodeBlock from "../CodeBlock";
 import OptionList from "../OptionList";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useAnswerDraft } from "@/lib/answerDraft";
@@ -38,7 +28,6 @@ export default function CodeQuestion({
   const { t } = useTranslation("questions");
   const [answer, setAnswer] = useAnswerDraft(draftKey);
   const [caret, setCaret] = useState(0);
-  const [confirming, setConfirming] = useState(false);
   const textareaRef = useRef(null);
   const gutterRef = useRef(null);
   const statusId = useId();
@@ -54,11 +43,6 @@ export default function CodeQuestion({
       toast.error(t("code.provideAnswer"));
       return;
     }
-    setConfirming(true);
-  };
-
-  const confirmSubmit = () => {
-    setConfirming(false);
     onSubmit({ [isMcq ? "selected_option" : "code_answer"]: answer });
   };
 
@@ -182,23 +166,6 @@ export default function CodeQuestion({
           </div>
         )}
       </div>
-
-      <Dialog open={confirming} onOpenChange={setConfirming}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>{t("code.confirmTitle")}</DialogTitle>
-            <DialogDescription>{t("code.confirmBody")}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">{t("code.keepEditing")}</Button>
-            </DialogClose>
-            <Button onClick={confirmSubmit} disabled={submitting}>
-              {t("code.confirmSubmit")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </QuestionShell>
   );
 }

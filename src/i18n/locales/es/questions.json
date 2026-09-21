@@ -20,11 +20,7 @@
     "position": "Lín. {{line}}, col. {{column}}",
     "characters": "{{count}} / {{max}} caracteres",
     "pasteDisabled": "Pegar está desactivado en esta pregunta. Escribe tu respuesta.",
-    "draftSaved": "Borrador guardado",
-    "confirmTitle": "¿Enviar tu respuesta?",
-    "confirmBody": "No podrás volver a esta pregunta después de enviarla.",
-    "confirmSubmit": "Enviar respuesta",
-    "keepEditing": "Seguir editando"
+    "draftSaved": "Borrador guardado"
   },
   "voice": {
     "badge": "Pregunta de voz",
@@ -73,7 +69,11 @@
     "submitInterview": "Enviar entrevista",
     "nextQuestion": "Siguiente pregunta",
     "submitFailed": "No se pudo enviar tu respuesta.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "answersFinal": "Las respuestas no se pueden cambiar después de avanzar.",
+    "finalConfirmTitle": "¿Enviar tu entrevista?",
+    "finalConfirmBody": "Esto finaliza tu entrevista. No podrás cambiar ninguna respuesta.",
+    "goBack": "Volver"
   },
   "loader": {
     "preparing": "Preparando tu siguiente pregunta…"
