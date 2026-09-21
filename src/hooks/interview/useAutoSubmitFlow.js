@@ -3,6 +3,7 @@ import { useAutoSubmitMutation } from "@mutations/useAutoSubmitMutation";
 import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { logger } from "@/lib/logger";
+import { clearDrafts, draftKeyFor, readDraft } from "@/lib/answerDraft";
 
 /**
  * Owns the auto-submit flow: the async submit-and-freeze-session action plus
@@ -61,6 +62,8 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
         interview_id: session.interview_id,
         session_id: session.session_id,
       };
+      const draft = readDraft(draftKeyFor(session));
+      if (draft.trim()) requestData.answer = draft;
 
       const response = await autoSubmitMutation.mutateAsync(requestData);
 
@@ -73,6 +76,7 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
 
       logger.log("[AutoSubmit] ✅ Auto-submit response parsed successfully.", response.data);
 
+      clearDrafts();
       setAutoSubmitSuccess(true);
 
       // Let the success UI animation run smoothly

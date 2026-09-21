@@ -50,6 +50,7 @@ function QuestionRenderer({
   endTime,
   submitting,
   isLastQuestion,
+  draftKey,
 }) {
   // Active session but no question yet (e.g. backend returned no next_question).
   // Show a loading state instead of a blank panel.
@@ -70,6 +71,7 @@ function QuestionRenderer({
         endTime={endTime}
         submitting={submitting}
         isLastQuestion={isLastQuestion}
+        draftKey={draftKey}
       />
     </Suspense>
   );

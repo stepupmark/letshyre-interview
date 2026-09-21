@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import Header from "@components/interview/Header";
 import PostInterviewHeader from "@components/interview/PostInterviewHeader";
@@ -29,8 +30,10 @@ import { useRegisterFace } from "@mutations/useRegisterFace";
 import { dataUrlToFile } from "@/lib/videoCapture";
 import { logger } from "@/lib/logger";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
+import { draftKeyFor } from "@/lib/answerDraft";
 
 export function Interview() {
+  const { t } = useTranslation("questions");
   const {
     session,
     submitting,
@@ -181,17 +184,22 @@ export function Interview() {
 
   const question = session?.question || session?.next_question || null;
 
-  //wrapped in useCallback + added error handling for network failures
   const handleSubmit = useCallback(
-    async (payload) => {
+    async function send(payload) {
       try {
         await submit(payload);
+        toast.dismiss("submit-failed");
       } catch (err) {
-        toast.error("Failed to submit answer. Please try again.");
         logger.error("[Interview] submit failed:", err);
+        toast.error(t("shell.submitFailed"), {
+          id: "submit-failed",
+          description: err?.response?.data?.message,
+          duration: Infinity,
+          action: { label: t("shell.retry"), onClick: () => send(payload) },
+        });
       }
     },
-    [submit],
+    [submit, t],
   );
 
   // Sits above the loader: submission is already running underneath, so this
@@ -303,6 +311,7 @@ export function Interview() {
                     endTime={session.end_time}
                     submitting={submitting}
                     isLastQuestion={session.current_index === session.total_questions}
+                    draftKey={draftKeyFor(session)}
                   />
                 </ErrorBoundary>
               </div>

@@ -15,7 +15,16 @@
     "provideAnswer": "Please provide your code answer to proceed.",
     "badgePseudocode": "Pseudocode MCQ",
     "badgeCoding": "Coding",
-    "placeholder": "Type your code here..."
+    "placeholder": "Type your code here...",
+    "editorLabel": "Code answer for question {{number}}",
+    "position": "Ln {{line}}, Col {{column}}",
+    "characters": "{{count}} / {{max}} characters",
+    "pasteDisabled": "Pasting is turned off for this question. Please type your answer.",
+    "draftSaved": "Draft saved",
+    "confirmTitle": "Submit your answer?",
+    "confirmBody": "You can't come back to this question after submitting.",
+    "confirmSubmit": "Submit answer",
+    "keepEditing": "Keep editing"
   },
   "voice": {
     "badge": "Voice Question",
@@ -62,7 +71,9 @@
     "generatingNext": "Generating Your Next Interview Question...",
     "submitting": "Submitting...",
     "submitInterview": "Submit Interview",
-    "nextQuestion": "Next Question"
+    "nextQuestion": "Next Question",
+    "submitFailed": "Couldn't submit your answer.",
+    "retry": "Retry"
   },
   "loader": {
     "preparing": "Preparing your next question…"

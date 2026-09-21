@@ -167,3 +167,54 @@ describe("useInterviewSession", () => {
     expect(toast.error.mock.calls[1][0]).toContain("Strike 2 of 3");
   });
 });
+
+describe("useInterviewSession submit", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    startMutateAsync.mockReset().mockResolvedValue(FAKE_START_RESPONSE);
+    submitMutateAsync.mockReset().mockResolvedValue({
+      success: true,
+      data: { ai: { current_index: 2, next_question: { text: "Next" } } },
+    });
+  });
+
+  const ready = async () => {
+    const hook = renderHook(() => useInterviewSession());
+    await waitFor(() => expect(hook.result.current.loading).toBe(false));
+    return hook;
+  };
+
+  it.each([
+    ["code_answer", "return s[::-1]"],
+    ["answer_text", "I build APIs."],
+    ["selected_option", "B. O(n)"],
+  ])("sends %s as the answer field", async (field, value) => {
+    const { result } = await ready();
+
+    await act(() => result.current.submit({ [field]: value }));
+
+    expect(submitMutateAsync).toHaveBeenCalledWith({
+      interview_id: "interview-123",
+      session_id: "session-456",
+      answer: value,
+    });
+  });
+
+  it("refuses to send a request without an answer", async () => {
+    const { result } = await ready();
+
+    await expect(act(() => result.current.submit({ code_answer: "   " }))).rejects.toThrow();
+    await expect(act(() => result.current.submit({}))).rejects.toThrow();
+    expect(submitMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("drops the saved draft once the answer is accepted", async () => {
+    const { result } = await ready();
+    const key = "answer_draft:interview-123:1";
+    sessionStorage.setItem(key, "draft");
+
+    await act(() => result.current.submit({ code_answer: "draft" }));
+
+    expect(sessionStorage.getItem(key)).toBeNull();
+  });
+});

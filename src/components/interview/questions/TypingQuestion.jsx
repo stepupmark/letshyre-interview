@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import QuestionShell from "../QuestionShell";
 import { useTranslation } from "react-i18next";
+import { useAnswerDraft } from "@/lib/answerDraft";
 
 import { toast } from "sonner";
 
@@ -12,9 +12,10 @@ export default function TypingQuestion({
   endTime,
   submitting,
   isLastQuestion,
+  draftKey,
 }) {
   const { t } = useTranslation("questions");
-  const [value, setValue] = useState("");
+  const [value, setValue] = useAnswerDraft(draftKey);
 
   const handleNext = () => {
     if (!value.trim()) {
@@ -31,14 +32,13 @@ export default function TypingQuestion({
   return (
     <QuestionShell
       badgeText={t("typing.badge")}
-      questionNumber={questionNumber || 2}
+      questionNumber={questionNumber}
       questionText={questionText}
       onNext={handleNext}
       endTime={endTime}
       submitting={submitting}
       isLastQuestion={isLastQuestion}
     >
-      {/* Answer */}
       <Textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -50,7 +50,6 @@ export default function TypingQuestion({
         className="min-h-[250px] resize-none rounded-2xl border-blue-200 px-4 py-3 focus-visible:ring-2 focus-visible:ring-blue-300"
       />
 
-      {/* Footer */}
       <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
         <span>{t("typing.characters", { count: value.length })}</span>
         <span>{t("typing.answerTip")}</span>

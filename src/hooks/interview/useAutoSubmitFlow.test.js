@@ -133,6 +133,20 @@ describe("useAutoSubmitFlow submission", () => {
     expect(mutateAsync).toHaveBeenCalledWith({ interview_id: "i1", session_id: "s1" });
   });
 
+  it("sends the unsubmitted answer of the current question", async () => {
+    sessionStorage.setItem("answer_draft:i1:10", "def solve(): pass");
+    setup({ session: activeSession({ current_index: 10 }), timeLeft: 0 });
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    expect(mutateAsync).toHaveBeenCalledWith({
+      interview_id: "i1",
+      session_id: "s1",
+      answer: "def solve(): pass",
+    });
+    await waitFor(() => expect(sessionStorage.getItem("answer_draft:i1:10")).toBeNull());
+    sessionStorage.clear();
+  });
+
   it("flags success once the response is parsed", async () => {
     const { result } = setup({ session: activeSession(), timeLeft: 0 });
 

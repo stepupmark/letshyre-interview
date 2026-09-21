@@ -186,3 +186,52 @@ describe("CodeQuestion Code Editor Enhancement", () => {
     expect(contextMenuEvent).toBe(false);
   });
 });
+
+describe("CodeQuestion submission", () => {
+  const props = {
+    question: { text: "Reverse a string.", options: [] },
+    questionNumber: 10,
+    endTime: Date.now() + 60000,
+    submitting: false,
+    isLastQuestion: false,
+    draftKey: "answer_draft:i1:10",
+  };
+
+  beforeEach(() => sessionStorage.clear());
+
+  it("sends the typed code only after the candidate confirms", () => {
+    const onSubmit = vi.fn();
+    render(<CodeQuestion {...props} onSubmit={onSubmit} />);
+
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "return s[::-1]" } });
+    fireEvent.click(screen.getByRole("button", { name: /next question/i }));
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
+    expect(onSubmit).toHaveBeenCalledWith({ code_answer: "return s[::-1]" });
+  });
+
+  it("does not open the confirmation for an empty answer", () => {
+    const onSubmit = vi.fn();
+    render(<CodeQuestion {...props} onSubmit={onSubmit} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /next question/i }));
+
+    expect(screen.queryByRole("button", { name: "Submit answer" })).not.toBeInTheDocument();
+  });
+
+  it("brings back the draft after a reload", () => {
+    sessionStorage.setItem(props.draftKey, "x = 1");
+    render(<CodeQuestion {...props} onSubmit={vi.fn()} />);
+
+    expect(screen.getByRole("textbox")).toHaveValue("x = 1");
+    expect(screen.getByText("Draft saved")).toBeInTheDocument();
+  });
+
+  it("labels the editor and shows where the caret is", () => {
+    render(<CodeQuestion {...props} onSubmit={vi.fn()} />);
+
+    expect(screen.getByLabelText("Code answer for question 10")).toBeInTheDocument();
+    expect(screen.getByText("Ln 1, Col 1")).toBeInTheDocument();
+  });
+});

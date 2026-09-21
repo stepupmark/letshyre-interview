@@ -11,6 +11,7 @@ import {
   SESSION_STATUS,
 } from "@/config/interview";
 import { logger } from "@/lib/logger";
+import { clearDrafts, draftKeyFor, writeDraft } from "@/lib/answerDraft";
 
 const STORAGE_KEY = INTERVIEW_SESSION_STORAGE_KEY;
 
@@ -143,6 +144,7 @@ export function useInterviewSession() {
         status: SESSION_STATUS.ACTIVE,
       };
 
+      clearDrafts();
       setSession(nextSession);
 
       return nextSession;
@@ -404,12 +406,14 @@ export function useInterviewSession() {
         requestData.audio_file = base64Audio;
       }
 
-      if (payload.answer_text !== undefined) {
-        requestData.answer = payload.answer_text;
-      }
-
-      if (payload.selected_option !== undefined) {
-        requestData.answer = payload.selected_option;
+      const answer = payload.answer_text ?? payload.code_answer ?? payload.selected_option;
+      if (answer !== undefined) {
+        if (typeof answer !== "string" || !answer.trim()) {
+          throw new Error("Answer is empty");
+        }
+        requestData.answer = answer;
+      } else if (!payload.audio_blob) {
+        throw new Error("Answer is missing");
       }
 
       const response = await submitMutation.mutateAsync(requestData);
@@ -422,6 +426,9 @@ export function useInterviewSession() {
       // scorecard is nested inside `ai` in this response
       const scorecard = aiData?.scorecard || response.data.scorecard || null;
       const isCompleted = !!(aiData?.completed || aiData?.is_completed);
+
+      if (isCompleted) clearDrafts();
+      else writeDraft(draftKeyFor(session), "");
 
       setSession((prev) => {
         if (!prev) return prev;

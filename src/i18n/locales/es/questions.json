@@ -15,7 +15,16 @@
     "provideAnswer": "Proporciona tu respuesta de código para continuar.",
     "badgePseudocode": "Pseudocódigo (opción múltiple)",
     "badgeCoding": "Programación",
-    "placeholder": "Escribe tu código aquí..."
+    "placeholder": "Escribe tu código aquí...",
+    "editorLabel": "Respuesta de código para la pregunta {{number}}",
+    "position": "Lín. {{line}}, col. {{column}}",
+    "characters": "{{count}} / {{max}} caracteres",
+    "pasteDisabled": "Pegar está desactivado en esta pregunta. Escribe tu respuesta.",
+    "draftSaved": "Borrador guardado",
+    "confirmTitle": "¿Enviar tu respuesta?",
+    "confirmBody": "No podrás volver a esta pregunta después de enviarla.",
+    "confirmSubmit": "Enviar respuesta",
+    "keepEditing": "Seguir editando"
   },
   "voice": {
     "badge": "Pregunta de voz",
@@ -62,7 +71,9 @@
     "generatingNext": "Generando tu siguiente pregunta de la entrevista...",
     "submitting": "Enviando...",
     "submitInterview": "Enviar entrevista",
-    "nextQuestion": "Siguiente pregunta"
+    "nextQuestion": "Siguiente pregunta",
+    "submitFailed": "No se pudo enviar tu respuesta.",
+    "retry": "Reintentar"
   },
   "loader": {
     "preparing": "Preparando tu siguiente pregunta…"

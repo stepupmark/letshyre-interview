@@ -15,7 +15,16 @@
     "provideAnswer": "Veuillez fournir votre réponse de code pour continuer.",
     "badgePseudocode": "QCM de pseudocode",
     "badgeCoding": "Codage",
-    "placeholder": "Saisissez votre code ici..."
+    "placeholder": "Saisissez votre code ici...",
+    "editorLabel": "Réponse en code pour la question {{number}}",
+    "position": "Ligne {{line}}, col. {{column}}",
+    "characters": "{{count}} / {{max}} caractères",
+    "pasteDisabled": "Le collage est désactivé pour cette question. Veuillez saisir votre réponse.",
+    "draftSaved": "Brouillon enregistré",
+    "confirmTitle": "Envoyer votre réponse ?",
+    "confirmBody": "Vous ne pourrez pas revenir à cette question après l'envoi.",
+    "confirmSubmit": "Envoyer la réponse",
+    "keepEditing": "Continuer à modifier"
   },
   "voice": {
     "badge": "Question vocale",
@@ -62,7 +71,9 @@
     "generatingNext": "Génération de votre prochaine question d'entretien...",
     "submitting": "Envoi en cours...",
     "submitInterview": "Soumettre l'entretien",
-    "nextQuestion": "Question suivante"
+    "nextQuestion": "Question suivante",
+    "submitFailed": "Impossible d'envoyer votre réponse.",
+    "retry": "Réessayer"
   },
   "loader": {
     "preparing": "Préparation de votre prochaine question…"

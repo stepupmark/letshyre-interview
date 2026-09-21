@@ -15,7 +15,16 @@
     "provideAnswer": "続行するにはコードの回答を入力してください。",
     "badgePseudocode": "疑似コード選択問題",
     "badgeCoding": "コーディング",
-    "placeholder": "ここにコードを入力してください..."
+    "placeholder": "ここにコードを入力してください...",
+    "editorLabel": "質問 {{number}} のコード回答",
+    "position": "{{line}} 行、{{column}} 列",
+    "characters": "{{count}} / {{max}} 文字",
+    "pasteDisabled": "この質問では貼り付けが無効です。回答を入力してください。",
+    "draftSaved": "下書きを保存しました",
+    "confirmTitle": "回答を送信しますか？",
+    "confirmBody": "送信後はこの質問に戻れません。",
+    "confirmSubmit": "回答を送信",
+    "keepEditing": "編集を続ける"
   },
   "voice": {
     "badge": "音声問題",
@@ -62,7 +71,9 @@
     "generatingNext": "次の面接質問を生成しています...",
     "submitting": "送信中...",
     "submitInterview": "面接を提出する",
-    "nextQuestion": "次の質問"
+    "nextQuestion": "次の質問",
+    "submitFailed": "回答を送信できませんでした。",
+    "retry": "再試行"
   },
   "loader": {
     "preparing": "次の質問を準備しています…"

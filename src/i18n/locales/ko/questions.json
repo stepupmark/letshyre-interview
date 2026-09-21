@@ -1,7 +1,7 @@
 {
   "mcq": { "selectOption": "계속하려면 옵션을 선택해 주십시오.", "badge": "객관식" },
   "typing": { "provideAnswer": "계속하려면 답변을 입력해 주십시오.", "badge": "타이핑", "placeholder": "여기에 답변을 입력하세요...", "characters": "{{count}}자", "answerTip": "명확하고 간결하게 답변하십시오" },
-  "code": { "selectOption": "계속하려면 옵션을 선택해 주십시오.", "provideAnswer": "계속하려면 코드 답변을 입력해 주십시오.", "badgePseudocode": "의사코드 객관식", "badgeCoding": "코딩", "placeholder": "여기에 코드를 입력하세요..." },
+  "code": { "selectOption": "계속하려면 옵션을 선택해 주십시오.", "provideAnswer": "계속하려면 코드 답변을 입력해 주십시오.", "badgePseudocode": "의사코드 객관식", "badgeCoding": "코딩", "placeholder": "여기에 코드를 입력하세요...", "editorLabel": "질문 {{number}}의 코드 답변", "position": "줄 {{line}}, 열 {{column}}", "characters": "{{count}} / {{max}}자", "pasteDisabled": "이 질문에서는 붙여넣기가 비활성화되어 있습니다. 답변을 직접 입력하세요.", "draftSaved": "초안 저장됨", "confirmTitle": "답변을 제출하시겠습니까?", "confirmBody": "제출한 후에는 이 질문으로 돌아올 수 없습니다.", "confirmSubmit": "답변 제출", "keepEditing": "계속 편집" },
   "voice": {
     "badge": "음성 질문", "verifying": "음성 신원을 확인하는 중입니다…", "verified": "음성 확인됨 ✓", "mismatchDetected": "음성 불일치가 감지되었습니다",
     "matchResult": "신원이 확인되었습니다. 신뢰도 점수: {{score}}%", "mismatchResult": "이 음성은 등록된 샘플과 일치하지 않습니다. 점수: {{score}}%. 그래도 답변을 제출할 수 있습니다.",
@@ -11,6 +11,6 @@
     "tipsTitle": "녹음 팁", "tip1": "명확하고 일정한 속도로 말씀해 주세요", "tip2": "마이크가 음소거되어 있지 않은지 확인하세요", "tip3": "배경 소음을 최소화하도록 노력하세요", "preparing": "마이크를 준비하는 중…", "microphone": "마이크", "microphoneFallback": "마이크 {{number}}", "inputLevel": "마이크 음량", "micMuted": "마이크가 음소거된 것 같습니다. 녹음을 계속하려면 음소거를 해제하세요.",
     "errors": { "micUnavailable": "마이크 접근이 거부되었거나 사용할 수 없습니다. 브라우저 권한을 확인하고 다시 시도하세요.", "noSound": "소리가 녹음되지 않았습니다. 마이크가 연결되어 있고 음소거되지 않았는지 확인한 후 다시 녹음하세요.", "playbackFailed": "녹음을 재생할 수 없습니다. 답변을 다시 녹음해 주세요.", "unplayable": "녹음을 재생 가능한 형식으로 저장하지 못했습니다. 다시 녹음해 주세요.", "playbackBlocked": "브라우저가 재생을 차단했습니다. 듣기를 다시 눌러 주세요.", "virtualMic": "가상 또는 루프백 오디오 장치는 사용할 수 없습니다. 실제 마이크를 선택하고 다시 녹음하세요.", "micDisconnected": "마이크 연결이 끊어졌습니다. 다시 연결하거나 다른 마이크를 선택한 후 다시 녹음하세요.", "micSwitched": "선택한 마이크를 더 이상 사용할 수 없어 다른 마이크로 전환했습니다." }
   },
-  "shell": { "submittingFinal": "최종 답변을 제출하는 중입니다...", "generatingNext": "다음 인터뷰 질문을 생성하는 중입니다...", "submitting": "제출하는 중...", "submitInterview": "인터뷰 제출", "nextQuestion": "다음 질문" },
+  "shell": { "submittingFinal": "최종 답변을 제출하는 중입니다...", "generatingNext": "다음 인터뷰 질문을 생성하는 중입니다...", "submitting": "제출하는 중...", "submitInterview": "인터뷰 제출", "nextQuestion": "다음 질문", "submitFailed": "답변을 제출하지 못했습니다.", "retry": "다시 시도" },
   "loader": { "preparing": "다음 질문을 준비하는 중입니다…" }
 }

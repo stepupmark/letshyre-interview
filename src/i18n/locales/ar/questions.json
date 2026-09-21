@@ -15,7 +15,16 @@
     "provideAnswer": "يرجى تقديم إجابتك البرمجية للمتابعة.",
     "badgePseudocode": "أسئلة اختيار من متعدد (شبه كود)",
     "badgeCoding": "برمجة",
-    "placeholder": "اكتب الكود هنا..."
+    "placeholder": "اكتب الكود هنا...",
+    "editorLabel": "إجابة الكود للسؤال {{number}}",
+    "position": "سطر {{line}}، عمود {{column}}",
+    "characters": "{{count}} / {{max}} حرف",
+    "pasteDisabled": "اللصق معطّل لهذا السؤال. يرجى كتابة إجابتك.",
+    "draftSaved": "تم حفظ المسودة",
+    "confirmTitle": "هل تريد إرسال إجابتك؟",
+    "confirmBody": "لا يمكنك العودة إلى هذا السؤال بعد الإرسال.",
+    "confirmSubmit": "إرسال الإجابة",
+    "keepEditing": "متابعة التعديل"
   },
   "voice": {
     "badge": "سؤال صوتي",
@@ -62,7 +71,9 @@
     "generatingNext": "جارٍ إنشاء سؤال المقابلة التالي...",
     "submitting": "جارٍ الإرسال...",
     "submitInterview": "إرسال المقابلة",
-    "nextQuestion": "السؤال التالي"
+    "nextQuestion": "السؤال التالي",
+    "submitFailed": "تعذّر إرسال إجابتك.",
+    "retry": "إعادة المحاولة"
   },
   "loader": {
     "preparing": "جارٍ تجهيز سؤالك التالي…"
