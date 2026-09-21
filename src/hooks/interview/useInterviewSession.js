@@ -12,6 +12,7 @@ import {
 } from "@/config/interview";
 import { logger } from "@/lib/logger";
 import { clearDrafts, draftKeyFor, writeDraft } from "@/lib/answerDraft";
+import { END_REASONS } from "@/lib/terminationReasons";
 
 const STORAGE_KEY = INTERVIEW_SESSION_STORAGE_KEY;
 
@@ -438,6 +439,7 @@ export function useInterviewSession() {
           question: aiData?.next_question || null,
           // Persist scorecard into session state so ScoreCard can render it
           ...(isCompleted && scorecard ? { scorecard } : {}),
+          ...(isCompleted ? { end_reason: END_REASONS.COMPLETED } : {}),
           status: isCompleted ? SESSION_STATUS.COMPLETED : prev.status,
         };
       });

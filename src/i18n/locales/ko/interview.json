@@ -7,8 +7,6 @@
     "recording": "녹화 중"
   },
   "scoreCard": {
-    "heading": "인터뷰가 완료되었습니다",
-    "subheading": "수고하셨습니다! 아래는 귀하의 성과에 대한 상세 분석입니다.",
     "overallPerformance": "종합 성과",
     "overallPerformanceDesc": "정확성, 의사소통 능력, 기술적 깊이를 기반으로 합니다.",
     "communicationMetrics": "의사소통 지표",
@@ -27,7 +25,28 @@
     "codeSnippet": "코드 스니펫",
     "yourAnswer": "귀하의 답변",
     "noAnswerProvided": "제출된 답변 없음",
-    "score": "점수"
+    "score": "점수",
+    "notAnswered": "답변 안 함",
+    "answeredCount": "{{total}}개 중 {{answered}}개 답변",
+    "correctAnswer": "정답",
+    "ending": {
+      "completed": {
+        "title": "면접 완료",
+        "subtitle": "각 질문의 결과는 다음과 같습니다."
+      },
+      "expired": {
+        "title": "시간 종료",
+        "subtitle": "시간이 끝나 답변이 제출되었습니다."
+      },
+      "terminated": {
+        "title": "면접이 조기 종료되었습니다",
+        "subtitle": "면접이 중단되어 지금까지의 답변으로 제출되었습니다."
+      },
+      "autoSubmitted": {
+        "title": "면접 제출됨",
+        "subtitle": "면접이 지금까지의 답변으로 자동 제출되었습니다."
+      }
+    }
   },
   "terminated": {
     "heading": "인터뷰가 종료되었습니다",

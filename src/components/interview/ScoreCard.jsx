@@ -14,13 +14,115 @@ import {
   BarChart,
   MessageCircle,
   AlertTriangle,
+  Clock,
+  Send,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import QuestionContent from "./QuestionContent";
 import CodeBlock from "./CodeBlock";
+import { END_REASONS } from "@/lib/terminationReasons";
 
-// Question types whose answer is a code snippet (render in a code block).
 const CODE_TYPES = new Set(["CODE", "CODING", "PSEUDO_CODE", "SUDO_CODE"]);
+const CHOICE_TYPES = new Set(["MCQ", "PSEUDOCODE_MCQ"]);
+
+// Voice answers arrive as a recording, so their answer text is always empty.
+const isAnswered = (q) =>
+  q.type === "AUDIO" ? Boolean(q.audio_file_provided) : Boolean(q.answer_provided?.trim());
+
+const ENDINGS = {
+  [END_REASONS.COMPLETED]: { key: "completed", Icon: CheckCircle2 },
+  [END_REASONS.EXPIRED]: { key: "expired", Icon: Clock },
+  [END_REASONS.TERMINATED]: { key: "terminated", Icon: AlertTriangle },
+  [END_REASONS.AUTO_SUBMITTED]: { key: "autoSubmitted", Icon: Send },
+};
+
+function ResultBadge({ q }) {
+  const { t } = useTranslation("interview");
+  // Voice questions only ever say correct or incorrect.
+  const answered = q.type === "AUDIO" || isAnswered(q);
+  const tone = !answered
+    ? "bg-slate-100 text-slate-600"
+    : q.is_correct
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-rose-100 text-rose-700";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${tone}`}
+    >
+      {!answered ? (
+        t("scoreCard.notAnswered")
+      ) : q.is_correct ? (
+        <>
+          <CheckCircle2 className="h-3.5 w-3.5" /> {t("scoreCard.correct")}
+        </>
+      ) : (
+        <>
+          <AlertTriangle className="h-3.5 w-3.5" /> {t("scoreCard.incorrect")}
+        </>
+      )}
+    </span>
+  );
+}
+
+function AnswerRow({ label, children }) {
+  return (
+    <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+      <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function Answer({ q }) {
+  const { t } = useTranslation("interview");
+  const type = (q.type || "").toUpperCase();
+
+  if (type === "AUDIO") return null;
+
+  if (!isAnswered(q)) {
+    return (
+      <AnswerRow label={t("scoreCard.yourAnswer")}>
+        <p className="text-slate-500">{t("scoreCard.noAnswerProvided")}</p>
+      </AnswerRow>
+    );
+  }
+
+  if (CHOICE_TYPES.has(type)) {
+    return (
+      <div className="space-y-3">
+        <AnswerRow label={t("scoreCard.yourAnswer")}>
+          <p className="text-slate-700">
+            {q.answer_provided}{" "}
+            <span
+              className={q.is_correct ? "text-emerald-600" : "text-rose-600"}
+              aria-hidden="true"
+            >
+              {q.is_correct ? "✓" : "✗"}
+            </span>
+          </p>
+        </AnswerRow>
+        {q.correct_answer && (
+          <AnswerRow label={t("scoreCard.correctAnswer")}>
+            <p className="text-slate-700">{q.correct_answer}</p>
+          </AnswerRow>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <AnswerRow label={t("scoreCard.yourAnswer")}>
+      {CODE_TYPES.has(type) ? (
+        <CodeBlock code={q.answer_provided} />
+      ) : (
+        <p className="whitespace-pre-wrap text-slate-700">{q.answer_provided}</p>
+      )}
+    </AnswerRow>
+  );
+}
 
 // A beautiful, animated circular progress ring component
 function CircularProgress({ value }) {
@@ -76,7 +178,7 @@ function CircularProgress({ value }) {
       <div className="absolute inset-0 flex flex-col items-center justify-center pt-1">
         <div className="flex items-baseline">
           <span className="text-5xl font-black tracking-tighter text-slate-800">
-            {animatedValue}
+            {Math.round(animatedValue)}
           </span>
           <span className="text-2xl font-bold text-blue-600">%</span>
         </div>
@@ -88,7 +190,7 @@ function CircularProgress({ value }) {
   );
 }
 
-export default function ScoreCard({ scorecard }) {
+export default function ScoreCard({ scorecard, endReason }) {
   const { t } = useTranslation("interview");
   // ScoreCard mounting = the result screen is visible, so the score is on the
   // recording before it ends.
@@ -107,13 +209,9 @@ export default function ScoreCard({ scorecard }) {
     question_breakdown,
   } = scorecard;
 
-  const displayQuestions = [];
-
-  for (const qa of question_breakdown ?? []) {
-    if (qa.type === "AUDIO" && qa.is_dummy_audio) continue;
-    if (qa.type !== "AUDIO" && qa.answer_provided === "") continue;
-    displayQuestions.push(qa);
-  }
+  const questions = question_breakdown ?? [];
+  const answeredCount = questions.filter(isAnswered).length;
+  const ending = ENDINGS[endReason] ?? ENDINGS[END_REASONS.COMPLETED];
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -125,12 +223,14 @@ export default function ScoreCard({ scorecard }) {
 
         <div className="relative z-10">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 shadow-inner backdrop-blur-md">
-            <CheckCircle2 className="h-10 w-10 text-white" />
+            <ending.Icon className="h-10 w-10 text-white" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {t("scoreCard.heading")}
+            {t(`scoreCard.ending.${ending.key}.title`)}
           </h1>
-          <p className="mt-3 text-lg font-medium text-blue-100">{t("scoreCard.subheading")}</p>
+          <p className="mt-3 text-lg font-medium text-blue-100">
+            {t(`scoreCard.ending.${ending.key}.subtitle`)}
+          </p>
         </div>
       </div>
 
@@ -265,12 +365,20 @@ export default function ScoreCard({ scorecard }) {
               <MessageCircle className="h-5 w-5" />
             </div>
             <h3 className="text-xl font-bold text-slate-800">{t("scoreCard.questionBreakdown")}</h3>
+            {questions.length > 0 && (
+              <span className="ms-auto text-sm font-medium text-slate-500">
+                {t("scoreCard.answeredCount", {
+                  answered: answeredCount,
+                  total: questions.length,
+                })}
+              </span>
+            )}
           </div>
 
           <div className="space-y-6">
-            {displayQuestions?.map((q, i) => (
+            {questions.map((q, i) => (
               <div
-                key={i}
+                key={q.question_number ?? i}
                 className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50 transition-colors hover:border-blue-100"
               >
                 {/* Header Row */}
@@ -283,25 +391,7 @@ export default function ScoreCard({ scorecard }) {
                       {q.type}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${
-                        q.is_correct
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-rose-100 text-rose-700"
-                      }`}
-                    >
-                      {q.is_correct ? (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5" /> {t("scoreCard.correct")}
-                        </>
-                      ) : (
-                        <>
-                          <AlertTriangle className="h-3.5 w-3.5" /> {t("scoreCard.incorrect")}
-                        </>
-                      )}
-                    </span>
-                  </div>
+                  <ResultBadge q={q} />
                 </div>
 
                 {/* Body Content */}
@@ -320,37 +410,7 @@ export default function ScoreCard({ scorecard }) {
                     </div>
                   )}
 
-                  <div>
-                    <div className="rounded-xl bg-white p-4 shadow-sm border border-slate-100">
-                      <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
-                        {t("scoreCard.yourAnswer")}
-                      </span>
-                      {q.type === "AUDIO" ? (
-                        q.candidate_audio_file_url && (
-                          <audio
-                            controls
-                            src={q.candidate_audio_file_url}
-                            className="mt-2 w-full"
-                          />
-                        )
-                      ) : CODE_TYPES.has((q.type || "").toUpperCase()) && q.answer_provided ? (
-                        <CodeBlock code={q.answer_provided} />
-                      ) : (
-                        <p className="text-slate-700">
-                          {q.answer_provided || t("scoreCard.noAnswerProvided")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* {q.feedback && (
-                    <div
-                      className={`mt-2 rounded-xl p-4 text-sm ${q.is_correct ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-rose-50 text-rose-700 border border-rose-100"}`}
-                    >
-                      <span className="font-semibold">Feedback: </span>
-                      {q.feedback}
-                    </div>
-                  )} */}
+                  <Answer q={q} />
                 </div>
               </div>
             ))}

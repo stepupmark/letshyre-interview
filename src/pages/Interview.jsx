@@ -280,7 +280,7 @@ export function Interview() {
           {session?.scorecard ? (
             <ErrorBoundary>
               <Suspense fallback={null}>
-                <ScoreCard scorecard={session.scorecard} />
+                <ScoreCard scorecard={session.scorecard} endReason={session.end_reason} />
               </Suspense>
             </ErrorBoundary>
           ) : (

@@ -7,8 +7,6 @@
     "recording": "Aufnahme"
   },
   "scoreCard": {
-    "heading": "Interview abgeschlossen",
-    "subheading": "Gut gemacht! Hier ist eine detaillierte Übersicht Ihrer Leistung.",
     "overallPerformance": "Gesamtleistung",
     "overallPerformanceDesc": "Basierend auf Korrektheit, Kommunikation und fachlicher Tiefe.",
     "communicationMetrics": "Kommunikationskennzahlen",
@@ -27,7 +25,28 @@
     "codeSnippet": "Code-Snippet",
     "yourAnswer": "Ihre Antwort",
     "noAnswerProvided": "Keine Antwort angegeben",
-    "score": "Punktzahl"
+    "score": "Punktzahl",
+    "notAnswered": "Nicht beantwortet",
+    "answeredCount": "{{answered}} von {{total}} beantwortet",
+    "correctAnswer": "Richtige Antwort",
+    "ending": {
+      "completed": {
+        "title": "Interview abgeschlossen",
+        "subtitle": "So haben Sie bei jeder Frage abgeschnitten."
+      },
+      "expired": {
+        "title": "Die Zeit ist abgelaufen",
+        "subtitle": "Ihre Zeit ist abgelaufen, daher wurden Ihre Antworten übermittelt."
+      },
+      "terminated": {
+        "title": "Interview vorzeitig beendet",
+        "subtitle": "Ihr Interview wurde gestoppt und mit Ihren bisherigen Antworten übermittelt."
+      },
+      "autoSubmitted": {
+        "title": "Interview übermittelt",
+        "subtitle": "Ihr Interview wurde automatisch mit Ihren bisherigen Antworten übermittelt."
+      }
+    }
   },
   "terminated": {
     "heading": "Interview beendet",

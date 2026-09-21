@@ -7,8 +7,6 @@
     "recording": "Enregistrement en cours"
   },
   "scoreCard": {
-    "heading": "Entretien terminé",
-    "subheading": "Excellent travail ! Voici un bilan détaillé de votre performance.",
     "overallPerformance": "Performance globale",
     "overallPerformanceDesc": "Basé sur l'exactitude, la communication et la profondeur technique.",
     "communicationMetrics": "Indicateurs de communication",
@@ -27,7 +25,28 @@
     "codeSnippet": "Extrait de code",
     "yourAnswer": "Votre réponse",
     "noAnswerProvided": "Aucune réponse fournie",
-    "score": "Score"
+    "score": "Score",
+    "notAnswered": "Sans réponse",
+    "answeredCount": "{{answered}} sur {{total}} répondues",
+    "correctAnswer": "Bonne réponse",
+    "ending": {
+      "completed": {
+        "title": "Entretien terminé",
+        "subtitle": "Voici vos résultats pour chaque question."
+      },
+      "expired": {
+        "title": "Temps écoulé",
+        "subtitle": "Votre temps est écoulé, vos réponses ont donc été envoyées."
+      },
+      "terminated": {
+        "title": "Entretien interrompu",
+        "subtitle": "Votre entretien a été arrêté et envoyé avec les réponses que vous avez données."
+      },
+      "autoSubmitted": {
+        "title": "Entretien envoyé",
+        "subtitle": "Votre entretien a été envoyé automatiquement avec les réponses que vous avez données."
+      }
+    }
   },
   "terminated": {
     "heading": "Entretien interrompu",

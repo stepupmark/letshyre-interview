@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { logger } from "@/lib/logger";
+import { END_REASONS, toEndReason } from "@/lib/terminationReasons";
 
 /**
  * Signals Electron that the interview session has ended.
@@ -30,13 +31,15 @@ export function useInterviewComplete({
     if (!window.electronAPI?.interviewComplete) return; // not inside Electron
 
     // Every auto-submit freezes the session as expired first, so without the
-    // auto-submit reason a security block would be logged as "expired".
+    // auto-submit reason a security block would be reported as "expired".
     let reason = null;
 
-    if (isCompleted) reason = autoSubmitReason || "completed";
-    else if (isExpired) reason = autoSubmitReason || "expired";
-    else if (isTerminated) reason = "terminated";
-    else if (autoSubmitSuccess) reason = autoSubmitReason || "auto-submitted";
+    if (isCompleted)
+      reason = autoSubmitReason ? toEndReason(autoSubmitReason) : END_REASONS.COMPLETED;
+    else if (isExpired)
+      reason = autoSubmitReason ? toEndReason(autoSubmitReason) : END_REASONS.EXPIRED;
+    else if (isTerminated) reason = END_REASONS.TERMINATED;
+    else if (autoSubmitSuccess) reason = toEndReason(autoSubmitReason);
 
     if (!reason) return; // session still active — nothing to signal yet
 

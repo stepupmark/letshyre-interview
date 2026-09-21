@@ -1,7 +1,9 @@
 import {
+  END_REASONS,
   TERMINATION_REASONS,
   getTerminationCopy,
   isTerminationReason,
+  toEndReason,
 } from "./terminationReasons";
 
 describe("terminationReasons", () => {
@@ -44,5 +46,31 @@ describe("terminationReasons", () => {
     expect(getTerminationCopy(TERMINATION_REASONS.TIME_EXPIRED).punitive).toBe(false);
     expect(getTerminationCopy(TERMINATION_REASONS.NETWORK_DISCONNECTS).punitive).toBe(false);
     expect(getTerminationCopy(TERMINATION_REASONS.VIOLATION_LIMIT).punitive).toBe(true);
+  });
+});
+
+describe("toEndReason", () => {
+  it.each([
+    [TERMINATION_REASONS.VIOLATION_LIMIT, END_REASONS.TERMINATED],
+    [TERMINATION_REASONS.FACE_MISMATCH, END_REASONS.TERMINATED],
+    [TERMINATION_REASONS.ELECTRON_SECURITY, END_REASONS.TERMINATED],
+    [TERMINATION_REASONS.TIME_EXPIRED, END_REASONS.EXPIRED],
+    [TERMINATION_REASONS.NETWORK_DISCONNECTS, END_REASONS.AUTO_SUBMITTED],
+    ["Resuming expired session", END_REASONS.AUTO_SUBMITTED],
+  ])("maps %s to %s", (reason, expected) => {
+    expect(toEndReason(reason)).toBe(expected);
+  });
+
+  it("trusts the backend when it says the interview was terminated", () => {
+    expect(toEndReason(TERMINATION_REASONS.NETWORK_DISCONNECTS, { terminated: true })).toBe(
+      END_REASONS.TERMINATED,
+    );
+  });
+
+  it("treats a restored session whose time ran out as expired", () => {
+    expect(toEndReason("Resuming expired session", { timeUp: true })).toBe(END_REASONS.EXPIRED);
+    expect(toEndReason(TERMINATION_REASONS.NETWORK_DISCONNECTS, { timeUp: true })).toBe(
+      END_REASONS.AUTO_SUBMITTED,
+    );
   });
 });

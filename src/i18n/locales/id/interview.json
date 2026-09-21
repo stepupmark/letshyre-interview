@@ -7,8 +7,6 @@
     "recording": "Merekam"
   },
   "scoreCard": {
-    "heading": "Wawancara Selesai",
-    "subheading": "Kerja bagus! Berikut rincian lengkap kinerja Anda.",
     "overallPerformance": "Kinerja Keseluruhan",
     "overallPerformanceDesc": "Berdasarkan ketepatan, komunikasi, dan kedalaman teknis.",
     "communicationMetrics": "Metrik Komunikasi",
@@ -27,7 +25,28 @@
     "codeSnippet": "Cuplikan Kode",
     "yourAnswer": "Jawaban Anda",
     "noAnswerProvided": "Tidak ada jawaban yang diberikan",
-    "score": "Skor"
+    "score": "Skor",
+    "notAnswered": "Tidak dijawab",
+    "answeredCount": "{{answered}} dari {{total}} dijawab",
+    "correctAnswer": "Jawaban benar",
+    "ending": {
+      "completed": {
+        "title": "Wawancara selesai",
+        "subtitle": "Berikut hasil Anda untuk setiap pertanyaan."
+      },
+      "expired": {
+        "title": "Waktu habis",
+        "subtitle": "Waktu Anda habis, jadi jawaban Anda telah dikirim."
+      },
+      "terminated": {
+        "title": "Wawancara berakhir lebih awal",
+        "subtitle": "Wawancara Anda dihentikan dan dikirim dengan jawaban yang telah Anda berikan."
+      },
+      "autoSubmitted": {
+        "title": "Wawancara terkirim",
+        "subtitle": "Wawancara Anda dikirim otomatis dengan jawaban yang telah Anda berikan."
+      }
+    }
   },
   "terminated": {
     "heading": "Wawancara Dihentikan",

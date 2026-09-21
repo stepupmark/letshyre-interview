@@ -7,8 +7,6 @@
     "recording": "Gravando"
   },
   "scoreCard": {
-    "heading": "Entrevista concluída",
-    "subheading": "Muito bem! Aqui está um resumo detalhado do seu desempenho.",
     "overallPerformance": "Desempenho geral",
     "overallPerformanceDesc": "Com base na precisão, comunicação e profundidade técnica.",
     "communicationMetrics": "Métricas de comunicação",
@@ -27,7 +25,28 @@
     "codeSnippet": "Trecho de código",
     "yourAnswer": "Sua resposta",
     "noAnswerProvided": "Nenhuma resposta fornecida",
-    "score": "Pontuação"
+    "score": "Pontuação",
+    "notAnswered": "Não respondida",
+    "answeredCount": "{{answered}} de {{total}} respondidas",
+    "correctAnswer": "Resposta correta",
+    "ending": {
+      "completed": {
+        "title": "Entrevista concluída",
+        "subtitle": "Veja como você foi em cada pergunta."
+      },
+      "expired": {
+        "title": "O tempo acabou",
+        "subtitle": "Seu tempo acabou, então suas respostas foram enviadas."
+      },
+      "terminated": {
+        "title": "Entrevista encerrada antes do fim",
+        "subtitle": "Sua entrevista foi interrompida e enviada com as respostas que você deu."
+      },
+      "autoSubmitted": {
+        "title": "Entrevista enviada",
+        "subtitle": "Sua entrevista foi enviada automaticamente com as respostas que você deu."
+      }
+    }
   },
   "terminated": {
     "heading": "Entrevista encerrada",

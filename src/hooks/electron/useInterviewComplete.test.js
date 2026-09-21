@@ -32,15 +32,14 @@ describe("useInterviewComplete", () => {
     expect(interviewComplete).toHaveBeenCalledWith("completed");
   });
 
-  it("reports why an auto-submit ended the interview instead of expired", () => {
-    renderHook(() =>
-      useInterviewComplete({
-        ...base,
-        isExpired: true,
-        autoSubmitReason: TERMINATION_REASONS.ELECTRON_SECURITY,
-      }),
-    );
-    expect(interviewComplete).toHaveBeenCalledWith(TERMINATION_REASONS.ELECTRON_SECURITY);
+  it.each([
+    [TERMINATION_REASONS.ELECTRON_SECURITY, "terminated"],
+    [TERMINATION_REASONS.VIOLATION_LIMIT, "terminated"],
+    [TERMINATION_REASONS.TIME_EXPIRED, "expired"],
+    [TERMINATION_REASONS.NETWORK_DISCONNECTS, "auto-submitted"],
+  ])("reports an auto-submit for %s as %s", (autoSubmitReason, expected) => {
+    renderHook(() => useInterviewComplete({ ...base, isExpired: true, autoSubmitReason }));
+    expect(interviewComplete).toHaveBeenCalledWith(expected);
   });
 
   it("falls back to expired for a restored session with no reason", () => {

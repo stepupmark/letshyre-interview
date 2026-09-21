@@ -7,8 +7,6 @@
     "recording": "録画中"
   },
   "scoreCard": {
-    "heading": "面接が完了しました",
-    "subheading": "お疲れさまでした！あなたのパフォーマンスの詳細な内訳です。",
     "overallPerformance": "総合評価",
     "overallPerformanceDesc": "正確性、コミュニケーション、専門知識の深さに基づいています。",
     "communicationMetrics": "コミュニケーション指標",
@@ -27,7 +25,28 @@
     "codeSnippet": "コードスニペット",
     "yourAnswer": "あなたの回答",
     "noAnswerProvided": "回答がありません",
-    "score": "スコア"
+    "score": "スコア",
+    "notAnswered": "未回答",
+    "answeredCount": "{{total}} 問中 {{answered}} 問に回答",
+    "correctAnswer": "正解",
+    "ending": {
+      "completed": {
+        "title": "面接が完了しました",
+        "subtitle": "各質問の結果は次のとおりです。"
+      },
+      "expired": {
+        "title": "時間切れです",
+        "subtitle": "時間が終了したため、回答が提出されました。"
+      },
+      "terminated": {
+        "title": "面接は途中で終了しました",
+        "subtitle": "面接は中断され、それまでの回答で提出されました。"
+      },
+      "autoSubmitted": {
+        "title": "面接が提出されました",
+        "subtitle": "面接はそれまでの回答で自動的に提出されました。"
+      }
+    }
   },
   "terminated": {
     "heading": "面接が終了されました",

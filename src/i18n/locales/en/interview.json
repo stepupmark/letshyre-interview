@@ -7,8 +7,6 @@
     "recording": "Recording"
   },
   "scoreCard": {
-    "heading": "Interview Completed",
-    "subheading": "Great job! Here is a detailed breakdown of your performance.",
     "overallPerformance": "Overall Performance",
     "overallPerformanceDesc": "Based on correctness, communication, and technical depth.",
     "communicationMetrics": "Communication Metrics",
@@ -27,7 +25,28 @@
     "codeSnippet": "Code Snippet",
     "yourAnswer": "Your Answer",
     "noAnswerProvided": "No answer provided",
-    "score": "Score"
+    "score": "Score",
+    "notAnswered": "Not answered",
+    "answeredCount": "{{answered}} of {{total}} answered",
+    "correctAnswer": "Correct answer",
+    "ending": {
+      "completed": {
+        "title": "Interview complete",
+        "subtitle": "Here's how you did on each question."
+      },
+      "expired": {
+        "title": "Time's up",
+        "subtitle": "Your time ran out, so your answers were submitted."
+      },
+      "terminated": {
+        "title": "Interview ended early",
+        "subtitle": "Your interview was stopped and submitted with the answers you gave."
+      },
+      "autoSubmitted": {
+        "title": "Interview submitted",
+        "subtitle": "Your interview was submitted automatically with the answers you gave."
+      }
+    }
   },
   "terminated": {
     "heading": "Interview Terminated",

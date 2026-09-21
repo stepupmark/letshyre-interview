@@ -7,8 +7,6 @@
     "recording": "جارٍ التسجيل"
   },
   "scoreCard": {
-    "heading": "اكتملت المقابلة",
-    "subheading": "عمل رائع! إليك تفصيل شامل لأدائك.",
     "overallPerformance": "الأداء العام",
     "overallPerformanceDesc": "بناءً على الدقة والتواصل والعمق التقني.",
     "communicationMetrics": "مقاييس التواصل",
@@ -27,7 +25,28 @@
     "codeSnippet": "مقتطف الكود",
     "yourAnswer": "إجابتك",
     "noAnswerProvided": "لم يتم تقديم إجابة",
-    "score": "النتيجة"
+    "score": "النتيجة",
+    "notAnswered": "لم تتم الإجابة",
+    "answeredCount": "تمت الإجابة على {{answered}} من {{total}}",
+    "correctAnswer": "الإجابة الصحيحة",
+    "ending": {
+      "completed": {
+        "title": "اكتملت المقابلة",
+        "subtitle": "إليك أداؤك في كل سؤال."
+      },
+      "expired": {
+        "title": "انتهى الوقت",
+        "subtitle": "انتهى وقتك، لذا تم إرسال إجاباتك."
+      },
+      "terminated": {
+        "title": "انتهت المقابلة مبكرًا",
+        "subtitle": "تم إيقاف مقابلتك وإرسالها بالإجابات التي قدمتها."
+      },
+      "autoSubmitted": {
+        "title": "تم إرسال المقابلة",
+        "subtitle": "تم إرسال مقابلتك تلقائيًا بالإجابات التي قدمتها."
+      }
+    }
   },
   "terminated": {
     "heading": "تم إنهاء المقابلة",

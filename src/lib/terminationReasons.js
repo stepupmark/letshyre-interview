@@ -62,3 +62,19 @@ export function isTerminationReason(value) {
 export function getTerminationCopy(reason) {
   return REASON_COPY[reason] ?? FALLBACK_COPY;
 }
+
+// How an interview ended, as the scorecard and the desktop app see it.
+export const END_REASONS = {
+  COMPLETED: "completed",
+  AUTO_SUBMITTED: "auto-submitted",
+  TERMINATED: "terminated",
+  EXPIRED: "expired",
+};
+
+export function toEndReason(reason, { terminated = false, timeUp = false } = {}) {
+  if (terminated || getTerminationCopy(reason).punitive) return END_REASONS.TERMINATED;
+  if (reason === TERMINATION_REASONS.TIME_EXPIRED) return END_REASONS.EXPIRED;
+  // A restored session carries no reason code, only whether its time ran out.
+  if (!isTerminationReason(reason) && timeUp) return END_REASONS.EXPIRED;
+  return END_REASONS.AUTO_SUBMITTED;
+}

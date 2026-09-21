@@ -7,8 +7,6 @@
     "recording": "Registrazione"
   },
   "scoreCard": {
-    "heading": "Colloquio completato",
-    "subheading": "Ottimo lavoro! Ecco una panoramica dettagliata della sua performance.",
     "overallPerformance": "Prestazione complessiva",
     "overallPerformanceDesc": "Basata su correttezza, comunicazione e profondità tecnica.",
     "communicationMetrics": "Metriche di comunicazione",
@@ -27,7 +25,28 @@
     "codeSnippet": "Frammento di codice",
     "yourAnswer": "La sua risposta",
     "noAnswerProvided": "Nessuna risposta fornita",
-    "score": "Punteggio"
+    "score": "Punteggio",
+    "notAnswered": "Senza risposta",
+    "answeredCount": "{{answered}} su {{total}} con risposta",
+    "correctAnswer": "Risposta corretta",
+    "ending": {
+      "completed": {
+        "title": "Colloquio completato",
+        "subtitle": "Ecco come sei andato in ogni domanda."
+      },
+      "expired": {
+        "title": "Tempo scaduto",
+        "subtitle": "Il tempo è scaduto, quindi le tue risposte sono state inviate."
+      },
+      "terminated": {
+        "title": "Colloquio terminato in anticipo",
+        "subtitle": "Il colloquio è stato interrotto e inviato con le risposte che hai dato."
+      },
+      "autoSubmitted": {
+        "title": "Colloquio inviato",
+        "subtitle": "Il colloquio è stato inviato automaticamente con le risposte che hai dato."
+      }
+    }
   },
   "terminated": {
     "heading": "Colloquio interrotto",

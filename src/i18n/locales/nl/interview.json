@@ -7,8 +7,6 @@
     "recording": "Opname"
   },
   "scoreCard": {
-    "heading": "Interview voltooid",
-    "subheading": "Goed gedaan! Hier vindt u een gedetailleerd overzicht van uw prestaties.",
     "overallPerformance": "Algemene prestatie",
     "overallPerformanceDesc": "Gebaseerd op juistheid, communicatie en technische diepgang.",
     "communicationMetrics": "Communicatiestatistieken",
@@ -27,7 +25,28 @@
     "codeSnippet": "Codefragment",
     "yourAnswer": "Uw antwoord",
     "noAnswerProvided": "Geen antwoord gegeven",
-    "score": "Score"
+    "score": "Score",
+    "notAnswered": "Niet beantwoord",
+    "answeredCount": "{{answered}} van {{total}} beantwoord",
+    "correctAnswer": "Juist antwoord",
+    "ending": {
+      "completed": {
+        "title": "Interview voltooid",
+        "subtitle": "Zo deed je het bij elke vraag."
+      },
+      "expired": {
+        "title": "De tijd is om",
+        "subtitle": "Je tijd is op, dus je antwoorden zijn verstuurd."
+      },
+      "terminated": {
+        "title": "Interview vroegtijdig beëindigd",
+        "subtitle": "Je interview is gestopt en verstuurd met de antwoorden die je gaf."
+      },
+      "autoSubmitted": {
+        "title": "Interview verstuurd",
+        "subtitle": "Je interview is automatisch verstuurd met de antwoorden die je gaf."
+      }
+    }
   },
   "terminated": {
     "heading": "Interview beëindigd",

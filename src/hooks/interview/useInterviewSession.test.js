@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { useInterviewSession } from "./useInterviewSession";
+import { SESSION_STATUS } from "@/config/interview";
 
 const startMutateAsync = vi.fn();
 const submitMutateAsync = vi.fn();
@@ -216,5 +217,20 @@ describe("useInterviewSession submit", () => {
     await act(() => result.current.submit({ code_answer: "draft" }));
 
     expect(sessionStorage.getItem(key)).toBeNull();
+  });
+
+  it("marks an interview finished by the last answer as completed", async () => {
+    submitMutateAsync.mockResolvedValue({
+      success: true,
+      data: { ai: { completed: true, scorecard: { overall_score: 50 } } },
+    });
+    const { result } = await ready();
+
+    await act(() => result.current.submit({ answer_text: "last" }));
+
+    expect(result.current.session).toMatchObject({
+      status: SESSION_STATUS.COMPLETED,
+      end_reason: "completed",
+    });
   });
 });

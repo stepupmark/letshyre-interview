@@ -126,6 +126,32 @@ describe("useAutoSubmitFlow submission", () => {
     expect(updater(activeSession())).toMatchObject({ status: SESSION_STATUS.EXPIRED });
   });
 
+  const finalUpdate = async (setSession) => {
+    await waitFor(() => expect(setSession).toHaveBeenCalledTimes(2), { timeout: 3000 });
+    return setSession.mock.calls[1][0](activeSession());
+  };
+
+  it("records how the interview ended with the scorecard", async () => {
+    const { setSession } = setup({ session: activeSession(), timeLeft: 0 });
+
+    expect(await finalUpdate(setSession)).toMatchObject({
+      status: SESSION_STATUS.COMPLETED,
+      end_reason: "expired",
+    });
+  });
+
+  it("records a backend termination as terminated", async () => {
+    mutateAsync.mockResolvedValue({
+      success: true,
+      data: { ai: { completed: true, terminated: true, scorecard: {} } },
+    });
+    const { setSession } = setup({
+      session: activeSession({ internet_disconnect_count: MAX_INTERNET_DISCONNECTS }),
+    });
+
+    expect(await finalUpdate(setSession)).toMatchObject({ end_reason: "terminated" });
+  });
+
   it("sends the interview and session ids", async () => {
     setup({ session: activeSession(), timeLeft: 0 });
 

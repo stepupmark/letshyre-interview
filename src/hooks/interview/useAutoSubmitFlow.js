@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAutoSubmitMutation } from "@mutations/useAutoSubmitMutation";
 import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
-import { TERMINATION_REASONS } from "@/lib/terminationReasons";
+import { TERMINATION_REASONS, toEndReason } from "@/lib/terminationReasons";
 import { logger } from "@/lib/logger";
 import { clearDrafts, draftKeyFor, readDraft } from "@/lib/answerDraft";
 
@@ -73,6 +73,10 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
 
       const aiData = response.data.ai;
       const scorecard = aiData?.scorecard || response.data.scorecard || null;
+      const endReason = toEndReason(reason, {
+        terminated: aiData?.terminated === true,
+        timeUp: session.end_time <= Date.now(),
+      });
 
       logger.log("[AutoSubmit] ✅ Auto-submit response parsed successfully.", response.data);
 
@@ -89,6 +93,7 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
           ...aiData,
           question: null,
           ...(scorecard ? { scorecard } : {}),
+          end_reason: endReason,
           status: SESSION_STATUS.COMPLETED,
         };
       });
