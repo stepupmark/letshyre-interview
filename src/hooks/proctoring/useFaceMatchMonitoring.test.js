@@ -1,5 +1,9 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { classifyVerification, useFaceMatchMonitoring } from "./useFaceMatchMonitoring";
+import {
+  classifyVerification,
+  MAX_REREGISTERS,
+  useFaceMatchMonitoring,
+} from "./useFaceMatchMonitoring";
 import { RESEED_AFTER_GAP_MS } from "./useProctoringSystem";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { subscribeToViolationLog } from "@/lib/violationLog";
@@ -75,6 +79,8 @@ const UNEXPLAINED_FAILURE = {
   error: null,
 };
 
+const MAX_UNAVAILABLE_FOR_TEST = 3;
+
 const SAMPLE = { file: new File(["x"], "frame.jpg"), intervalMs: 5000 };
 const BACKED_OFF = 40000;
 
@@ -127,10 +133,7 @@ describe("classifyVerification", () => {
       verdict: "condition",
       reason: "MULTIPLE_FACES",
     });
-    expect(classifyVerification(INVALID_SESSION)).toMatchObject({
-      verdict: "unavailable",
-      reason: "SESSION_NOT_FOUND",
-    });
+    expect(classifyVerification(INVALID_SESSION)).toMatchObject({ verdict: "not_registered" });
   });
 
   it("reads the live mismatch payload as a mismatch, not a frame condition", () => {
@@ -146,7 +149,7 @@ describe("classifyVerification", () => {
   });
 
   it("treats an operational failure as unavailable even when a condition came with it", () => {
-    expect(classifyVerification({ ...NO_FACE, error: "SESSION_NOT_FOUND" })).toMatchObject({
+    expect(classifyVerification({ ...NO_FACE, error: "UPSTREAM_TIMEOUT" })).toMatchObject({
       verdict: "unavailable",
     });
   });
@@ -401,6 +404,26 @@ describe("useFaceMatchMonitoring", () => {
     await sample(MISMATCH, 2);
 
     expect(mutateAsync).toHaveBeenCalledTimes(callsWhenGivenUp);
+  });
+
+  it("asks for the face to be registered again when the service lost the session", async () => {
+    const onNotRegistered = vi.fn();
+    const { sample, result } = setup({ onNotRegistered });
+
+    await sample(INVALID_SESSION, 1);
+
+    expect(onNotRegistered).toHaveBeenCalledTimes(1);
+    expect(result.current.isVerificationUnavailable).toBe(false);
+  });
+
+  it("gives up once registering again keeps getting lost", async () => {
+    const onNotRegistered = vi.fn();
+    const { sample, result } = setup({ onNotRegistered });
+
+    await sample(INVALID_SESSION, MAX_REREGISTERS + MAX_UNAVAILABLE_FOR_TEST);
+
+    expect(onNotRegistered).toHaveBeenCalledTimes(MAX_REREGISTERS);
+    await waitFor(() => expect(result.current.isVerificationUnavailable).toBe(true));
   });
 
   it("recovers from a transient error without losing verification", async () => {

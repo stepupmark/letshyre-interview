@@ -508,6 +508,7 @@ export function useProctoringSystem(
   const stabilizerRef = useRef(createViolationStabilizer());
   const baselineRef = useRef(createBaselineTracker());
   const consecutiveFailuresRef = useRef(0);
+  const serviceFailuresRef = useRef(0);
   const burstRemainingRef = useRef(0);
   const burstsUsedRef = useRef(0);
   const intervalRef = useRef(DETECT_INTERVAL_MS);
@@ -575,9 +576,13 @@ export function useProctoringSystem(
       payload: { reason, consecutive: consecutiveFailuresRef.current },
     });
 
-    if (consecutiveFailuresRef.current >= DEGRADED_AFTER_FAILURES) {
-      logger.warn(
-        `[Proctoring] ⚠️ Detection degraded after ${consecutiveFailuresRef.current} failures.`,
+    // A camera that is still starting is not the service being down, and a
+    // camera that goes away is raised as CAMERA_OFF on its own clock.
+    if (reason === "camera_unavailable") return;
+    serviceFailuresRef.current += 1;
+    if (serviceFailuresRef.current >= DEGRADED_AFTER_FAILURES) {
+      logger.error(
+        `[Proctoring] ⚠️ Detection degraded after ${serviceFailuresRef.current} failures (${reason}).`,
       );
       setIsDegraded(true);
     }
@@ -586,6 +591,7 @@ export function useProctoringSystem(
   function recordSuccess() {
     if (consecutiveFailuresRef.current === 0) return;
     consecutiveFailuresRef.current = 0;
+    serviceFailuresRef.current = 0;
     setIsDegraded(false);
   }
 
@@ -1038,6 +1044,7 @@ export function useProctoringSystem(
       stabilizerRef.current.reset();
       baselineRef.current.start(Date.now());
       consecutiveFailuresRef.current = 0;
+      serviceFailuresRef.current = 0;
       burstRemainingRef.current = 0;
       burstsUsedRef.current = 0;
       incidentsRef.current.reset();

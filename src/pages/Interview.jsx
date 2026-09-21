@@ -31,6 +31,9 @@ import { dataUrlToFile } from "@/lib/videoCapture";
 import { logger } from "@/lib/logger";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { draftKeyFor } from "@/lib/answerDraft";
+import { recordViolationEvent } from "@/lib/violationLog";
+
+const FACE_REGISTERED_KEY = "face_registered_for";
 
 export function Interview() {
   const { t } = useTranslation("questions");
@@ -83,44 +86,59 @@ export function Interview() {
 
   const videoRef = useRef(null);
 
-  // Face match monitoring must not start until the reference face is registered.
-  // Electron injects candidate_photo into sessionStorage before the interview
-  // window boots (via webContents.executeJavaScript in the main process), so
-  // this initializer is true immediately in kiosk mode.
-  const [isFaceRegistered, setIsFaceRegistered] = useState(
-    () => sessionStorage.getItem("face_registered") === "true",
+  // Keyed by session: the desktop app reuses one window across interviews, so a
+  // bare flag left over from the last one skipped registering the next.
+  const [registeredFor, setRegisteredFor] = useState(() =>
+    sessionStorage.getItem(FACE_REGISTERED_KEY),
   );
+  const [registerRequest, setRegisterRequest] = useState(0);
+  const isFaceRegistered = !!session?.session_id && registeredFor === session.session_id;
 
   const registerFaceMutation = useRegisterFace(session?.session_id);
+
+  const reregisterFace = useCallback(() => {
+    sessionStorage.removeItem(FACE_REGISTERED_KEY);
+    setRegisteredFor(null);
+    setRegisterRequest((n) => n + 1);
+  }, []);
 
   const { verifySample, isVerificationUnavailable } = useFaceMatchMonitoring({
     sessionId: session?.session_id,
     autoSubmit,
     onViolation: handleAiViolation,
+    onNotRegistered: reregisterFace,
     isReady: isFaceRegistered,
   });
 
-  // Register the reference face once per session. Electron pre-populates
-  // sessionStorage('candidate_photo') before this page loads; the effect is
-  // a no-op in environments where the photo was never stored.
+  // The desktop app puts candidate_photo in sessionStorage before this page
+  // loads. Without it there is nothing to register.
   useEffect(() => {
-    if (!session?.session_id) return;
-    if (sessionStorage.getItem("face_registered") === "true") return;
+    const sessionId = session?.session_id;
+    if (!sessionId || sessionStorage.getItem(FACE_REGISTERED_KEY) === sessionId) return;
+    sessionStorage.removeItem("face_registered");
 
     const storedPhoto = sessionStorage.getItem("candidate_photo");
     if (!storedPhoto) return;
 
-    const file = dataUrlToFile(storedPhoto, "candidate.jpg");
     registerFaceMutation.mutate(
-      { imageFile: file },
+      { imageFile: dataUrlToFile(storedPhoto, "candidate.jpg") },
       {
         onSuccess: () => {
-          sessionStorage.setItem("face_registered", "true");
-          setIsFaceRegistered(true);
+          sessionStorage.setItem(FACE_REGISTERED_KEY, sessionId);
+          setRegisteredFor(sessionId);
+        },
+        onError: (err) => {
+          logger.error("[Interview] face registration failed:", err?.message);
+          recordViolationEvent({
+            source: "face_match",
+            type: "FACE_MISMATCH",
+            outcome: "registration_failed",
+            error: err?.response?.status ?? err?.message,
+          });
         },
       },
     );
-  }, [session?.session_id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session?.session_id, registerRequest]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Surface camera boot/playback failures to the candidate (previously a no-op
   // because the status callback was never wired through LeftPanel).
@@ -170,6 +188,7 @@ export function Interview() {
   useEffect(() => {
     if (!isProctoringDegraded && !isVerificationUnavailable) return;
     toast.warning("Proctoring checks are temporarily unavailable.", {
+      id: "proctoring-unavailable",
       description: "Your session is still being recorded. Stay in front of the camera.",
     });
   }, [isProctoringDegraded, isVerificationUnavailable]);

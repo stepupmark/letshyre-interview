@@ -5,8 +5,12 @@ import { FACE_MISMATCH_LIMIT } from "@/config/interview";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { violationCopy } from "@/lib/violationCopy";
 import { recordViolationEvent } from "@/lib/violationLog";
+import { logger } from "@/lib/logger";
 
 const MAX_UNAVAILABLE = 3;
+// The service forgets registered faces when it restarts, so a lost session is
+// registered again a couple of times before it counts as the service failing.
+export const MAX_REREGISTERS = 2;
 // Every false mismatch in real logs came from a frame the detector scored below
 // this; genuine matches sat well above it.
 export const MIN_FACE_CONFIDENCE = 0.8;
@@ -27,6 +31,7 @@ const IDENTITY_VIOLATIONS = new Set(["FACE_MISMATCH"]);
  */
 export function classifyVerification(result) {
   if (!result || typeof result !== "object") return { verdict: "no_verdict" };
+  if (result.error === "SESSION_NOT_FOUND") return { verdict: "not_registered" };
   if (result.error) return { verdict: "unavailable", reason: result.error };
 
   if (
@@ -46,7 +51,13 @@ export function classifyVerification(result) {
   return { verdict: "no_verdict", reason: "unrecognized_response" };
 }
 
-export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isReady = true }) => {
+export const useFaceMatchMonitoring = ({
+  sessionId,
+  autoSubmit,
+  onViolation,
+  onNotRegistered,
+  isReady = true,
+}) => {
   const [mismatchCount, setMismatchCount] = useState(0);
   const [isMonitoringStopped, setIsMonitoringStopped] = useState(false);
   const [isVerificationUnavailable, setIsVerificationUnavailable] = useState(false);
@@ -56,9 +67,11 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
   const stoppedRef = useRef(false);
   const inFlightRef = useRef(false);
   const unavailableRef = useRef(0);
+  const reregistersRef = useRef(0);
   const lastSampleAtRef = useRef(0);
   const onViolationRef = useRef(onViolation);
   const autoSubmitRef = useRef(autoSubmit);
+  const onNotRegisteredRef = useRef(onNotRegistered);
   const reportedUnregisteredRef = useRef(false);
 
   const verifyMutation = useContinuousVerifyMutation(sessionId);
@@ -67,14 +80,21 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
   useEffect(() => {
     onViolationRef.current = onViolation;
     autoSubmitRef.current = autoSubmit;
+    onNotRegisteredRef.current = onNotRegistered;
   });
+
+  useEffect(() => {
+    reregistersRef.current = 0;
+  }, [sessionId]);
 
   useEffect(() => {
     stoppedRef.current = isMonitoringStopped;
   }, [isMonitoringStopped]);
 
   const evaluate = useCallback((result) => {
-    const { verdict, reason, confidence, serverTotal } = classifyVerification(result);
+    const classified = classifyVerification(result);
+    const { confidence, serverTotal } = classified;
+    let { verdict, reason } = classified;
 
     const report = (outcome, extra) =>
       recordViolationEvent({
@@ -87,6 +107,18 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
         ...(serverTotal === undefined ? {} : { server_total: serverTotal }),
         ...extra,
       });
+
+    if (verdict === "not_registered") {
+      if (onNotRegisteredRef.current && reregistersRef.current < MAX_REREGISTERS) {
+        reregistersRef.current += 1;
+        streakRef.current = 0;
+        report("reregistering", { attempt: reregistersRef.current });
+        onNotRegisteredRef.current();
+        return;
+      }
+      verdict = "unavailable";
+      reason = "SESSION_NOT_FOUND";
+    }
 
     if (verdict !== "unavailable") unavailableRef.current = 0;
     const hadStreak = streakRef.current > 0;
@@ -140,7 +172,10 @@ export const useFaceMatchMonitoring = ({ sessionId, autoSubmit, onViolation, isR
     if (verdict === "unavailable") {
       unavailableRef.current += 1;
       report("unavailable", { error: reason });
-      if (unavailableRef.current >= MAX_UNAVAILABLE) setIsVerificationUnavailable(true);
+      if (unavailableRef.current >= MAX_UNAVAILABLE) {
+        logger.error(`[FaceMatch] verification unavailable (${reason}), stopped for this session.`);
+        setIsVerificationUnavailable(true);
+      }
       return;
     }
 

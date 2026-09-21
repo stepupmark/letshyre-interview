@@ -505,3 +505,31 @@ describe("looking away", () => {
     expect(ofType(onViolation, "NOT_LOOKING").length).toBeGreaterThan(0);
   });
 });
+
+describe("useProctoringSystem degraded mode", () => {
+  const render = () =>
+    renderHook(() =>
+      useProctoringSystem({ current: {} }, "i1", "s1", true, "token", vi.fn(), vi.fn()),
+    ).result;
+
+  it("does not call a slow camera a service outage", async () => {
+    camera.ready = false;
+    const result = render();
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(result.current.isDegraded).toBe(false);
+  });
+
+  it("degrades after three failed detection calls and recovers on the next answer", async () => {
+    detectFrame.mockRejectedValue(new Error("timeout"));
+    const result = render();
+
+    await vi.advanceTimersByTimeAsync(40_000);
+    expect(result.current.isDegraded).toBe(true);
+
+    detectFrame.mockResolvedValue(frame());
+    await vi.advanceTimersByTimeAsync(40_000);
+    expect(result.current.isDegraded).toBe(false);
+  });
+});
