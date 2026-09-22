@@ -605,13 +605,28 @@ describe("useFaceMatchMonitoring log", () => {
     config.strongBelow = 0;
   });
 
-  it("does not log a record for every matching frame", async () => {
+  it("logs one match a minute, not every matching frame", async () => {
     const { events, unsubscribe } = captureLog();
     const { sample } = setup();
     await sample(MATCH, 20);
     unsubscribe();
 
-    expect(events).toHaveLength(0);
+    expect(events.map((e) => e.outcome)).toEqual(["matched", "matched"]);
+    expect(events[0]).toMatchObject({
+      source: "face_match",
+      confidence: MATCH.confidence,
+      face_confidence: 0.93,
+    });
+  });
+
+  it("counts a cleared mismatch as the minute's match record", async () => {
+    const { events, unsubscribe } = captureLog();
+    const { sample } = setup();
+    await sample(MISMATCH);
+    await sample(MATCH, 5);
+    unsubscribe();
+
+    expect(events.filter((e) => e.outcome === "matched")).toHaveLength(0);
   });
 
   it("logs both counts, the scores and the service tally with a mismatch", async () => {

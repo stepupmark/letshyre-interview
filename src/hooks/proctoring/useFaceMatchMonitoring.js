@@ -20,6 +20,9 @@ export const MAX_REREGISTERS = 2;
 // Every false mismatch in real logs came from a frame the detector scored below
 // this; genuine matches sat well above it.
 export const MIN_FACE_CONFIDENCE = 0.8;
+// Matches are most frames of an interview, so only one a minute is logged:
+// enough for a reviewer to see identity was being checked.
+export const MATCH_LOG_INTERVAL_MS = 60_000;
 
 // `violation` carries two unrelated things. These are identity verdicts; the
 // rest are frame conditions that stopped the comparison from happening.
@@ -88,6 +91,7 @@ export const useFaceMatchMonitoring = ({
   const reregistersRef = useRef(0);
   const lastClearAtRef = useRef(0);
   const unclearHintedRef = useRef(false);
+  const lastMatchLoggedAtRef = useRef(null);
   const onViolationRef = useRef(onViolation);
   const autoSubmitRef = useRef(autoSubmit);
   const onNotRegisteredRef = useRef(onNotRegistered);
@@ -256,9 +260,16 @@ export const useFaceMatchMonitoring = ({
         const hadStreak = streakRef.current > 0;
         streakRef.current = 0;
         setMismatchCount(0);
-        // A match is most frames of the interview and says nothing on its own.
-        // Only the recovery from a mismatch is worth a record.
-        if (hadStreak) record("cleared", { total_count: totalRef.current, ...scores });
+        if (hadStreak) {
+          record("cleared", { total_count: totalRef.current, ...scores });
+          lastMatchLoggedAtRef.current = at;
+        } else if (
+          lastMatchLoggedAtRef.current === null ||
+          at - lastMatchLoggedAtRef.current >= MATCH_LOG_INTERVAL_MS
+        ) {
+          record("matched", scores);
+          lastMatchLoggedAtRef.current = at;
+        }
         return;
       }
 
