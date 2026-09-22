@@ -11,6 +11,8 @@ import {
   SESSION_STATUS,
 } from "@/config/interview";
 import { logger } from "@/lib/logger";
+import { recordInterviewEnded, recordViolationEvent } from "@/lib/violationLog";
+import { readStrikes } from "@hooks/proctoring/useViolationMonitor";
 import { clearDrafts, draftKeyFor, writeDraft } from "@/lib/answerDraft";
 import { END_REASONS } from "@/lib/terminationReasons";
 
@@ -88,6 +90,8 @@ export function useInterviewSession() {
    */
   const hasInitializedRef = useRef(false);
   const disconnectCountRef = useRef(0);
+  // Outlives the listeners, which re-register on every disconnect.
+  const offlineAtRef = useRef(null);
 
   /**
    * Persist session automatically
@@ -303,8 +307,16 @@ export function useInterviewSession() {
     const handleOffline = () => {
       disconnectCountRef.current += 1;
       const count = disconnectCountRef.current;
+      offlineAtRef.current = Date.now();
 
       logger.warn(`[Network] ⚠️ Offline event fired. Disconnection count: ${count}`);
+      recordViolationEvent({
+        source: "network",
+        type: "NETWORK_DISCONNECT",
+        outcome: "raised",
+        disconnect_count: count,
+        limit: MAX_INTERNET_DISCONNECTS,
+      });
 
       toast.error(`Internet disconnected! (Strike ${count} of ${MAX_INTERNET_DISCONNECTS})`, {
         description: `Your interview will be automatically submitted if your connection drops ${MAX_INTERNET_DISCONNECTS} times.`,
@@ -319,6 +331,13 @@ export function useInterviewSession() {
     };
 
     const handleOnline = () => {
+      recordViolationEvent({
+        source: "network",
+        type: "NETWORK_DISCONNECT",
+        outcome: "restored",
+        ...(offlineAtRef.current ? { offline_ms: Date.now() - offlineAtRef.current } : {}),
+      });
+      offlineAtRef.current = null;
       toast.success("Internet reconnected! You can safely proceed with your interview.");
     };
 
@@ -383,72 +402,85 @@ export function useInterviewSession() {
   /**
    * Submit answer
    */
-  const submit = useCallback(async (payload) => {
-    if (!session) return;
+  const submit = useCallback(
+    async (payload) => {
+      if (!session) return;
 
-    if (session.status !== SESSION_STATUS.ACTIVE) {
-      return;
-    }
-
-    try {
-      const requestData = {
-        interview_id: session.interview_id,
-        session_id: session.session_id,
-      };
-
-      if (payload.audio_blob) {
-        // Convert blob to base64 data-URL
-        const base64Audio = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(payload.audio_blob);
-        });
-        requestData.audio_file = base64Audio;
+      if (session.status !== SESSION_STATUS.ACTIVE) {
+        return;
       }
 
-      const answer = payload.answer_text ?? payload.code_answer ?? payload.selected_option;
-      if (answer !== undefined) {
-        if (typeof answer !== "string" || !answer.trim()) {
-          throw new Error("Answer is empty");
-        }
-        requestData.answer = answer;
-      } else if (!payload.audio_blob) {
-        throw new Error("Answer is missing");
-      }
-
-      const response = await submitMutation.mutateAsync(requestData);
-
-      if (!response?.success || !response?.data) {
-        throw new Error("Invalid submit response");
-      }
-
-      const aiData = response.data.ai;
-      // scorecard is nested inside `ai` in this response
-      const scorecard = aiData?.scorecard || response.data.scorecard || null;
-      const isCompleted = !!(aiData?.completed || aiData?.is_completed);
-
-      if (isCompleted) clearDrafts();
-      else writeDraft(draftKeyFor(session), "");
-
-      setSession((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          ...aiData,
-          question: aiData?.next_question || null,
-          // Persist scorecard into session state so ScoreCard can render it
-          ...(isCompleted && scorecard ? { scorecard } : {}),
-          ...(isCompleted ? { end_reason: END_REASONS.COMPLETED } : {}),
-          status: isCompleted ? SESSION_STATUS.COMPLETED : prev.status,
+      try {
+        const requestData = {
+          interview_id: session.interview_id,
+          session_id: session.session_id,
         };
-      });
-    } catch (error) {
-      logger.error("Failed to submit answer:", error);
-      // Rethrow so callers (handleSubmit) can surface a toast to the candidate.
-      throw error;
-    }
-  }, [session, submitMutation]);
+
+        if (payload.audio_blob) {
+          // Convert blob to base64 data-URL
+          const base64Audio = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(payload.audio_blob);
+          });
+          requestData.audio_file = base64Audio;
+        }
+
+        const answer = payload.answer_text ?? payload.code_answer ?? payload.selected_option;
+        if (answer !== undefined) {
+          if (typeof answer !== "string" || !answer.trim()) {
+            throw new Error("Answer is empty");
+          }
+          requestData.answer = answer;
+        } else if (!payload.audio_blob) {
+          throw new Error("Answer is missing");
+        }
+
+        const response = await submitMutation.mutateAsync(requestData);
+
+        if (!response?.success || !response?.data) {
+          throw new Error("Invalid submit response");
+        }
+
+        const aiData = response.data.ai;
+        // scorecard is nested inside `ai` in this response
+        const scorecard = aiData?.scorecard || response.data.scorecard || null;
+        const isCompleted = !!(aiData?.completed || aiData?.is_completed);
+
+        if (isCompleted) {
+          recordInterviewEnded({
+            outcome: END_REASONS.COMPLETED,
+            reason: END_REASONS.COMPLETED,
+            strikes: readStrikes(session.session_id),
+            strike_count: session.violations ?? 0,
+            internet_disconnects: session.internet_disconnect_count ?? 0,
+          });
+          clearDrafts();
+        } else {
+          writeDraft(draftKeyFor(session), "");
+        }
+
+        setSession((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            ...aiData,
+            question: aiData?.next_question || null,
+            // Persist scorecard into session state so ScoreCard can render it
+            ...(isCompleted && scorecard ? { scorecard } : {}),
+            ...(isCompleted ? { end_reason: END_REASONS.COMPLETED } : {}),
+            status: isCompleted ? SESSION_STATUS.COMPLETED : prev.status,
+          };
+        });
+      } catch (error) {
+        logger.error("Failed to submit answer:", error);
+        // Rethrow so callers (handleSubmit) can surface a toast to the candidate.
+        throw error;
+      }
+    },
+    [session, submitMutation],
+  );
 
   /**
    * Formatted timer

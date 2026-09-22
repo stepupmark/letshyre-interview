@@ -135,6 +135,7 @@ export function useViolationMonitor({
 
   const isWarningOpenRef = useRef(false);
   const shownKeyRef = useRef(null);
+  const shownAtRef = useRef(0);
   const heldRef = useRef(new Map());
 
   // Buffer Electron blocks that arrived before isActive was true. Flushed by the
@@ -255,6 +256,7 @@ export function useViolationMonitor({
       const key = strikeKey ?? type ?? titleKey;
 
       const report = (outcome, violationCount, extra) => {
+        const struck = countsAsViolation && (outcome === "raised" || outcome === "at_limit");
         recordViolationEvent({
           source,
           type: type ?? key,
@@ -263,6 +265,7 @@ export function useViolationMonitor({
           ...(label ? { label } : {}),
           ...(detail ?? {}),
           ...(violationCount === undefined ? {} : { violation_count: violationCount }),
+          ...(struck ? { counts_as_strike: true, strike_count: violationCount } : {}),
           ...extra,
         });
         return outcome;
@@ -271,6 +274,7 @@ export function useViolationMonitor({
       const show = (counts, violationCount) => {
         isWarningOpenRef.current = true;
         shownKeyRef.current = key;
+        shownAtRef.current = Date.now();
         setViolationInfo({
           titleKey,
           descriptionKey,
@@ -302,7 +306,7 @@ export function useViolationMonitor({
 
       if (ALWAYS_SHOWN.has(type)) {
         show(countsAsViolation, sessionViolationsRef.current);
-        return report("raised");
+        return "raised";
       }
 
       // A warning that costs nothing never replaces the one on screen.
@@ -331,6 +335,7 @@ export function useViolationMonitor({
       if (countsAsViolation && violationCount > 0) {
         const strike = {
           count: violationCount,
+          type: type ?? key,
           at: Date.now(),
           titleKey,
           descriptionKey,
@@ -404,14 +409,23 @@ export function useViolationMonitor({
   }, []);
 
   // Reset the ref IMMEDIATELY, before enterFullScreen can re-trigger.
-  const closeWarning = useCallback(() => {
+  const closeWarning = useCallback((how) => {
+    if (how && isWarningOpenRef.current) {
+      recordViolationEvent({
+        source: "window",
+        type: "WARNING",
+        outcome: how,
+        warning: shownKeyRef.current,
+        open_ms: Date.now() - shownAtRef.current,
+      });
+    }
     isWarningOpenRef.current = false;
     shownKeyRef.current = null;
     setShowTabWarning(false);
   }, []);
 
   const dismissWarning = useCallback(() => {
-    closeWarning();
+    closeWarning("dismissed");
     setNeedsFullscreen(false);
     enterFullScreen();
   }, [closeWarning, enterFullScreen]);
@@ -422,7 +436,7 @@ export function useViolationMonitor({
     if (!showTabWarning) return;
 
     const timer = setTimeout(() => {
-      closeWarning();
+      closeWarning("auto_closed");
       if (!document.fullscreenElement) setNeedsFullscreen(true);
     }, AUTO_DISMISS_MS);
 
@@ -519,13 +533,20 @@ export function useViolationMonitor({
 
   // Anti-cheat: disable right-click, copy, paste, cut
   useEffect(() => {
+    const logBlocked = (action) => {
+      if (!isActiveRef.current) return;
+      recordViolationEvent({ source: "input", type: "INPUT_BLOCKED", outcome: "blocked", action });
+    };
+
     const handleContextMenu = (e) => {
       e.preventDefault();
+      logBlocked("right_click");
       toast.warning("Right-click is disabled during the interview.");
     };
 
     const handleCopyPaste = (e) => {
       e.preventDefault();
+      logBlocked(e.type);
       toast.warning("Copying, pasting, or cutting is disabled during the interview.");
     };
 
@@ -559,8 +580,9 @@ export function useViolationMonitor({
             startedAt: leftWindow.startedAt,
             lastAt: Math.max(leftWindow.lastAt, at),
             away: leftWindow.away || away,
+            cause: leftWindow.cause,
           }
-        : { startedAt: at, lastAt: at, away };
+        : { startedAt: at, lastAt: at, away, cause: violation.type };
       raiseViolation({
         ...violation,
         strikeKey: LEFT_WINDOW,
@@ -571,10 +593,20 @@ export function useViolationMonitor({
     };
 
     const cameBack = () => {
+      if (leftWindow?.away && isActiveRef.current) {
+        recordViolationEvent({
+          source: "window",
+          type: LEFT_WINDOW,
+          outcome: "returned",
+          cause: leftWindow.cause,
+          away_ms: Date.now() - leftWindow.startedAt,
+        });
+      }
       leftWindow = null;
     };
 
     let focusTimer = null;
+    let blurredAt = 0;
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -596,6 +628,7 @@ export function useViolationMonitor({
     const handleBlur = () => {
       if (document.hidden || permissionPrompts > 0) return;
       const leftAt = Date.now();
+      blurredAt = leftAt;
       clearTimeout(focusTimer);
       focusTimer = setTimeout(() => {
         focusTimer = null;
@@ -613,7 +646,16 @@ export function useViolationMonitor({
       }, FOCUS_CONFIRM_MS);
     };
 
+    // Back before the focus loss was confirmed: no strike, but it happened.
     const handleFocus = () => {
+      if (focusTimer && isActiveRef.current) {
+        recordViolationEvent({
+          source: "window_focus",
+          type: "WINDOW_FOCUS",
+          outcome: "brief",
+          away_ms: Date.now() - blurredAt,
+        });
+      }
       clearTimeout(focusTimer);
       focusTimer = null;
       if (!document.hidden) cameBack();

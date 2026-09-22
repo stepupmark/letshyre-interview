@@ -81,8 +81,10 @@ export const SHADOW_LABELS = new Set(
 );
 
 // Behaviour rules (not labels) logged but never shown or counted, for the same
-// reason. "gaze" is the long look-away strike. An empty value keeps the default
-// so an unset CI variable can't switch enforcement on; use "none" to enforce.
+// reason. "gaze" is the long look-away strike; "verify_faces" is a no-face or
+// several-people strike that only face verification saw. An empty value keeps
+// the default so an unset CI variable can't switch enforcement on; use "none"
+// to enforce.
 export const SHADOW_RULES = new Set(
   (import.meta.env.VITE_AI_SHADOW_RULES || "gaze")
     .split(",")

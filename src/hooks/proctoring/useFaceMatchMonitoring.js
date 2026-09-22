@@ -24,41 +24,42 @@ export const MIN_FACE_CONFIDENCE = 0.8;
 // enough for a reviewer to see identity was being checked.
 export const MATCH_LOG_INTERVAL_MS = 60_000;
 
-// `violation` carries two unrelated things. These are identity verdicts; the
-// rest are frame conditions that stopped the comparison from happening.
-const IDENTITY_VIOLATIONS = new Set(["FACE_MISMATCH"]);
-
 const record = (outcome, extra) =>
   recordViolationEvent({ source: "face_match", type: "FACE_MISMATCH", outcome, ...extra });
 
+// What each `violation` means for identity and for the faces in the frame.
+const VIOLATIONS = {
+  FACE_MISMATCH: { verdict: "mismatch" },
+  FACE_MISMATCH_AND_MULTIPLE_FACES: { verdict: "mismatch", faces: "multiple" },
+  MULTIPLE_FACES: { verdict: "condition", faces: "multiple" },
+  NO_FACE: { verdict: "condition", faces: "none" },
+};
+const IDENTITY_VERDICTS = new Set(["match", "mismatch"]);
+
 /**
- * The fields carry independent meaning: `error` means the call never ran,
- * `violation` means either an identity verdict or a frame condition, and
- * `same_person` is only a verdict once `success` is true. Read out of order, a
- * no-face frame looks exactly like an impostor.
- *
- * A real mismatch arrives in `same_person` and `violation` at once, so either
- * one is enough. Reading `violation` first used to file it as a condition and
- * silently drop it.
+ * Verdicts come from `violation` and `same_person` only. `success` is false
+ * on several real verdicts, the combined mismatch among them, so reading it
+ * dropped an impostor with people behind them. `error` is read only to tell a
+ * lost session or an outage from a verdict.
  */
 export function classifyVerification(result) {
   if (!result || typeof result !== "object") return { verdict: "no_verdict" };
   if (result.error === "SESSION_NOT_FOUND") return { verdict: "not_registered" };
   if (result.error) return { verdict: "unavailable", reason: result.error };
 
-  if (
-    result.success === true &&
-    (result.same_person === false || IDENTITY_VIOLATIONS.has(result.violation))
-  ) {
-    return {
-      verdict: "mismatch",
-      confidence: result.confidence,
-      serverTotal: result.total_violations,
-    };
+  const { violation } = result;
+  if (violation) {
+    const known = VIOLATIONS[violation];
+    if (!known) return { verdict: "no_verdict", reason: "unknown_violation", violation };
+    return known.verdict === "mismatch"
+      ? {
+          ...known,
+          confidence: result.confidence ?? undefined,
+          serverTotal: result.total_violations ?? undefined,
+        }
+      : { ...known, reason: violation };
   }
 
-  if (result.violation) return { verdict: "condition", reason: result.violation };
-  if (result.success !== true) return { verdict: "no_verdict", reason: "unsuccessful_response" };
   if (result.same_person === true) return { verdict: "match", confidence: result.confidence };
   return { verdict: "no_verdict", reason: "unrecognized_response" };
 }
@@ -237,7 +238,7 @@ export const useFaceMatchMonitoring = ({
           reregistersRef.current += 1;
           record("reregistering", { attempt: reregistersRef.current });
           onNotRegisteredRef.current();
-          return;
+          return classified;
         }
         verdict = "unavailable";
         reason = "SESSION_NOT_FOUND";
@@ -245,14 +246,14 @@ export const useFaceMatchMonitoring = ({
 
       if (verdict === "unavailable") {
         markUnavailable(reason, at);
-        return;
+        return classified;
       }
       markAvailable(at);
 
       if (verdict === "mismatch") {
         sawClearFace(at);
         countMismatch({ vetted, similarity: confidence, detail: scores });
-        return;
+        return classified;
       }
 
       if (verdict === "match") {
@@ -270,22 +271,28 @@ export const useFaceMatchMonitoring = ({
           record("matched", scores);
           lastMatchLoggedAtRef.current = at;
         }
-        return;
+        return classified;
       }
 
-      // Detection owns face presence; raising it here too struck the same frame twice.
+      // The camera loop counts these, merged with what detection saw on the frame.
       if (verdict === "condition") {
         record("condition", { condition: reason });
-        return;
+        return classified;
       }
 
-      record("no_verdict", { reason });
+      record("no_verdict", {
+        reason,
+        ...(classified.violation ? { violation: classified.violation } : {}),
+      });
+      return classified;
     },
     [countMismatch, markAvailable, markUnavailable, sawClearFace],
   );
 
   // Driven by the proctoring loop's sampler rather than its own timer, so the
-  // identity verdict and the object verdict describe the same frame.
+  // identity verdict and the object verdict describe the same frame. Resolves
+  // with the faces the service saw ("none", "one" or "multiple"), which the
+  // loop counts together with detection's.
   const verifySample = useCallback(
     async (sample) => {
       if (!sessionId || stoppedRef.current) return;
@@ -304,18 +311,20 @@ export const useFaceMatchMonitoring = ({
       const at = sample.capturedAt ?? Date.now();
       if (!lastClearAtRef.current) lastClearAtRef.current = at;
 
-      // No face or several: detection strikes those, and the run is kept.
-      if (sample.faceCount !== undefined && sample.faceCount !== 1) return;
+      // With no face there is nothing to compare; detection counts that frame.
+      const { faceCount, faceConfidence } = sample;
+      if (faceCount === 0) return;
 
-      const { faceConfidence } = sample;
       if (faceConfidence !== undefined && faceConfidence < MIN_FACE_CONFIDENCE) {
+        if (faceCount !== 1) return;
         record("skipped", { face_confidence: faceConfidence });
         checkUnclear(at);
         return;
       }
 
-      // Unknown count or confidence means detection failed on this frame.
-      const vetted = sample.faceCount === 1 && faceConfidence !== undefined;
+      // Unknown count or confidence means detection failed on this frame. With
+      // several faces the service may have compared the wrong one.
+      const vetted = faceCount === 1 && faceConfidence !== undefined;
       if (vetted) sawClearFace(at);
 
       if (unavailableSinceRef.current) {
@@ -327,7 +336,11 @@ export const useFaceMatchMonitoring = ({
       inFlightRef.current = true;
       try {
         const result = await mutateAsync({ imageFile: sample.file });
-        if (!stoppedRef.current) evaluate(result, { at, vetted, faceConfidence });
+        if (stoppedRef.current) return;
+        const { verdict, faces } = evaluate(result, { at, vetted, faceConfidence });
+        // The interview ended on this frame; there is nothing left to count.
+        if (stoppedRef.current) return;
+        return { faces: faces ?? (IDENTITY_VERDICTS.has(verdict) ? "one" : null) };
       } catch (err) {
         if (!stoppedRef.current) markUnavailable(err?.message || "request_failed", at);
       } finally {

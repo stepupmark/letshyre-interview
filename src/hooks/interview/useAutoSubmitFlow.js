@@ -4,6 +4,8 @@ import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
 import { TERMINATION_REASONS, toEndReason } from "@/lib/terminationReasons";
 import { logger } from "@/lib/logger";
 import { clearDrafts, draftKeyFor, readDraft } from "@/lib/answerDraft";
+import { recordInterviewEnded } from "@/lib/violationLog";
+import { readStrikes } from "@hooks/proctoring/useViolationMonitor";
 
 /**
  * Owns the auto-submit flow: the async submit-and-freeze-session action plus
@@ -25,6 +27,8 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
   // one would still read `false` and submit. Cleared on failure so a retry can
   // get through.
   const submitInFlightRef = useRef(false);
+  // How the interview stopped is recorded once, whatever retries follow.
+  const endRecordedRef = useRef(false);
 
   /**
    * Auto-submit interview session when trigger conditions are met
@@ -46,9 +50,19 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
       setAutoSubmitReason(reason || "Automated submission");
       logger.log(`[AutoSubmit] 🚨 Triggering auto-submit. Reason: ${reason}`);
 
-      // Stop the session first by setting status to EXPIRED.
-      // This will freeze the timer and automatically trigger the proctoring logs flush queue.
+      // Stop the session first by setting status to EXPIRED. This freezes the
+      // timer and stops proctoring; the log is sent once this submission answers.
       if (session.status === SESSION_STATUS.ACTIVE) {
+        if (!endRecordedRef.current) {
+          endRecordedRef.current = true;
+          recordInterviewEnded({
+            outcome: toEndReason(reason, { timeUp: session.end_time <= Date.now() }),
+            reason,
+            strikes: readStrikes(session.session_id),
+            strike_count: session.violations ?? 0,
+            internet_disconnects: session.internet_disconnect_count ?? 0,
+          });
+        }
         setSession((prev) => {
           if (!prev) return prev;
           return {
@@ -80,6 +94,7 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
 
       logger.log("[AutoSubmit] ✅ Auto-submit response parsed successfully.", response.data);
 
+      recordInterviewEnded({ outcome: "submitted", reason, end_reason: endReason });
       clearDrafts();
       setAutoSubmitSuccess(true);
 
@@ -106,6 +121,11 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
       // through so the UI doesn't mislabel a server failure as "no internet".
       const offline = typeof navigator !== "undefined" && navigator.onLine === false;
       const serverMessage = error?.response?.data?.message || error?.message;
+      recordInterviewEnded({
+        outcome: "submit_failed",
+        reason,
+        error: offline ? "offline" : serverMessage || "unknown",
+      });
       setAutoSubmitError(
         offline
           ? "You appear to be offline. We'll submit automatically once you're back online."

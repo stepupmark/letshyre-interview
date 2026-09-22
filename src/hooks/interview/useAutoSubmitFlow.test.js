@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { useAutoSubmitFlow } from "./useAutoSubmitFlow";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
+import { resetViolationSummary, subscribeToViolationLog } from "@/lib/violationLog";
 
 const mutateAsync = vi.fn();
 
@@ -191,7 +192,9 @@ describe("useAutoSubmitFlow submission", () => {
     mutateAsync.mockResolvedValue({ success: false });
     const { result } = setup({ session: activeSession(), timeLeft: 0 });
 
-    await waitFor(() => expect(result.current.autoSubmitError).toBe("Invalid auto submit response"));
+    await waitFor(() =>
+      expect(result.current.autoSubmitError).toBe("Invalid auto submit response"),
+    );
   });
 
   it("submits once when every trigger fires in the same render", async () => {
@@ -232,5 +235,83 @@ describe("useAutoSubmitFlow submission", () => {
 
     await waitFor(() => expect(result.current.autoSubmitError).toMatch(/offline/i));
     onLine.mockRestore();
+  });
+});
+
+describe("useAutoSubmitFlow log", () => {
+  let ended;
+  let stop;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sessionStorage.clear();
+    resetViolationSummary();
+    ended = [];
+    stop = subscribeToViolationLog((event) => {
+      if (event.type === "INTERVIEW_ENDED") ended.push(event);
+    });
+  });
+
+  afterEach(() => stop());
+
+  it("records why the interview stopped, with its strikes, then the submission", async () => {
+    sessionStorage.setItem(
+      "interview_strikes:s1",
+      JSON.stringify([
+        { count: 1, type: "PROHIBITED_OBJECT", label: "cell phone", at: 0 },
+        { count: 2, type: "NO_FACE", at: 1_000 },
+        { count: 3, type: "TAB_SWITCH", at: 2_000 },
+      ]),
+    );
+    mutateAsync.mockResolvedValue(SUCCESS_RESPONSE);
+    setup({ session: activeSession({ violations: VIOLATIONS_ALLOWED }) });
+
+    await waitFor(() => expect(ended).toHaveLength(2), { timeout: 3000 });
+
+    expect(ended[0]).toMatchObject({
+      outcome: "terminated",
+      reason: TERMINATION_REASONS.VIOLATION_LIMIT,
+      strike_count: VIOLATIONS_ALLOWED,
+      internet_disconnects: 0,
+      face_mismatches: { in_a_row: 0, total: 0 },
+    });
+    expect(ended[0].strikes.map((strike) => strike.type)).toEqual([
+      "PROHIBITED_OBJECT",
+      "NO_FACE",
+      "TAB_SWITCH",
+    ]);
+    expect(ended[1]).toMatchObject({ outcome: "submitted", end_reason: "terminated" });
+  });
+
+  it.each([
+    [{ timeLeft: 0 }, "expired", TERMINATION_REASONS.TIME_EXPIRED],
+    [
+      { session: activeSession({ internet_disconnect_count: MAX_INTERNET_DISCONNECTS }) },
+      "auto-submitted",
+      TERMINATION_REASONS.NETWORK_DISCONNECTS,
+    ],
+  ])("records the ending %#", async (options, outcome, reason) => {
+    mutateAsync.mockResolvedValue(SUCCESS_RESPONSE);
+    setup({ session: activeSession(), ...options });
+
+    await waitFor(() => expect(ended.length).toBeGreaterThan(0));
+    expect(ended[0]).toMatchObject({ outcome, reason });
+  });
+
+  it("records a failed submission, and the stop only once across retries", async () => {
+    mutateAsync.mockRejectedValueOnce({ response: { data: { message: "Server exploded" } } });
+    const { result } = setup({ session: activeSession(), timeLeft: 0 });
+
+    await waitFor(() => expect(result.current.autoSubmitError).toBe("Server exploded"));
+    expect(ended.map((event) => event.outcome)).toEqual(["expired", "submit_failed"]);
+    expect(ended[1]).toMatchObject({ error: "Server exploded" });
+
+    mutateAsync.mockResolvedValue(SUCCESS_RESPONSE);
+    await act(async () => {
+      await result.current.autoSubmit(TERMINATION_REASONS.TIME_EXPIRED);
+    });
+
+    expect(ended.filter((event) => event.outcome === "expired")).toHaveLength(1);
+    expect(ended.at(-1).outcome).toBe("submitted");
   });
 });

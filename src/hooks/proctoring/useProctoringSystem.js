@@ -20,6 +20,20 @@ const IMAGE_QUALITY = 0.7;
 const TARGET_WIDTH = 640;
 const TARGET_HEIGHT = 480;
 
+// How long a frame waits for face verification before it is decided on
+// detection alone. A later answer still counts for identity.
+const VERIFY_WAIT_MS = 3_000;
+
+// Detection never answered for this frame, so only verification's faces count.
+const VERIFY_ONLY_FRAME = { success: true, verify_only: true, objects_detected: [] };
+
+const faceCountOf = (result) =>
+  result.face_detected ? Math.max(result.face_count ?? 1, result.yolo_person_count ?? 0, 1) : 0;
+
+// The backend keeps one log batch per interview, so it is sent once the ending
+// has settled, or this long after the interview stopped if it never does.
+export const LOG_SEND_FALLBACK_MS = 30_000;
+
 // Exponential backoff ceiling for AI service failures.
 const MAX_BACKOFF_MS = 40_000;
 const DEGRADED_AFTER_FAILURES = 3;
@@ -348,14 +362,28 @@ export function hasMultipleSignificantPeople(result) {
 export function detectViolations(result, classified) {
   if (!result?.success) return [];
 
-  const multiplePeople = hasMultipleSignificantPeople(result);
-  if (multiplePeople) {
-    return [{ type: "MULTIPLE_FACES", ...violationCopy("MULTIPLE_FACES"), incident: true }];
+  // `verified_faces` is what face verification saw on the same frame. Either
+  // check seeing the problem is enough, and `seenBy` records which one did.
+  // A `verify_only` frame is one detection never answered for.
+  const verified = result.verified_faces;
+  const faceViolation = (type, byDetect, byVerify) => ({
+    type,
+    ...violationCopy(type),
+    incident: true,
+    ...(verified ? { seenBy: byDetect && byVerify ? "both" : byVerify ? "verify" : "detect" } : {}),
+  });
+
+  const manyByDetect = !result.verify_only && hasMultipleSignificantPeople(result);
+  if (manyByDetect || verified === "multiple") {
+    return [faceViolation("MULTIPLE_FACES", manyByDetect, verified === "multiple")];
   }
 
-  if (!result.face_detected || result.face_count === 0) {
-    return [{ type: "NO_FACE", ...violationCopy("NO_FACE"), incident: true }];
+  const noneByDetect = !result.verify_only && (!result.face_detected || result.face_count === 0);
+  if (noneByDetect || verified === "none") {
+    return [faceViolation("NO_FACE", noneByDetect, verified === "none")];
   }
+
+  if (result.verify_only) return [];
 
   const objects =
     classified ?? findProhibitedObjects(result).map((object) => ({ object, state: "introduced" }));
@@ -492,6 +520,7 @@ export function useProctoringSystem(
   proctoringToken,
   onViolation,
   onSample,
+  logReady = true,
 ) {
   const queueRef = useRef([]);
   const timerRef = useRef(null);
@@ -510,6 +539,7 @@ export function useProctoringSystem(
   const burstsUsedRef = useRef(0);
   const nextTickAtRef = useRef(0);
   const identityTimerRef = useRef(null);
+  const identityRunRef = useRef(0);
   const incidentsRef = useRef(createIncidentTracker());
   const struckIncidentsRef = useRef(new Map());
   const lastNoFaceGuidanceRef = useRef(0);
@@ -600,6 +630,7 @@ export function useProctoringSystem(
     if (!detection) {
       return {
         ...(violation.reason ? { reason: violation.reason } : {}),
+        ...(violation.seenBy ? { seen_by: violation.seenBy } : {}),
         frame_quality: frameQuality,
       };
     }
@@ -718,6 +749,8 @@ export function useProctoringSystem(
         }
         raised = violation;
         logger.warn(`[Proctoring] 🚩 Violation raised: ${violation.type}`);
+      } else if (outcome === "soft") {
+        recordDecision(violation, "hint", frameQuality);
       }
     }
 
@@ -725,7 +758,7 @@ export function useProctoringSystem(
   }
 
   async function tick() {
-    clearTimeout(identityTimerRef.current);
+    stopIdentityChecks();
     if (!isActiveRef.current || busyRef.current) {
       scheduleNext();
       return;
@@ -743,10 +776,7 @@ export function useProctoringSystem(
     }
 
     busyRef.current = true;
-    // Verification waits for detection so it only compares clear, single-face
-    // frames. Both stay unknown when detection fails, so identity still runs.
-    let faceCount;
-    let faceConfidence;
+    let result = null;
 
     try {
       logger.log("[Proctoring] 🤖 Sending frame to AI detection API…");
@@ -760,126 +790,163 @@ export function useProctoringSystem(
 
       // An unsuccessful response carries no verdict — recording it as clean
       // would leave a stretch of log that looks observed but never was.
-      if (!cleanResult.success) {
-        recordFailure("unsuccessful_response");
-        return;
-      }
-      recordSuccess();
-      faceCount = cleanResult.face_detected
-        ? Math.max(cleanResult.face_count ?? 1, cleanResult.yolo_person_count ?? 0, 1)
-        : 0;
-      if (cleanResult.face_detected && (cleanResult.face_count ?? 0) > 0) {
-        lastNoFaceGuidanceRef.current = 0;
-      }
-      faceConfidence = cleanResult.confidence_score;
-
-      queueRef.current.push({
-        timestamp: new Date().toISOString(),
-        source: "cv_detect",
-        event_type: "frame",
-        payload: cleanResult,
-      });
-
-      // The room is only baselined when the session starts. Re-seeding after an
-      // outage handed out a fresh grace every time the connection dropped.
-      const now = Date.now();
-
-      const classified = applyBaselineRules(
-        baselineRef.current.classify(findProhibitedObjects(cleanResult), now),
-      );
-      recordClassification(classified, cleanResult);
-
-      const detected = detectViolations(cleanResult, classified);
-      const confirmed = stabilizerRef.current.push(detected);
-      incidentsRef.current.observe(detected.map(incidentKeyOf), now);
-
-      const typing = now - lastKeyAtRef.current < TYPING_GRACE_MS;
-      const isNotLooking = (violation) => violation.type === "NOT_LOOKING";
-      const lookingAway = gazeRef.current.observe(
-        { away: detected.some(isNotLooking), confirmed: confirmed.some(isNotLooking), typing },
-        now,
-      );
-
-      const suspicion = suspicionReason(cleanResult, detected, { typing });
-      if (suspicion) {
-        if (now >= suspicionUntilRef.current) {
-          logger.log(`[Proctoring] 🔎 Sampling every ${SUSPICION_INTERVAL_MS}ms: ${suspicion}`);
-          queueRef.current.push({
-            timestamp: new Date().toISOString(),
-            source: "cv_detect",
-            event_type: "suspicion_sampling",
-            payload: { reason: suspicion },
-          });
-        }
-        suspicionUntilRef.current = now + SUSPICION_WINDOW_MS;
-      }
-
-      // Re-check isActive after the async call — the session may have ended
-      // (auto-submit, normal submit) while we were waiting for the response.
-      if (isActiveRef.current) {
-        const gaze = lookingAway && lookingAwayViolation(lookingAway);
-        // Ahead of the soft gaze toast, so the strike isn't shown alongside it.
-        const queue = gaze
-          ? [...confirmed.filter((v) => !v.soft), gaze, ...confirmed.filter((v) => v.soft)]
-          : confirmed;
-        const raised = dispatchViolations(queue, cleanResult.frame_quality, now);
-        if (gaze && (gaze.shadow || raised === gaze)) gazeRef.current.settle(now);
+      if (cleanResult.success) {
+        recordSuccess();
+        result = cleanResult;
       } else {
-        for (const violation of confirmed) {
-          recordDecision(violation, "session_ended", cleanResult.frame_quality);
-        }
-      }
-
-      // A commit clears the window, so the same object right after its strike
-      // would otherwise log as a fresh, unconfirmed sighting.
-      const struck = struckIncidentsRef.current;
-      // Per label, so a phone joining a laptop that already struck is still new evidence.
-      const isHeld = (violation) => {
-        const key = violation.key ?? violation.type;
-        return (
-          struck.has(key) &&
-          struck.get(key) === incidentsRef.current.startedAt(incidentKeyOf(violation))
-        );
-      };
-      for (const violation of detected) {
-        if (confirmed.includes(violation)) continue;
-        recordDecision(
-          violation,
-          isHeld(violation) ? "held" : "unconfirmed",
-          cleanResult.frame_quality,
-        );
-      }
-
-      // Only evidence still waiting to confirm earns a quick second look. A muted
-      // or already struck laptop used to spend the whole budget, so a phone shown
-      // later never got one.
-      const worthBursting = detected.some(
-        (violation) =>
-          BURST_TYPES.has(violation.type) &&
-          !violation.shadow &&
-          violation.countsAsViolation !== false &&
-          (!confirmed.includes(violation) || (violation.type === "NO_FACE" && !isHeld(violation))) &&
-          !isHeld(violation),
-      );
-      if (worthBursting) {
-        const hasNoFace = detected.some((v) => v.type === "NO_FACE" && !isHeld(v));
-        const maxBursts = hasNoFace ? MAX_NO_FACE_BURSTS : MAX_BURSTS;
-        if (burstsUsedRef.current < maxBursts) {
-          burstRemainingRef.current = BURST_SAMPLES;
-          burstsUsedRef.current += 1;
-        }
-      } else if (burstRemainingRef.current === 0) {
-        burstsUsedRef.current = 0;
+        recordFailure("unsuccessful_response");
       }
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
       recordFailure(err?.message || "request_failed");
-    } finally {
-      if (isActiveRef.current) {
-        onSampleRef.current?.({ ...sample, faceCount, faceConfidence });
+    }
+
+    try {
+      const faces = await verifyFaces(sample, result);
+      const frame = result ?? (faces ? VERIFY_ONLY_FRAME : null);
+      if (frame) {
+        processFrame(faces ? { ...frame, verified_faces: faces } : frame, sample.capturedAt);
       }
+    } catch (err) {
+      logger.error("[Proctoring] ❌ Frame processing failed:", err?.message);
+    } finally {
       busyRef.current = false;
       scheduleNext();
+    }
+  }
+
+  // Verification sees the same frame, and the faces it saw join detection's
+  // before anything is decided, so one person in view can't strike twice.
+  // It waits for detection so it only compares clear frames; both stay
+  // unknown when detection fails, so identity still runs.
+  async function verifyFaces(sample, result) {
+    if (!isActiveRef.current || !onSampleRef.current) return null;
+    let timer;
+    const answer = await Promise.race([
+      Promise.resolve(
+        onSampleRef.current({
+          ...sample,
+          faceCount: result ? faceCountOf(result) : undefined,
+          faceConfidence: result?.confidence_score,
+        }),
+      ).catch(() => null),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, VERIFY_WAIT_MS);
+      }),
+    ]);
+    clearTimeout(timer);
+    return answer?.faces ?? null;
+  }
+
+  function processFrame(frame, capturedAt) {
+    const now = capturedAt ?? Date.now();
+    const verifyOnly = frame.verify_only === true;
+
+    queueRef.current.push({
+      timestamp: new Date().toISOString(),
+      source: "cv_detect",
+      event_type: verifyOnly ? "verified_frame" : "frame",
+      payload: verifyOnly ? { verified_faces: frame.verified_faces } : frame,
+    });
+
+    // The room is only baselined when the session starts. Re-seeding after an
+    // outage handed out a fresh grace every time the connection dropped.
+    const classified = verifyOnly
+      ? []
+      : applyBaselineRules(baselineRef.current.classify(findProhibitedObjects(frame), now));
+    if (!verifyOnly) recordClassification(classified, frame);
+
+    let detected = detectViolations(frame, classified);
+    // Muted: what only verification saw is logged, never counted.
+    if (SHADOW_RULES.has("verify_faces") && detected.some((v) => v.seenBy === "verify")) {
+      for (const violation of detected) recordDecision(violation, "shadow", frame.frame_quality);
+      detected = detectViolations({ ...frame, verified_faces: undefined }, classified);
+    }
+    if (!detected.some((violation) => violation.type === "NO_FACE")) {
+      lastNoFaceGuidanceRef.current = 0;
+    }
+    const confirmed = stabilizerRef.current.push(detected);
+    incidentsRef.current.observe(detected.map(incidentKeyOf), now);
+
+    // Verification says nothing about gaze or objects, so those wait for detection.
+    const typing = now - lastKeyAtRef.current < TYPING_GRACE_MS;
+    const isNotLooking = (violation) => violation.type === "NOT_LOOKING";
+    const lookingAway =
+      !verifyOnly &&
+      gazeRef.current.observe(
+        { away: detected.some(isNotLooking), confirmed: confirmed.some(isNotLooking), typing },
+        now,
+      );
+
+    const suspicion = !verifyOnly && suspicionReason(frame, detected, { typing });
+    if (suspicion) {
+      if (now >= suspicionUntilRef.current) {
+        logger.log(`[Proctoring] 🔎 Sampling every ${SUSPICION_INTERVAL_MS}ms: ${suspicion}`);
+        queueRef.current.push({
+          timestamp: new Date().toISOString(),
+          source: "cv_detect",
+          event_type: "suspicion_sampling",
+          payload: { reason: suspicion },
+        });
+      }
+      suspicionUntilRef.current = now + SUSPICION_WINDOW_MS;
+    }
+
+    // Re-check isActive after the async call — the session may have ended
+    // (auto-submit, normal submit) while we were waiting for the response.
+    if (isActiveRef.current) {
+      const gaze = lookingAway && lookingAwayViolation(lookingAway);
+      // Ahead of the soft gaze toast, so the strike isn't shown alongside it.
+      const queue = gaze
+        ? [...confirmed.filter((v) => !v.soft), gaze, ...confirmed.filter((v) => v.soft)]
+        : confirmed;
+      const raised = dispatchViolations(queue, frame.frame_quality, now);
+      if (gaze && (gaze.shadow || raised === gaze)) gazeRef.current.settle(now);
+    } else {
+      for (const violation of confirmed) {
+        recordDecision(violation, "session_ended", frame.frame_quality);
+      }
+    }
+
+    // A commit clears the window, so the same object right after its strike
+    // would otherwise log as a fresh, unconfirmed sighting.
+    const struck = struckIncidentsRef.current;
+    // Per label, so a phone joining a laptop that already struck is still new evidence.
+    const isHeld = (violation) => {
+      const key = violation.key ?? violation.type;
+      return (
+        struck.has(key) &&
+        struck.get(key) === incidentsRef.current.startedAt(incidentKeyOf(violation))
+      );
+    };
+    for (const violation of detected) {
+      if (confirmed.includes(violation)) continue;
+      recordDecision(violation, isHeld(violation) ? "held" : "unconfirmed", frame.frame_quality);
+    }
+
+    // Only evidence still waiting to confirm earns a quick second look. A muted
+    // or already struck laptop used to spend the whole budget, so a phone shown
+    // later never got one. Not while detection is down: its backoff comes first.
+    const worthBursting =
+      !verifyOnly &&
+      detected.some(
+        (violation) =>
+          BURST_TYPES.has(violation.type) &&
+          !violation.shadow &&
+          violation.countsAsViolation !== false &&
+          (!confirmed.includes(violation) ||
+            (violation.type === "NO_FACE" && !isHeld(violation))) &&
+          !isHeld(violation),
+      );
+    if (worthBursting) {
+      const hasNoFace = detected.some((v) => v.type === "NO_FACE" && !isHeld(v));
+      const maxBursts = hasNoFace ? MAX_NO_FACE_BURSTS : MAX_BURSTS;
+      if (burstsUsedRef.current < maxBursts) {
+        burstRemainingRef.current = BURST_SAMPLES;
+        burstsUsedRef.current += 1;
+      }
+    } else if (burstRemainingRef.current === 0) {
+      burstsUsedRef.current = 0;
     }
   }
 
@@ -912,14 +979,27 @@ export function useProctoringSystem(
   // Backing off protects the detection service, but it would slow identity
   // checks down with it. Frames captured for identity alone keep their pace.
   function scheduleIdentityChecks() {
-    clearTimeout(identityTimerRef.current);
-    const check = () => {
+    stopIdentityChecks();
+    const run = identityRunRef.current;
+    const check = async () => {
       if (!isActiveRef.current || busyRef.current) return;
       const sample = captureFrame();
-      if (sample) onSampleRef.current?.(sample);
+      if (sample) {
+        const faces = await verifyFaces(sample, null);
+        if (run !== identityRunRef.current) return;
+        if (faces && isActiveRef.current) {
+          processFrame({ ...VERIFY_ONLY_FRAME, verified_faces: faces }, sample.capturedAt);
+        }
+      }
       identityTimerRef.current = setTimeout(check, DETECT_INTERVAL_MS);
     };
     identityTimerRef.current = setTimeout(check, DETECT_INTERVAL_MS);
+  }
+
+  // A tick owns the camera again, including checks still waiting on an answer.
+  function stopIdentityChecks() {
+    clearTimeout(identityTimerRef.current);
+    identityRunRef.current += 1;
   }
 
   // Face verification asks for a quicker next look after a mismatch or while
@@ -1101,7 +1181,7 @@ export function useProctoringSystem(
     }
 
     return () => {
-      clearTimeout(identityTimerRef.current);
+      stopIdentityChecks();
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
@@ -1126,17 +1206,28 @@ export function useProctoringSystem(
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [isActive]);
 
-  const prevActiveRef = useRef(false);
+  // Sampling stops the instant the interview does; the log waits until the
+  // submission has answered so the one batch holds how it ended.
+  const hasRunRef = useRef(false);
   useEffect(() => {
-    if (prevActiveRef.current && !isActive) {
-      flushQueue();
+    if (isActive) {
+      hasRunRef.current = true;
+      return;
     }
-    prevActiveRef.current = isActive;
-  }, [isActive]);
+    if (!hasRunRef.current) return;
+    if (logReady) {
+      flushQueue();
+      return;
+    }
+    const timer = setTimeout(() => flushQueue(), LOG_SEND_FALLBACK_MS);
+    return () => clearTimeout(timer);
+  }, [isActive, logReady]);
 
+  // Only a send that already failed is retried. Retrying mid-interview sent a
+  // partial batch, and the real one after it was then never sent.
   useEffect(() => {
     const handleOnlineFlush = () => {
-      if (queueRef.current.length > 0 && !hasFlushedRef.current) {
+      if (queueRef.current.length > 0 && !hasFlushedRef.current && flushRetryCountRef.current > 0) {
         logger.log("[Proctoring] 🌐 Internet restored — retrying proctoring log flush...");
         flushQueue();
       }

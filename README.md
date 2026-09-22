@@ -234,6 +234,11 @@ Detection is deliberately conservative — false strikes are worse than missed o
 - **Rate limits** — a 30s per-type cooldown plus a 10s reaction window after every
   strike. Anything confirmed during the window is queued and lands after it, oldest first.
 - **Soft violations** (gaze, eyes closed) show a toast and never count as a strike.
+- **Face verification counts too** — continuous-verify's `NO_FACE`, `MULTIPLE_FACES` and
+  `FACE_MISMATCH_AND_MULTIPLE_FACES` are merged into detection's result for the same
+  frame, so a face problem either check sees strikes once, under the same rules. Each
+  decision logs `seen_by` (`detect`, `verify` or `both`); `verify_faces` in
+  `VITE_AI_SHADOW_RULES` turns the verification-only strikes back into log entries.
 - **Degraded mode** — after 3 consecutive detection failures the loop backs off
   exponentially (to 40s) and the candidate is told checks are temporarily unavailable.
 - **Log flush** — batched to the backend; on unload via `fetch(keepalive)` (not

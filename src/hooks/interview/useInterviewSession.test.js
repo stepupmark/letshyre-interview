@@ -2,7 +2,8 @@ import { StrictMode } from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { useInterviewSession } from "./useInterviewSession";
-import { SESSION_STATUS } from "@/config/interview";
+import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
+import { subscribeToViolationLog } from "@/lib/violationLog";
 
 const startMutateAsync = vi.fn();
 const submitMutateAsync = vi.fn();
@@ -232,5 +233,53 @@ describe("useInterviewSession submit", () => {
       status: SESSION_STATUS.COMPLETED,
       end_reason: "completed",
     });
+  });
+});
+
+describe("useInterviewSession log", () => {
+  let events;
+  let stop;
+
+  beforeEach(() => {
+    sessionStorage.clear();
+    startMutateAsync.mockReset().mockResolvedValue(FAKE_START_RESPONSE);
+    events = [];
+    stop = subscribeToViolationLog((event) => events.push(event));
+  });
+
+  afterEach(() => stop());
+
+  it("logs each disconnect and how long it lasted", async () => {
+    const { result } = renderHook(() => useInterviewSession());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => window.dispatchEvent(new Event("offline")));
+    act(() => window.dispatchEvent(new Event("online")));
+
+    const network = events.filter((event) => event.type === "NETWORK_DISCONNECT");
+    expect(network).toEqual([
+      expect.objectContaining({
+        outcome: "raised",
+        disconnect_count: 1,
+        limit: MAX_INTERNET_DISCONNECTS,
+        category: "network",
+      }),
+      expect.objectContaining({ outcome: "restored", offline_ms: expect.any(Number) }),
+    ]);
+  });
+
+  it("records a normal finish", async () => {
+    submitMutateAsync.mockReset().mockResolvedValue({
+      success: true,
+      data: { ai: { completed: true, scorecard: { overall_score: 50 } } },
+    });
+    const { result } = renderHook(() => useInterviewSession());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(() => result.current.submit({ answer_text: "last" }));
+
+    expect(events.filter((event) => event.type === "INTERVIEW_ENDED")).toEqual([
+      expect.objectContaining({ outcome: "completed", reason: "completed", strike_count: 0 }),
+    ]);
   });
 });

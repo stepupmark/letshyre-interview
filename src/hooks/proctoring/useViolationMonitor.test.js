@@ -1391,3 +1391,126 @@ describe("useViolationMonitor desktop-app hard blocks", () => {
     );
   });
 });
+
+describe("useViolationMonitor log", () => {
+  let events;
+  let stop;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    events = [];
+    stop = subscribeToViolationLog((event) => events.push(event));
+  });
+
+  afterEach(() => {
+    stop();
+    vi.useRealTimers();
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+  });
+
+  const hardViolation = {
+    titleKey: "violations.noFace.title",
+    descriptionKey: "violations.noFace.description",
+  };
+  const logged = (type) => events.filter((event) => event.type === type);
+
+  it("marks the record that added a strike, and keeps its type", () => {
+    const { result } = setup();
+    act(() => result.current.handleAiViolation({ ...hardViolation, type: "NO_FACE" }));
+
+    expect(logged("NO_FACE")).toEqual([
+      expect.objectContaining({ outcome: "raised", counts_as_strike: true, strike_count: 1 }),
+    ]);
+    expect(result.current.strikes[0]).toMatchObject({ count: 1, type: "NO_FACE" });
+  });
+
+  it("does not log a face mismatch the face check already logged", () => {
+    const { result } = setup();
+    act(() =>
+      result.current.handleAiViolation({
+        type: "FACE_MISMATCH",
+        titleKey: "violations.faceMismatch.title",
+        countsAsViolation: false,
+      }),
+    );
+
+    expect(result.current.showTabWarning).toBe(true);
+    expect(logged("FACE_MISMATCH")).toHaveLength(0);
+  });
+
+  it("logs a warning the candidate closed, and one that closed itself", () => {
+    const { result } = setup();
+
+    act(() => result.current.handleAiViolation(hardViolation));
+    act(() => vi.advanceTimersByTime(3_000));
+    act(() => result.current.dismissWarning());
+
+    act(() => vi.advanceTimersByTime(60_000));
+    act(() => result.current.handleAiViolation({ ...hardViolation, type: "LOOKING_AWAY" }));
+    act(() => vi.advanceTimersByTime(20_000));
+
+    expect(logged("WARNING")).toEqual([
+      expect.objectContaining({ outcome: "dismissed", open_ms: 3_000 }),
+      expect.objectContaining({ outcome: "auto_closed", open_ms: 20_000 }),
+    ]);
+  });
+
+  it("logs blocked copy, paste and right-click without a strike", () => {
+    const { incrementViolation } = setup();
+
+    act(() => {
+      document.dispatchEvent(new Event("copy"));
+      document.dispatchEvent(new Event("paste"));
+      document.dispatchEvent(new Event("contextmenu"));
+    });
+
+    expect(logged("INPUT_BLOCKED").map((event) => event.action)).toEqual([
+      "copy",
+      "paste",
+      "right_click",
+    ]);
+    expect(logged("INPUT_BLOCKED")[0]).toMatchObject({
+      category: "input",
+      counts_as_strike: false,
+    });
+    expect(incrementViolation).not.toHaveBeenCalled();
+  });
+
+  it("logs nothing for blocked input before the interview starts", () => {
+    setup({ isActive: false });
+    act(() => document.dispatchEvent(new Event("copy")));
+    expect(logged("INPUT_BLOCKED")).toHaveLength(0);
+  });
+
+  it("logs how long the candidate was away after a tab switch", () => {
+    setup();
+
+    act(() => {
+      Object.defineProperty(document, "hidden", { value: true, configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    act(() => vi.advanceTimersByTime(4_000));
+    act(() => {
+      Object.defineProperty(document, "hidden", { value: false, configurable: true });
+      window.dispatchEvent(new Event("focus"));
+    });
+
+    expect(logged("LEFT_WINDOW")).toEqual([
+      expect.objectContaining({ outcome: "returned", cause: "TAB_SWITCH", away_ms: 4_000 }),
+    ]);
+  });
+
+  it("logs a focus loss too short to count, without a strike", () => {
+    const { incrementViolation } = setup();
+
+    act(() => window.dispatchEvent(new Event("blur")));
+    act(() => vi.advanceTimersByTime(500));
+    act(() => window.dispatchEvent(new Event("focus")));
+
+    expect(logged("WINDOW_FOCUS")).toEqual([
+      expect.objectContaining({ outcome: "brief", away_ms: 500, category: "window" }),
+    ]);
+    expect(incrementViolation).not.toHaveBeenCalled();
+  });
+});

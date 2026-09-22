@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
-import { detectFrame } from "@/services/proctoring.api";
+import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
 import { subscribeToViolationLog } from "@/lib/violationLog";
-import { useProctoringSystem } from "./useProctoringSystem";
+import { LOG_SEND_FALLBACK_MS, useProctoringSystem } from "./useProctoringSystem";
 
 vi.mock("@/services/proctoring.api", () => ({
   detectFrame: vi.fn(),
@@ -577,5 +577,168 @@ describe("face verification pacing", () => {
       5_000, 10_000, 15_000, 20_000, 25_000, 30_000, 35_000,
     ]);
     expect(onSample.mock.calls.every(([sample]) => sample.faceCount === undefined)).toBe(true);
+  });
+});
+
+describe("faces seen by verification", () => {
+  const verified = (faces) => vi.fn(async () => ({ faces }));
+  const strikes = (onViolation, type) =>
+    onViolation.mock.calls.map(([v]) => v).filter((v) => v.type === type && !v.soft);
+
+  it("strikes several people that only verification saw", async () => {
+    replay([]);
+    const { onViolation } = start(undefined, verified("multiple"));
+
+    await vi.advanceTimersByTimeAsync(6_000);
+
+    expect(strikes(onViolation, "MULTIPLE_FACES")).toEqual([
+      expect.objectContaining({ detail: expect.objectContaining({ seen_by: "verify" }) }),
+    ]);
+  });
+
+  it("counts several people once when both checks see them", async () => {
+    replay(Array.from({ length: 10 }, () => ({ ...frame(), face_count: 2 })));
+    const { onViolation } = start(undefined, verified("multiple"));
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(strikes(onViolation, "MULTIPLE_FACES")).toEqual([
+      expect.objectContaining({ detail: expect.objectContaining({ seen_by: "both" }) }),
+    ]);
+  });
+
+  it("strikes no face when verification finds none on a frame detection saw a face in", async () => {
+    replay([]);
+    const { onViolation } = start(undefined, verified("none"));
+
+    await vi.advanceTimersByTimeAsync(6_000);
+    expect(strikes(onViolation, "NO_FACE")).toHaveLength(0);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(strikes(onViolation, "NO_FACE")).toEqual([
+      expect.objectContaining({ detail: expect.objectContaining({ seen_by: "verify" }) }),
+    ]);
+  });
+
+  it("counts on verification alone while detection is down, without extra detection calls", async () => {
+    detectFrame.mockImplementation(async () => {
+      calls.push(Date.now());
+      throw new Error("offline");
+    });
+    const { onViolation } = start(undefined, verified("none"));
+
+    await vi.advanceTimersByTimeAsync(20_000);
+
+    expect(calls).toEqual([5_000, 15_000]);
+    expect(strikes(onViolation, "NO_FACE")).toHaveLength(1);
+  });
+
+  it("does not let a slow answer hold detection up for more than 3 seconds", async () => {
+    replay([]);
+    start(
+      undefined,
+      vi.fn(() => new Promise(() => {})),
+    );
+
+    await vi.advanceTimersByTimeAsync(13_000);
+
+    expect(calls).toEqual([5_000, 13_000]);
+  });
+
+  it("only logs what verification alone saw while verify_faces is muted", async () => {
+    shadowRules.add("verify_faces");
+    replay([]);
+    const { onViolation } = start(undefined, verified("multiple"));
+
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(strikes(onViolation, "MULTIPLE_FACES")).toHaveLength(0);
+    expect(decisions("MULTIPLE_FACES")).toContain("shadow");
+  });
+});
+
+describe("sending the log", () => {
+  const render = (props) =>
+    renderHook(
+      ({ isActive, logReady }) =>
+        useProctoringSystem(
+          { current: {} },
+          "i1",
+          "s1",
+          isActive,
+          "token",
+          vi.fn(() => "raised"),
+          vi.fn(),
+          logReady,
+        ),
+      { initialProps: props },
+    );
+
+  beforeEach(() => {
+    submitProctoringLogs.mockReset().mockResolvedValue({});
+    replay([]);
+  });
+
+  it("waits for the submission to answer, then sends once", async () => {
+    const { rerender } = render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    rerender({ isActive: false, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(submitProctoringLogs).not.toHaveBeenCalled();
+
+    rerender({ isActive: false, logReady: true });
+    await vi.advanceTimersByTimeAsync(0);
+    rerender({ isActive: false, logReady: true });
+    await vi.advanceTimersByTimeAsync(LOG_SEND_FALLBACK_MS);
+
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(1);
+    expect(submitProctoringLogs.mock.calls[0][0].payload.records.length).toBeGreaterThan(0);
+  });
+
+  it("sends anyway if the submission never answers", async () => {
+    const { rerender } = render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+    rerender({ isActive: false, logReady: false });
+
+    await vi.advanceTimersByTimeAsync(LOG_SEND_FALLBACK_MS - 1);
+    expect(submitProctoringLogs).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not send mid-interview when the connection comes back", async () => {
+    render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    window.dispatchEvent(new Event("online"));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(submitProctoringLogs).not.toHaveBeenCalled();
+  });
+
+  it("retries a failed send when the connection comes back", async () => {
+    submitProctoringLogs.mockRejectedValueOnce(new Error("offline"));
+    const { rerender } = render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+    rerender({ isActive: false, logReady: true });
+    await vi.advanceTimersByTimeAsync(0);
+
+    window.dispatchEvent(new Event("online"));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("hints in the log", () => {
+  it("logs the look-away hint the candidate was shown", async () => {
+    replay(Array.from({ length: 10 }, notLooking));
+    start(softAware());
+
+    await vi.advanceTimersByTimeAsync(20_000);
+
+    expect(decisions("NOT_LOOKING")).toContain("hint");
   });
 });

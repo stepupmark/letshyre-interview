@@ -177,9 +177,14 @@ export function Interview() {
   // because the status callback was never wired through LeftPanel).
   const handleCameraStatus = useCallback((status) => {
     if (status === "engine-error") {
+      recordViolationEvent({ source: "camera", type: "CAMERA_ERROR", outcome: "failed" });
       toast.error("Camera unavailable. Check permissions/hardware — proctoring needs your camera.");
     }
   }, []);
+
+  // The log is sent once, so it waits until the submission has answered.
+  const logReady =
+    autoSubmitSuccess || !!autoSubmitError || (!autoSubmitting && (isCompleted || isTerminated));
 
   // Owns the only camera clock; face verification reads the frames it samples.
   const { isDegraded: isProctoringDegraded, sampleSoon } = useProctoringSystem(
@@ -190,6 +195,7 @@ export function Interview() {
     session?.proctoring_token,
     handleAiViolation,
     verifySample,
+    logReady,
   );
 
   useEffect(() => {

@@ -29,7 +29,7 @@ vi.mock("sonner", () => ({
 const MATCH = {
   success: true,
   same_person: true,
-  confidence: 0.682546079158783,
+  confidence: 0.6708521842956543,
   violation: null,
   total_violations: 0,
   error: null,
@@ -37,12 +37,11 @@ const MATCH = {
 const MISMATCH = {
   success: true,
   same_person: false,
-  confidence: 0.21,
-  violation: null,
-  total_violations: 0,
+  confidence: 0.515070378780365,
+  violation: "FACE_MISMATCH",
+  total_violations: 2,
   error: null,
 };
-// What the endpoint actually sends: the identity verdict lands in both fields.
 const LIVE_MISMATCH = {
   success: true,
   same_person: false,
@@ -68,6 +67,8 @@ const NO_FACE = {
   error: null,
 };
 const MULTIPLE_FACES = { ...NO_FACE, violation: "MULTIPLE_FACES", total_violations: 10 };
+// Someone else in front, more people behind. `success` is false even so.
+const MISMATCH_WITH_PEOPLE = { ...MULTIPLE_FACES, violation: "FACE_MISMATCH_AND_MULTIPLE_FACES" };
 const INVALID_SESSION = {
   success: false,
   same_person: null,
@@ -112,17 +113,21 @@ function setup(options = {}) {
   let capturedAt = 0;
 
   const send = async (frame) => {
+    let answer;
     await act(async () => {
-      await result.current.verifySample({ ...frame, capturedAt });
+      answer = await result.current.verifySample({ ...frame, capturedAt });
     });
+    return answer;
   };
 
   const sample = async (response, times = 1, frame = CLEAR) => {
+    let answer;
     for (let i = 0; i < times; i += 1) {
       capturedAt += 5000;
       mutateAsync.mockResolvedValueOnce(response);
-      await send(frame);
+      answer = await send(frame);
     }
+    return answer;
   };
 
   const failSample = async (times = 1) => {
@@ -133,12 +138,14 @@ function setup(options = {}) {
     }
   };
 
-  // Frames the service never sees: no face, several, or an unclear one.
+  // Frames sent without a scripted response, or never sent at all.
   const frames = async (frame, times = 1) => {
+    let answer;
     for (let i = 0; i < times; i += 1) {
       capturedAt += 5000;
-      await send(frame);
+      answer = await send(frame);
     }
+    return answer;
   };
 
   const unclear = (times) => frames({ ...CLEAR, faceConfidence: 0.6 }, times);
@@ -171,30 +178,24 @@ function captureLog() {
 }
 
 describe("classifyVerification", () => {
-  it("reads each response shape for what it is", () => {
-    expect(classifyVerification(MATCH)).toMatchObject({ verdict: "match" });
-    expect(classifyVerification(MISMATCH)).toMatchObject({ verdict: "mismatch" });
-    expect(classifyVerification(NO_FACE)).toMatchObject({
-      verdict: "condition",
-      reason: "NO_FACE",
-    });
-    expect(classifyVerification(MULTIPLE_FACES)).toMatchObject({
-      verdict: "condition",
-      reason: "MULTIPLE_FACES",
-    });
-    expect(classifyVerification(INVALID_SESSION)).toMatchObject({ verdict: "not_registered" });
+  it.each([
+    ["the same person", MATCH, { verdict: "match" }],
+    ["a mismatch", MISMATCH, { verdict: "mismatch", confidence: 0.515070378780365 }],
+    ["no face", NO_FACE, { verdict: "condition", faces: "none" }],
+    ["several people", MULTIPLE_FACES, { verdict: "condition", faces: "multiple" }],
+    [
+      "a mismatch with people behind",
+      MISMATCH_WITH_PEOPLE,
+      { verdict: "mismatch", faces: "multiple" },
+    ],
+    ["an invalid session", INVALID_SESSION, { verdict: "not_registered" }],
+  ])("reads %s", (_label, response, expected) => {
+    expect(classifyVerification(response)).toMatchObject(expected);
   });
 
-  it("reads the live mismatch payload as a mismatch, not a frame condition", () => {
-    expect(classifyVerification(LIVE_MISMATCH)).toEqual({
-      verdict: "mismatch",
-      confidence: 0.07679013907909393,
-      serverTotal: 2,
-    });
-  });
-
-  it("reads the live match payload as a match", () => {
-    expect(classifyVerification(LIVE_MATCH)).toEqual({ verdict: "match", confidence: 1 });
+  it("reads the verdict whatever success says", () => {
+    expect(classifyVerification({ ...MISMATCH, success: false }).verdict).toBe("mismatch");
+    expect(classifyVerification({ ...MATCH, success: false }).verdict).toBe("match");
   });
 
   it("treats an operational failure as unavailable even when a condition came with it", () => {
@@ -203,10 +204,15 @@ describe("classifyVerification", () => {
     });
   });
 
-  it("will not read a verdict out of a call that did not succeed", () => {
-    expect(classifyVerification(UNEXPLAINED_FAILURE)).toMatchObject({
+  it("takes no verdict from same_person false without a violation", () => {
+    expect(classifyVerification(UNEXPLAINED_FAILURE).verdict).toBe("no_verdict");
+  });
+
+  it("keeps an unknown violation out of both counts", () => {
+    expect(classifyVerification({ ...NO_FACE, violation: "SOMETHING_NEW" })).toEqual({
       verdict: "no_verdict",
-      reason: "unsuccessful_response",
+      reason: "unknown_violation",
+      violation: "SOMETHING_NEW",
     });
   });
 
@@ -338,14 +344,86 @@ describe("useFaceMatchMonitoring mismatches", () => {
     expect(autoSubmit).not.toHaveBeenCalled();
   });
 
-  it("does not ask the service about a frame without exactly one face", async () => {
+  it("does not ask the service about a frame with no face", async () => {
     const { frames, onViolation } = setup();
 
     await frames({ ...CLEAR, faceCount: 0 });
-    await frames({ ...CLEAR, faceCount: 2 });
 
     expect(mutateAsync).not.toHaveBeenCalled();
     expect(onViolation).not.toHaveBeenCalled();
+  });
+});
+
+describe("useFaceMatchMonitoring faces the service saw", () => {
+  beforeEach(() => {
+    mutateAsync.mockReset();
+    config.strongBelow = 0;
+  });
+
+  it.each([
+    ["a match", MATCH, "one"],
+    ["a mismatch", MISMATCH, "one"],
+    ["no face", NO_FACE, "none"],
+    ["several people", MULTIPLE_FACES, "multiple"],
+    ["a mismatch with people behind", MISMATCH_WITH_PEOPLE, "multiple"],
+    ["a response with no verdict", UNEXPLAINED_FAILURE, null],
+    ["a service error", UPSTREAM_ERROR, null],
+  ])("reports %s to the camera loop", async (_label, response, faces) => {
+    const { sample } = setup();
+    expect(await sample(response)).toEqual({ faces });
+  });
+
+  it("reports nothing for a frame it did not send", async () => {
+    const { frames } = setup();
+    expect(await frames({ ...CLEAR, faceCount: 0 })).toBeUndefined();
+  });
+
+  it("counts a mismatch with people behind towards identity too", async () => {
+    const { autoSubmit, sample, mismatchWarnings } = setup();
+
+    await sample(MISMATCH_WITH_PEOPLE);
+    expect(mismatchWarnings()).toHaveLength(1);
+
+    expect(await sample(MISMATCH_WITH_PEOPLE)).toBeUndefined();
+    expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
+  });
+
+  it("checks frames with several faces, needing one more mismatch to end", async () => {
+    const { autoSubmit, sample } = setup();
+    const crowded = { ...CLEAR, faceCount: 2 };
+
+    await sample(MISMATCH_WITH_PEOPLE, 2, crowded);
+    expect(mutateAsync).toHaveBeenCalledTimes(2);
+    expect(autoSubmit).not.toHaveBeenCalled();
+
+    await sample(MISMATCH_WITH_PEOPLE, 1, crowded);
+    expect(autoSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("never counts no face or several people as a mismatch", async () => {
+    const { autoSubmit, sample, result } = setup();
+
+    await sample(NO_FACE, 3);
+    await sample(MULTIPLE_FACES, 3);
+
+    expect(result.current.mismatchCount).toBe(0);
+    expect(autoSubmit).not.toHaveBeenCalled();
+  });
+
+  it("logs a violation it does not know", async () => {
+    const { events, unsubscribe } = captureLog();
+    const { sample, onViolation } = setup();
+    await sample({ ...NO_FACE, violation: "SOMETHING_NEW" });
+    unsubscribe();
+
+    expect(onViolation).not.toHaveBeenCalled();
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        outcome: "no_verdict",
+        reason: "unknown_violation",
+        violation: "SOMETHING_NEW",
+      }),
+    );
   });
 });
 
