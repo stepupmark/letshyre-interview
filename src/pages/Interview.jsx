@@ -34,6 +34,8 @@ import { draftKeyFor } from "@/lib/answerDraft";
 import { recordViolationEvent } from "@/lib/violationLog";
 
 const FACE_REGISTERED_KEY = "face_registered_for";
+const REGISTER_RETRY_MS = 15_000;
+const UNVERIFIED_AFTER_MS = 60_000;
 
 export function Interview() {
   const { t } = useTranslation("questions");
@@ -92,6 +94,7 @@ export function Interview() {
     sessionStorage.getItem(FACE_REGISTERED_KEY),
   );
   const [registerRequest, setRegisterRequest] = useState(0);
+  const [registerFailures, setRegisterFailures] = useState(0);
   const isFaceRegistered = !!session?.session_id && registeredFor === session.session_id;
 
   const registerFaceMutation = useRegisterFace(session?.session_id);
@@ -102,11 +105,17 @@ export function Interview() {
     setRegisterRequest((n) => n + 1);
   }, []);
 
+  // The two hooks need each other: verification asks the camera loop for a
+  // quicker look, and the loop feeds verification its frames.
+  const sampleSoonRef = useRef(null);
+  const requestSample = useCallback((reason) => sampleSoonRef.current?.(reason), []);
+
   const { verifySample, isVerificationUnavailable } = useFaceMatchMonitoring({
     sessionId: session?.session_id,
     autoSubmit,
     onViolation: handleAiViolation,
     onNotRegistered: reregisterFace,
+    requestSample,
     isReady: isFaceRegistered,
   });
 
@@ -135,10 +144,34 @@ export function Interview() {
             outcome: "registration_failed",
             error: err?.response?.status ?? err?.message,
           });
+          setRegisterFailures((n) => n + 1);
         },
       },
     );
   }, [session?.session_id, registerRequest]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!registerFailures || !isActive || isFaceRegistered) return;
+    const id = setTimeout(() => setRegisterRequest((n) => n + 1), REGISTER_RETRY_MS);
+    return () => clearTimeout(id);
+  }, [registerFailures, isActive, isFaceRegistered]);
+
+  // Flagged for review rather than ended: a missing reference face is our
+  // failure, not the candidate's.
+  useEffect(() => {
+    if (!isActive || isFaceRegistered) return;
+    const id = setTimeout(() => {
+      recordViolationEvent({
+        source: "face_match",
+        type: "FACE_MISMATCH",
+        outcome: "identity_unverified",
+        reason: sessionStorage.getItem("candidate_photo")
+          ? "registration_failed"
+          : "no_reference_photo",
+      });
+    }, UNVERIFIED_AFTER_MS);
+    return () => clearTimeout(id);
+  }, [isActive, isFaceRegistered]);
 
   // Surface camera boot/playback failures to the candidate (previously a no-op
   // because the status callback was never wired through LeftPanel).
@@ -149,7 +182,7 @@ export function Interview() {
   }, []);
 
   // Owns the only camera clock; face verification reads the frames it samples.
-  const { isDegraded: isProctoringDegraded } = useProctoringSystem(
+  const { isDegraded: isProctoringDegraded, sampleSoon } = useProctoringSystem(
     videoRef,
     session?.interview_id,
     session?.session_id,
@@ -158,6 +191,10 @@ export function Interview() {
     handleAiViolation,
     verifySample,
   );
+
+  useEffect(() => {
+    sampleSoonRef.current = sampleSoon;
+  }, [sampleSoon]);
 
   const {
     visible: showTermination,

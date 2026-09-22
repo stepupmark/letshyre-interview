@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
 import { captureSample, isVideoReady } from "@/lib/videoCapture";
 import { violationCopy } from "@/lib/violationCopy";
@@ -61,9 +61,6 @@ export const LOOKING_AWAY_HOLD_MS = 15_000;
 export const LOOKING_AWAY_REPEATS = 4;
 export const LOOKING_AWAY_WINDOW_MS = 120_000;
 export const TYPING_GRACE_MS = 3_000;
-
-// Past this much unobserved time a run of evidence counts as broken.
-export const RESEED_AFTER_GAP_MS = 20_000;
 
 // fetch(keepalive) caps the body at 64KB. Oldest records are dropped first so a
 // too-large tail degrades to a partial log instead of no log at all.
@@ -511,7 +508,8 @@ export function useProctoringSystem(
   const serviceFailuresRef = useRef(0);
   const burstRemainingRef = useRef(0);
   const burstsUsedRef = useRef(0);
-  const intervalRef = useRef(DETECT_INTERVAL_MS);
+  const nextTickAtRef = useRef(0);
+  const identityTimerRef = useRef(null);
   const incidentsRef = useRef(createIncidentTracker());
   const struckIncidentsRef = useRef(new Map());
   const lastNoFaceGuidanceRef = useRef(0);
@@ -727,6 +725,7 @@ export function useProctoringSystem(
   }
 
   async function tick() {
+    clearTimeout(identityTimerRef.current);
     if (!isActiveRef.current || busyRef.current) {
       scheduleNext();
       return;
@@ -736,7 +735,7 @@ export function useProctoringSystem(
     if (!sample) {
       recordFailure("camera_unavailable");
       if (consecutiveFailuresRef.current <= CAMERA_GRACE_TICKS) {
-        timerRef.current = setTimeout(tick, CAMERA_RETRY_MS);
+        setTickTimer(CAMERA_RETRY_MS);
       } else {
         scheduleNext();
       }
@@ -877,16 +876,17 @@ export function useProctoringSystem(
       recordFailure(err?.message || "request_failed");
     } finally {
       if (isActiveRef.current) {
-        onSampleRef.current?.({
-          ...sample,
-          intervalMs: intervalRef.current,
-          faceCount,
-          faceConfidence,
-        });
+        onSampleRef.current?.({ ...sample, faceCount, faceConfidence });
       }
       busyRef.current = false;
       scheduleNext();
     }
+  }
+
+  function setTickTimer(delay) {
+    clearTimeout(timerRef.current);
+    nextTickAtRef.current = Date.now() + delay;
+    timerRef.current = setTimeout(() => tickRef.current(), delay);
   }
 
   function scheduleNext() {
@@ -894,8 +894,7 @@ export function useProctoringSystem(
 
     if (burstRemainingRef.current > 0) {
       burstRemainingRef.current -= 1;
-      intervalRef.current = BURST_INTERVAL_MS;
-      timerRef.current = setTimeout(tick, BURST_INTERVAL_MS);
+      setTickTimer(BURST_INTERVAL_MS);
       return;
     }
 
@@ -906,8 +905,42 @@ export function useProctoringSystem(
         : Date.now() < suspicionUntilRef.current
           ? SUSPICION_INTERVAL_MS
           : DETECT_INTERVAL_MS;
-    intervalRef.current = delay;
-    timerRef.current = setTimeout(tick, delay);
+    setTickTimer(delay);
+    if (delay > DETECT_INTERVAL_MS) scheduleIdentityChecks();
+  }
+
+  // Backing off protects the detection service, but it would slow identity
+  // checks down with it. Frames captured for identity alone keep their pace.
+  function scheduleIdentityChecks() {
+    clearTimeout(identityTimerRef.current);
+    const check = () => {
+      if (!isActiveRef.current || busyRef.current) return;
+      const sample = captureFrame();
+      if (sample) onSampleRef.current?.(sample);
+      identityTimerRef.current = setTimeout(check, DETECT_INTERVAL_MS);
+    };
+    identityTimerRef.current = setTimeout(check, DETECT_INTERVAL_MS);
+  }
+
+  // Face verification asks for a quicker next look after a mismatch or while
+  // the face is unclear. Backoff still wins: the service is struggling then.
+  function sampleSoon(reason) {
+    if (!isActiveRef.current) return;
+    const now = Date.now();
+    if (now >= suspicionUntilRef.current) {
+      logger.log(`[Proctoring] 🔎 Sampling every ${SUSPICION_INTERVAL_MS}ms: ${reason}`);
+      queueRef.current.push({
+        timestamp: new Date().toISOString(),
+        source: "cv_detect",
+        event_type: "suspicion_sampling",
+        payload: { reason },
+      });
+    }
+    suspicionUntilRef.current = now + SUSPICION_WINDOW_MS;
+
+    // A tick in progress picks the faster pace up when it schedules the next one.
+    if (busyRef.current || consecutiveFailuresRef.current > 0) return;
+    if (nextTickAtRef.current - now > SUSPICION_INTERVAL_MS) setTickTimer(SUSPICION_INTERVAL_MS);
   }
 
   function checkCamera() {
@@ -1031,10 +1064,13 @@ export function useProctoringSystem(
 
   const tickRef = useRef(tick);
   const checkCameraRef = useRef(checkCamera);
+  const sampleSoonRef = useRef(sampleSoon);
   useEffect(() => {
     tickRef.current = tick;
     checkCameraRef.current = checkCamera;
+    sampleSoonRef.current = sampleSoon;
   });
+  const requestSample = useCallback((reason) => sampleSoonRef.current(reason), []);
 
   useEffect(() => {
     if (isActive) {
@@ -1054,6 +1090,7 @@ export function useProctoringSystem(
       gazeRef.current.reset();
       // Deferred so the setState isn't a direct synchronous call in the effect body.
       queueMicrotask(() => setIsDegraded(false));
+      nextTickAtRef.current = Date.now() + DETECT_INTERVAL_MS;
       timerRef.current = setTimeout(() => tickRef.current(), DETECT_INTERVAL_MS);
     } else {
       logger.log("[Proctoring] ⏹️ Interview inactive — stopping loop.");
@@ -1064,6 +1101,7 @@ export function useProctoringSystem(
     }
 
     return () => {
+      clearTimeout(identityTimerRef.current);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
@@ -1129,5 +1167,6 @@ export function useProctoringSystem(
     flush: flushQueue,
     pendingCount: () => queueRef.current.length,
     isDegraded,
+    sampleSoon: requestSample,
   };
 }

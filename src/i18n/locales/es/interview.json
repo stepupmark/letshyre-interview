@@ -186,6 +186,10 @@
     "faceMismatch": {
       "title": "Verificación de identidad fallida",
       "description": "No pudimos confirmar que siga siendo usted en la cámara. Asegúrese de que su rostro esté bien visible e iluminado."
+    },
+    "faceUnclear": {
+      "title": "Mire a la cámara",
+      "description": "No vemos su rostro con la claridad suficiente para confirmar que es usted. Mire hacia la pantalla y asegúrese de que su rostro esté bien iluminado."
     }
   },
   "termination": {
@@ -201,7 +205,7 @@
     "faceMismatch": {
       "title": "Entrevista finalizada",
       "pill": "Verificación de identidad fallida",
-      "description": "La verificación de identidad falló en {{faceMismatches}} comprobaciones seguidas, por lo que no pudimos confirmar que siguiera siendo usted en la cámara. Su entrevista se envió con las respuestas que completó."
+      "description": "La verificación de identidad falló repetidamente, por lo que no pudimos confirmar que siguiera siendo usted en la cámara. Su entrevista se envió con las respuestas que completó."
     },
     "networkDisconnects": {
       "title": "Entrevista finalizada",

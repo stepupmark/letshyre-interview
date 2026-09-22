@@ -186,6 +186,10 @@
     "faceMismatch": {
       "title": "Échec de la vérification d'identité",
       "description": "Nous n'avons pas pu confirmer que c'est toujours vous devant la caméra. Veillez à ce que votre visage soit bien visible et éclairé."
+    },
+    "faceUnclear": {
+      "title": "Faites face à la caméra",
+      "description": "Nous ne voyons pas assez bien votre visage pour confirmer que c'est vous. Regardez l'écran et assurez-vous que votre visage est bien éclairé."
     }
   },
   "termination": {
@@ -201,7 +205,7 @@
     "faceMismatch": {
       "title": "Entretien terminé",
       "pill": "Échec de la vérification d'identité",
-      "description": "La vérification d'identité a échoué {{faceMismatches}} fois de suite, nous n'avons donc pas pu confirmer que c'était toujours vous devant la caméra. Votre entretien a été soumis avec les réponses complétées."
+      "description": "La vérification d'identité a échoué à plusieurs reprises, nous n'avons donc pas pu confirmer que c'était toujours vous devant la caméra. Votre entretien a été soumis avec les réponses complétées."
     },
     "networkDisconnects": {
       "title": "Entretien terminé",

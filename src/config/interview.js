@@ -14,9 +14,30 @@ const num = (value, fallback) => {
 // allowed before the interview is auto-submitted.
 export const MAX_VIOLATIONS = num(import.meta.env.VITE_AI_MAX_VIOLATIONS_ALLOWED, 3);
 
-// Consecutive mismatching frames before auto-submit. Anything that isn't a
-// verdict — a no-face frame, an error, a failed call — resets the streak.
+// Mismatches with no match between them before auto-submit. Only a match
+// resets the run; a no-face frame, an error or a pause does not.
 export const FACE_MISMATCH_LIMIT = num(import.meta.env.VITE_AI_FACE_MISMATCH_LIMIT, 2);
+
+// Mismatches across the whole interview, matches or not, before auto-submit.
+export const FACE_MISMATCH_TOTAL_LIMIT = num(import.meta.env.VITE_AI_FACE_MISMATCH_TOTAL_LIMIT, 3);
+
+// A face too unclear to compare for this long gets a hint, and for the longer
+// one counts as a mismatch.
+export const FACE_UNCLEAR_HINT_MS =
+  num(import.meta.env.VITE_AI_FACE_UNCLEAR_HINT_SECONDS, 30) * 1000;
+export const FACE_UNCLEAR_LIMIT_MS =
+  num(import.meta.env.VITE_AI_FACE_UNCLEAR_LIMIT_SECONDS, 60) * 1000;
+
+// While the verification service is down, one frame per this interval checks
+// whether it is back.
+export const FACE_PROBE_INTERVAL_MS = 30_000;
+
+// Similarity below this on a clear frame ends the interview on the first
+// mismatch. Off until real interviews show where honest candidates never land.
+export const FACE_STRONG_MISMATCH_BELOW = num(
+  import.meta.env.VITE_AI_FACE_STRONG_MISMATCH_BELOW,
+  0,
+);
 
 // Internet disconnects allowed before auto-submit. Tracked separately from
 // proctoring violations — a dropped connection is not misconduct.

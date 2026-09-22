@@ -533,3 +533,49 @@ describe("useProctoringSystem degraded mode", () => {
     expect(result.current.isDegraded).toBe(false);
   });
 });
+
+describe("face verification pacing", () => {
+  const render = (onSample = vi.fn()) => {
+    const { result } = renderHook(() =>
+      useProctoringSystem({ current: {} }, "i1", "s1", true, "token", vi.fn(), onSample),
+    );
+    return { result, onSample };
+  };
+
+  it("pulls the next frame in to 2s when verification asks", async () => {
+    replay([]);
+    const { result } = render();
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    result.current.sampleSoon("face_mismatch");
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(calls).toEqual([5_000, 7_000, 9_000, 11_000, 13_000, 15_000]);
+  });
+
+  it("does not speed detection up while it is backing off", async () => {
+    detectFrame.mockImplementation(async () => {
+      calls.push(Date.now());
+      throw new Error("offline");
+    });
+    const { result } = render();
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    result.current.sampleSoon("face_mismatch");
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(calls).toEqual([5_000, 15_000]);
+  });
+
+  it("keeps identity checks every 5s while detection backs off", async () => {
+    detectFrame.mockRejectedValue(new Error("offline"));
+    const { onSample } = render();
+
+    await vi.advanceTimersByTimeAsync(35_000);
+
+    expect(onSample.mock.calls.map(([sample]) => sample.capturedAt)).toEqual([
+      5_000, 10_000, 15_000, 20_000, 25_000, 30_000, 35_000,
+    ]);
+    expect(onSample.mock.calls.every(([sample]) => sample.faceCount === undefined)).toBe(true);
+  });
+});

@@ -186,6 +186,10 @@
     "faceMismatch": {
       "title": "Verifica dell'identità non riuscita",
       "description": "Non abbiamo potuto confermare che sei ancora tu davanti alla fotocamera. Assicurati che il viso sia ben visibile e illuminato."
+    },
+    "faceUnclear": {
+      "title": "Guarda la fotocamera",
+      "description": "Non vediamo il tuo viso abbastanza chiaramente per confermare che sei tu. Guarda lo schermo e assicurati che il viso sia ben illuminato."
     }
   },
   "termination": {
@@ -201,7 +205,7 @@
     "faceMismatch": {
       "title": "Colloquio terminato",
       "pill": "Verifica dell'identità non riuscita",
-      "description": "La verifica dell'identità non è riuscita per {{faceMismatches}} controlli consecutivi, quindi non abbiamo potuto confermare che fossi ancora tu davanti alla fotocamera. Il colloquio è stato inviato con le risposte completate."
+      "description": "La verifica dell'identità non è riuscita più volte, quindi non abbiamo potuto confermare che fossi ancora tu davanti alla fotocamera. Il colloquio è stato inviato con le risposte completate."
     },
     "networkDisconnects": {
       "title": "Colloquio terminato",

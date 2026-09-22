@@ -3,7 +3,7 @@ import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTerminationCopy, TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { violationTitle } from "@/lib/violationCopy";
-import { FACE_MISMATCH_LIMIT, MAX_INTERNET_DISCONNECTS, MAX_VIOLATIONS } from "@/config/interview";
+import { MAX_INTERNET_DISCONNECTS, MAX_VIOLATIONS } from "@/config/interview";
 
 // These titles are generic, so the list names what was actually seen.
 export default function TerminationNotice({
@@ -29,7 +29,6 @@ export default function TerminationNotice({
   // i18next ignores the counts a given message doesn't interpolate.
   const counts = {
     violations: MAX_VIOLATIONS,
-    faceMismatches: FACE_MISMATCH_LIMIT,
     disconnects: MAX_INTERNET_DISCONNECTS,
   };
 

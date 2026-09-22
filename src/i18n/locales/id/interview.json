@@ -186,6 +186,10 @@
     "faceMismatch": {
       "title": "Verifikasi Identitas Gagal",
       "description": "Kami tidak dapat memastikan bahwa ini masih Anda di kamera. Pastikan wajah Anda terlihat jelas dan cukup cahaya."
+    },
+    "faceUnclear": {
+      "title": "Hadap ke kamera",
+      "description": "Wajah Anda tidak terlihat cukup jelas untuk memastikan bahwa ini Anda. Hadap ke layar dan pastikan wajah Anda cukup cahaya."
     }
   },
   "termination": {
@@ -201,7 +205,7 @@
     "faceMismatch": {
       "title": "Wawancara Berakhir",
       "pill": "Verifikasi identitas gagal",
-      "description": "Verifikasi identitas gagal {{faceMismatches}} kali berturut-turut, sehingga kami tidak dapat memastikan bahwa itu masih Anda di kamera. Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
+      "description": "Verifikasi identitas gagal berulang kali, sehingga kami tidak dapat memastikan bahwa itu masih Anda di kamera. Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
     },
     "networkDisconnects": {
       "title": "Wawancara Berakhir",

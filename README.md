@@ -25,19 +25,19 @@ Available in 19 languages.
 
 ## Tech stack
 
-| Area | Choice |
-|---|---|
-| Framework | React 19 + Vite 8 (`@vitejs/plugin-react`) |
-| Routing | react-router v7 data router (`createBrowserRouter`) |
-| Server state | @tanstack/react-query v5 |
-| HTTP | axios (per-backend clients, auth + refresh interceptors) |
-| i18n | i18next + react-i18next, 19 locales, 4 namespaces |
-| Styling | Tailwind CSS v4 (`@tailwindcss/vite`), `tw-animate-css` |
-| UI | Radix UI / shadcn-style primitives, `lucide-react` |
-| Audio | Native MediaRecorder (`audio/webm;opus`, `audio/mp4` on Safari) |
-| Notifications | sonner |
-| Testing | Vitest + Testing Library (jsdom) |
-| Tooling | ESLint 10, Prettier 3, pnpm |
+| Area          | Choice                                                          |
+| ------------- | --------------------------------------------------------------- |
+| Framework     | React 19 + Vite 8 (`@vitejs/plugin-react`)                      |
+| Routing       | react-router v7 data router (`createBrowserRouter`)             |
+| Server state  | @tanstack/react-query v5                                        |
+| HTTP          | axios (per-backend clients, auth + refresh interceptors)        |
+| i18n          | i18next + react-i18next, 19 locales, 4 namespaces               |
+| Styling       | Tailwind CSS v4 (`@tailwindcss/vite`), `tw-animate-css`         |
+| UI            | Radix UI / shadcn-style primitives, `lucide-react`              |
+| Audio         | Native MediaRecorder (`audio/webm;opus`, `audio/mp4` on Safari) |
+| Notifications | sonner                                                          |
+| Testing       | Vitest + Testing Library (jsdom)                                |
+| Tooling       | ESLint 10, Prettier 3, pnpm                                     |
 
 **Path aliases** (`vite.config.js`, `vitest.config.js`, `jsconfig.json` — keep all three in
 sync): `@` → `src`, plus `@components`, `@pages`, `@router`, `@hooks`,
@@ -72,18 +72,22 @@ redirects to `/interview`. Without valid tokens, `privateLoader` redirects to
 
 Copy `.env.example` → `.env`. **Never** add a trailing slash to a URL value.
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `VITE_API_BASE_URL` | ✅ | — | Main Django API base |
-| `VITE_AI_DETECTION_URL` | ✅ | — | AI detection / face verification base |
-| `VITE_AI_MAX_VIOLATIONS_ALLOWED` | – | `3` | Proctoring strikes before auto-submit |
-| `VITE_AI_FACE_MISMATCH_LIMIT` | – | `2` | Consecutive face mismatches before auto-submit |
-| `VITE_AI_MAX_INTERNET_DISCONNECTS` | – | `3` | Network drops before auto-submit |
-| `VITE_AI_INTERVIEW_DURATION_MINUTES` | – | `15` | Interview length |
-| `VITE_AI_TERMINATION_NOTICE_SECONDS` | – | `12` | How long the termination notice holds |
-| `VITE_AI_HELD_RESTRIKE_SECONDS` | – | `30` | Object or camera-off still there this long adds one more strike |
-| `VITE_AI_SHADOW_RULES` | – | `gaze` | Rules logged but never shown or counted; `none` enforces all |
-| `VITE_DEBUG_LOGS` | – | `false` | `"true"` keeps verbose logs in a production build |
+| Variable                             | Required | Default | Description                                                       |
+| ------------------------------------ | -------- | ------- | ----------------------------------------------------------------- |
+| `VITE_API_BASE_URL`                  | ✅       | —       | Main Django API base                                              |
+| `VITE_AI_DETECTION_URL`              | ✅       | —       | AI detection / face verification base                             |
+| `VITE_AI_MAX_VIOLATIONS_ALLOWED`     | –        | `3`     | Proctoring strikes before auto-submit                             |
+| `VITE_AI_FACE_MISMATCH_LIMIT`        | –        | `2`     | Face mismatches with no match between them before auto-submit     |
+| `VITE_AI_FACE_MISMATCH_TOTAL_LIMIT`  | –        | `3`     | Face mismatches in the whole interview before auto-submit         |
+| `VITE_AI_FACE_UNCLEAR_HINT_SECONDS`  | –        | `30`    | No clear face this long shows a hint                              |
+| `VITE_AI_FACE_UNCLEAR_LIMIT_SECONDS` | –        | `60`    | No clear face this long counts as a mismatch                      |
+| `VITE_AI_FACE_STRONG_MISMATCH_BELOW` | –        | off     | Similarity below this on a clear frame ends the interview at once |
+| `VITE_AI_MAX_INTERNET_DISCONNECTS`   | –        | `3`     | Network drops before auto-submit                                  |
+| `VITE_AI_INTERVIEW_DURATION_MINUTES` | –        | `15`    | Interview length                                                  |
+| `VITE_AI_TERMINATION_NOTICE_SECONDS` | –        | `12`    | How long the termination notice holds                             |
+| `VITE_AI_HELD_RESTRIKE_SECONDS`      | –        | `30`    | Object or camera-off still there this long adds one more strike   |
+| `VITE_AI_SHADOW_RULES`               | –        | `gaze`  | Rules logged but never shown or counted; `none` enforces all      |
+| `VITE_DEBUG_LOGS`                    | –        | `false` | `"true"` keeps verbose logs in a production build                 |
 
 All tunables resolve through [`src/config/interview.js`](src/config/interview.js), which
 coerces and falls back — read them from there, never from `import.meta.env` directly.
@@ -191,7 +195,7 @@ stateDiagram-v2
   so overlapping triggers can't submit twice. Reasons are stable codes from
   [`lib/terminationReasons.js`](src/lib/terminationReasons.js) — never free text, since
   they drive both i18n lookup and UI copy.
-- **TerminationNotice** explains *why* the interview ended and holds the screen for
+- **TerminationNotice** explains _why_ the interview ended and holds the screen for
   `VITE_AI_TERMINATION_NOTICE_SECONDS` while submission proceeds underneath.
 
 ---
@@ -246,7 +250,7 @@ Detection is deliberately conservative — false strikes are worse than missed o
 - English is the fallback; missing keys in any other locale degrade to English, never to a
   raw key.
 - **All user-facing copy must be an i18n key.** Passing a literal string as a prop silently
-  defeats the fallback — violation and termination copy resolve keys *inside* the
+  defeats the fallback — violation and termination copy resolve keys _inside_ the
   component, not at the call site.
 - RTL (`ar`, `ur`) is handled with logical CSS properties (`ms-`/`me-`/`start`/`end`).
 - Question and answer content comes from the backend and is not translated client-side.
@@ -275,18 +279,18 @@ which attaches `Authorization: Bearer <ac>` and `Accept-Language`, and on **401*
 transparently calls `/user/v1/login_refresh/`, updates tokens, and replays queued requests
 (single-flight refresh). A failed refresh clears the session and redirects.
 
-| Domain | Method & path | Service fn |
-|---|---|---|
-| **Interview** | `POST /user/v1/candidate/interview/ai/start/` | `fetchQuestion` |
-| | `POST /user/v1/candidate/interview/ai/answer/` | `submitAnswer` |
-| | `POST /user/v1/candidate/interview/ai/auto_submit/force/` | `autoSubmitInterview` |
-| **Voice** | `POST /user/v1/candidate/interview/voice_enroll/` | `enrollVoice` |
-| | `POST /user/v1/candidate/interview/voice_compare/` | `compareVoice` |
-| **Proctoring** | `POST /user/v1/candidate/interview/proctoring/log/` | `submitProctoringLogs` |
-| **Auth** | `POST /user/v1/login_refresh/` | response interceptor |
-| **CV detection** | `POST {AI}/api/v1/detect` | `detectFrame` |
-| **Face verify** | `POST {AI}/continuous-verify/verification/register-face` | `registerFace` |
-| | `POST {AI}/continuous-verify/verification/continuous-verify` | `continuousVerify` |
+| Domain           | Method & path                                                | Service fn             |
+| ---------------- | ------------------------------------------------------------ | ---------------------- |
+| **Interview**    | `POST /user/v1/candidate/interview/ai/start/`                | `fetchQuestion`        |
+|                  | `POST /user/v1/candidate/interview/ai/answer/`               | `submitAnswer`         |
+|                  | `POST /user/v1/candidate/interview/ai/auto_submit/force/`    | `autoSubmitInterview`  |
+| **Voice**        | `POST /user/v1/candidate/interview/voice_enroll/`            | `enrollVoice`          |
+|                  | `POST /user/v1/candidate/interview/voice_compare/`           | `compareVoice`         |
+| **Proctoring**   | `POST /user/v1/candidate/interview/proctoring/log/`          | `submitProctoringLogs` |
+| **Auth**         | `POST /user/v1/login_refresh/`                               | response interceptor   |
+| **CV detection** | `POST {AI}/api/v1/detect`                                    | `detectFrame`          |
+| **Face verify**  | `POST {AI}/continuous-verify/verification/register-face`     | `registerFace`         |
+|                  | `POST {AI}/continuous-verify/verification/continuous-verify` | `continuousVerify`     |
 
 ---
 
@@ -328,10 +332,10 @@ stabilization, and termination-reason copy resolution.
 
 Firebase Hosting, project `interview-letshyre-uat`, via GitHub Actions.
 
-| Workflow | Trigger |
-|---|---|
-| [`ci.yml`](.github/workflows/ci.yml) | every PR and push — lint, test, build |
-| [`deploy.yml`](.github/workflows/deploy.yml) | push to `main`, or manual dispatch |
+| Workflow                                     | Trigger                               |
+| -------------------------------------------- | ------------------------------------- |
+| [`ci.yml`](.github/workflows/ci.yml)         | every PR and push — lint, test, build |
+| [`deploy.yml`](.github/workflows/deploy.yml) | push to `main`, or manual dispatch    |
 
 Deploys run under the `production` GitHub Environment, restricted to `main`. Build-time
 config comes from **environment variables** (`vars.*`) for the `VITE_*` values; the only
@@ -367,14 +371,14 @@ pnpm format:check   # Prettier check
 
 ## Troubleshooting
 
-| Symptom | Likely cause |
-|---|---|
-| Immediate redirect to `/unauthorized-access` | Missing/invalid `ac`/`rc` in the URL or `sessionStorage` |
-| Requests 404 or hit a strange host | A URL env value has a **trailing slash** |
-| Interview auto-submits unexpectedly | Violation, face-mismatch, or network-drop limit reached — check the reason on the termination notice |
-| "Proctoring checks temporarily unavailable" | Degraded mode: 3+ consecutive detection failures — check the AI service |
-| Raw `violations.…` / `termination.…` text on screen | A missing i18n key in `en/interview.json` |
-| Camera prompts blocked | Browser permissions, or plain `http` on a non-localhost origin |
+| Symptom                                             | Likely cause                                                                                         |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Immediate redirect to `/unauthorized-access`        | Missing/invalid `ac`/`rc` in the URL or `sessionStorage`                                             |
+| Requests 404 or hit a strange host                  | A URL env value has a **trailing slash**                                                             |
+| Interview auto-submits unexpectedly                 | Violation, face-mismatch, or network-drop limit reached — check the reason on the termination notice |
+| "Proctoring checks temporarily unavailable"         | Degraded mode: 3+ consecutive detection failures — check the AI service                              |
+| Raw `violations.…` / `termination.…` text on screen | A missing i18n key in `en/interview.json`                                                            |
+| Camera prompts blocked                              | Browser permissions, or plain `http` on a non-localhost origin                                       |
 
 ### Manually exercising the anti-cheat flow
 

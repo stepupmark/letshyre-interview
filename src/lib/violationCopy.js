@@ -16,6 +16,11 @@ const COPY = {
     descriptionKey: "violations.faceMismatch.description",
     imagePath: "/termination-face-mismatch.svg",
   },
+  FACE_UNCLEAR: {
+    titleKey: "violations.faceUnclear.title",
+    descriptionKey: "violations.faceUnclear.description",
+    soft: true,
+  },
   MULTIPLE_FACES: {
     titleKey: "violations.multipleFaces.title",
     descriptionKey: "violations.multipleFaces.description",

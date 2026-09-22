@@ -186,6 +186,10 @@
     "faceMismatch": {
       "title": "Identiteitscontrole mislukt",
       "description": "We konden niet bevestigen dat u nog voor de camera zit. Zorg dat uw gezicht duidelijk zichtbaar en goed verlicht is."
+    },
+    "faceUnclear": {
+      "title": "Kijk naar de camera",
+      "description": "We zien uw gezicht niet duidelijk genoeg om te bevestigen dat u het bent. Kijk naar het scherm en zorg dat uw gezicht goed verlicht is."
     }
   },
   "termination": {
@@ -201,7 +205,7 @@
     "faceMismatch": {
       "title": "Interview beëindigd",
       "pill": "Identiteitscontrole mislukt",
-      "description": "De identiteitscontrole is {{faceMismatches}} keer achter elkaar mislukt, dus we konden niet bevestigen dat u nog voor de camera zat. Uw interview is ingediend met de antwoorden die u heeft voltooid."
+      "description": "De identiteitscontrole is herhaaldelijk mislukt, dus we konden niet bevestigen dat u nog voor de camera zat. Uw interview is ingediend met de antwoorden die u heeft voltooid."
     },
     "networkDisconnects": {
       "title": "Interview beëindigd",

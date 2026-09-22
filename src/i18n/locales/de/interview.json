@@ -186,6 +186,10 @@
     "faceMismatch": {
       "title": "Identitätsprüfung fehlgeschlagen",
       "description": "Wir konnten nicht bestätigen, dass Sie noch vor der Kamera sind. Achten Sie auf ein gut sichtbares, gut beleuchtetes Gesicht."
+    },
+    "faceUnclear": {
+      "title": "Zur Kamera schauen",
+      "description": "Wir sehen Ihr Gesicht nicht deutlich genug, um Sie zu bestätigen. Schauen Sie zum Bildschirm und sorgen Sie für gute Beleuchtung."
     }
   },
   "termination": {
@@ -201,7 +205,7 @@
     "faceMismatch": {
       "title": "Interview beendet",
       "pill": "Identitätsprüfung fehlgeschlagen",
-      "description": "Die Identitätsprüfung ist {{faceMismatches}} Mal hintereinander fehlgeschlagen, daher konnten wir nicht bestätigen, dass Sie noch vor der Kamera sind. Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
+      "description": "Die Identitätsprüfung ist wiederholt fehlgeschlagen, daher konnten wir nicht bestätigen, dass Sie noch vor der Kamera sind. Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
     },
     "networkDisconnects": {
       "title": "Interview beendet",
