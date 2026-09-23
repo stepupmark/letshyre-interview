@@ -48,6 +48,18 @@ describe("SHADOW_RULES", () => {
   });
 });
 
+describe("LOCAL_OBJECT_WATCH", () => {
+  it("is on by default", async () => {
+    const { LOCAL_OBJECT_WATCH } = await loadConfig({});
+    expect(LOCAL_OBJECT_WATCH).toBe(true);
+  });
+
+  it("is turned off by false", async () => {
+    const { LOCAL_OBJECT_WATCH } = await loadConfig({ VITE_AI_LOCAL_OBJECT_WATCH: "false" });
+    expect(LOCAL_OBJECT_WATCH).toBe(false);
+  });
+});
+
 describe("HELD_RESTRIKE_SECONDS", () => {
   it("defaults to 30 seconds", async () => {
     const { HELD_RESTRIKE_SECONDS } = await loadConfig({});

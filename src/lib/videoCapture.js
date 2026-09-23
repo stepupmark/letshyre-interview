@@ -12,6 +12,7 @@ export function isVideoReady(video) {
 
 let sharedCanvas = null;
 let scaledCanvas = null;
+let fileCanvas = null;
 
 /** Draws the current frame to a canvas, scaled down (never up) to fit maxWidth/maxHeight. Returns null if the video isn't ready. */
 export function captureCanvas(video, { maxWidth, maxHeight } = {}) {
@@ -40,30 +41,38 @@ export function dataUrlToFile(dataUrl, filename) {
   return new File([u8], filename, { type: mime });
 }
 
+function drawScaled(canvas, source, scale) {
+  const w = Math.max(1, Math.round(source.width * scale));
+  const h = Math.max(1, Math.round(source.height * scale));
+  if (canvas.width !== w) canvas.width = w;
+  if (canvas.height !== h) canvas.height = h;
+  canvas.getContext("2d").drawImage(source, 0, 0, w, h);
+  return canvas;
+}
+
 /**
  * One draw of the video, two payloads: the downscaled base64 that detection
- * sends and the full-size File that face verification sends. Capturing them
- * separately let the two checks describe different moments.
+ * sends and the File that face verification sends, full size unless
+ * `fileMaxWidth` caps it. Capturing them separately let the two checks
+ * describe different moments.
  */
 export function captureSample(video, opts = {}) {
   const source = captureCanvas(video);
   if (!source) return null;
 
+  const { maxWidth, maxHeight, fileMaxWidth } = opts;
+  const fileScale = fileMaxWidth ? Math.min(fileMaxWidth / source.width, 1) : 1;
+  if (fileScale < 1 && !fileCanvas) fileCanvas = document.createElement("canvas");
+  const fileSource = fileScale < 1 ? drawScaled(fileCanvas, source, fileScale) : source;
   const file = dataUrlToFile(
-    source.toDataURL("image/jpeg", opts.fileQuality ?? 0.92),
+    fileSource.toDataURL("image/jpeg", opts.fileQuality ?? 0.92),
     opts.filename ?? "frame.jpg",
   );
 
-  const { maxWidth, maxHeight } = opts;
   const scale =
     maxWidth && maxHeight ? Math.min(maxWidth / source.width, maxHeight / source.height, 1) : 1;
-  const w = Math.max(1, Math.round(source.width * scale));
-  const h = Math.max(1, Math.round(source.height * scale));
-
   if (!scaledCanvas) scaledCanvas = document.createElement("canvas");
-  if (scaledCanvas.width !== w) scaledCanvas.width = w;
-  if (scaledCanvas.height !== h) scaledCanvas.height = h;
-  scaledCanvas.getContext("2d").drawImage(source, 0, 0, w, h);
+  drawScaled(scaledCanvas, source, scale);
 
   return {
     frame: scaledCanvas.toDataURL("image/jpeg", opts.quality ?? 0.92).split(",")[1],

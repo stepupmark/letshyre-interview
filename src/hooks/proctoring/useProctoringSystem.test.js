@@ -2,6 +2,7 @@ import {
   cameraOffReason,
   createGazeTracker,
   detectViolations,
+  faceCountOf,
   sendUnloadFlush,
   suspicionReason,
 } from "./useProctoringSystem";
@@ -428,7 +429,7 @@ describe("detectViolations", () => {
       });
     });
 
-    it("assigns laptop.png to other prohibited devices like laptops", () => {
+    it("assigns laptop.webp to other prohibited devices like laptops", () => {
       const violation = first({
         ...CLEAN_RESULT,
         objects_detected: [{ label: "laptop", confidence: 0.9, area_ratio: 0.02 }],
@@ -436,10 +437,47 @@ describe("detectViolations", () => {
       expect(violation).toMatchObject({
         type: "PROHIBITED_OBJECT",
         label: "laptop",
-        imagePath: "/laptop.png",
+        imagePath: "/laptop.webp",
         titleKey: "violations.prohibitedObject.title",
       });
     });
+  });
+});
+
+describe("faceCountOf", () => {
+  it("reports no face when detection found none", () => {
+    expect(faceCountOf({ ...CLEAN_RESULT, face_detected: false, face_count: 0 })).toBe(0);
+  });
+
+  it("reports one face for a single candidate", () => {
+    expect(faceCountOf(CLEAN_RESULT)).toBe(1);
+  });
+
+  it("ignores a small figure in the background", () => {
+    const poster = {
+      ...CLEAN_RESULT,
+      face_count: 2,
+      faces: [{ bbox: [100, 100, 300, 300] }, { bbox: [400, 20, 430, 50] }],
+    };
+    const tv = {
+      ...CLEAN_RESULT,
+      yolo_person_count: 2,
+      objects_detected: [
+        { label: "person", bbox: [50, 50, 450, 450] },
+        { label: "person", bbox: [500, 20, 520, 40] },
+      ],
+    };
+    expect(faceCountOf(poster)).toBe(1);
+    expect(faceCountOf(tv)).toBe(1);
+  });
+
+  it("reports several when a second person is significant", () => {
+    const beside = {
+      ...CLEAN_RESULT,
+      faces: [{ bbox: [100, 100, 300, 300] }, { bbox: [320, 100, 480, 300] }],
+    };
+    expect(faceCountOf(beside)).toBe(2);
+    expect(faceCountOf({ ...CLEAN_RESULT, yolo_person_count: 2 })).toBe(2);
   });
 });
 

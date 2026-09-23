@@ -146,6 +146,10 @@
       "title": "Caméra désactivée",
       "description": "Votre caméra n'envoie plus de vidéo. Réactivez-la pour poursuivre l'entretien."
     },
+    "cameraOffHint": {
+      "title": "Votre caméra s'est arrêtée",
+      "description": "Réactivez votre caméra. Si elle reste désactivée, cela comptera comme une infraction."
+    },
     "lookingAway": {
       "title": "Regard détourné trop longtemps",
       "description": "Vous avez détourné le regard de l'écran trop longtemps. Restez concentré sur l'entretien."

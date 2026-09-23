@@ -65,7 +65,7 @@ describe("useViolationMonitor", () => {
       result.current.handleAiViolation({
         titleKey: "violations.noFace.title",
         descriptionKey: "violations.noFace.description",
-        imagePath: "/no-candidate.png",
+        imagePath: "/no-candidate.webp",
       });
     });
 
@@ -84,6 +84,7 @@ describe("useViolationMonitor", () => {
 
     act(() => {
       result.current.handleAiViolation({
+        type: "NOT_LOOKING",
         soft: true,
         titleKey: "violations.notLooking.title",
         descriptionKey: "violations.notLooking.description",
@@ -91,10 +92,54 @@ describe("useViolationMonitor", () => {
     });
 
     expect(toast.warning).toHaveBeenCalledWith("violations.notLooking.title", {
+      id: "soft:NOT_LOOKING",
       description: "violations.notLooking.description",
     });
     expect(incrementViolation).not.toHaveBeenCalled();
     expect(result.current.showTabWarning).toBe(false);
+  });
+
+  it("updates one toast per kind of nudge instead of stacking them", () => {
+    const { result } = setup();
+    const nudge = (type) =>
+      act(() => result.current.handleAiViolation({ type, soft: true, titleKey: type }));
+
+    nudge("NOT_LOOKING");
+    nudge("NOT_LOOKING");
+    nudge("EYES_CLOSED");
+
+    expect(toast.warning.mock.calls.map(([, { id }]) => id)).toEqual([
+      "soft:NOT_LOOKING",
+      "soft:NOT_LOOKING",
+      "soft:EYES_CLOSED",
+    ]);
+  });
+
+  it("fetches every warning picture once the interview starts", () => {
+    const loaded = [];
+    vi.stubGlobal(
+      "Image",
+      class {
+        set src(path) {
+          loaded.push(path);
+        }
+      },
+    );
+    const { rerender, incrementViolation } = setup({ isActive: false });
+    expect(loaded).toEqual([]);
+
+    rerender({ isActive: true, incrementViolation, sessionViolations: 0 });
+    vi.unstubAllGlobals();
+
+    expect(loaded).toEqual(
+      expect.arrayContaining([
+        "/window-switch.webp",
+        "/laptop.webp",
+        "/no-candidate.webp",
+        "/multi-people.webp",
+      ]),
+    );
+    expect(new Set(loaded).size).toBe(loaded.length);
   });
 
   it("shows a non-counting violation without adding a strike", () => {
@@ -332,7 +377,7 @@ describe("useViolationMonitor modal lifecycle", () => {
   const hardViolation = {
     titleKey: "violations.noFace.title",
     descriptionKey: "violations.noFace.description",
-    imagePath: "/no-candidate.png",
+    imagePath: "/no-candidate.webp",
   };
 
   it("closes the modal on its own so it cannot be held open as a mute", () => {
@@ -521,7 +566,7 @@ describe("useViolationMonitor modal lifecycle", () => {
         label: "cell phone",
         titleKey: "violations.prohibitedObject.title",
         descriptionKey: "violations.prohibitedObject.description",
-        imagePath: "/laptop.png",
+        imagePath: "/laptop.webp",
       }),
     );
 
@@ -850,12 +895,12 @@ describe("useViolationMonitor strike summary", () => {
   const tabSwitch = {
     type: "TAB_SWITCH",
     titleKey: "violations.tabSwitch.title",
-    imagePath: "/window-switch.png",
+    imagePath: "/window-switch.webp",
   };
   const devices = {
     type: "PROHIBITED_OBJECT",
     titleKey: "violations.multipleDevices.title",
-    imagePath: "/laptop.png",
+    imagePath: "/laptop.webp",
     label: "cell phone",
     labels: ["cell phone", "laptop"],
     incident: true,
@@ -974,13 +1019,13 @@ describe("useViolationMonitor leaving the window", () => {
     exitFullscreen();
     wait(3_000);
     shrink();
-    wait(60_000);
+    wait(20_000);
 
     expect(incrementViolation).toHaveBeenCalledTimes(1);
     expect(result.current.violationInfo).toMatchObject({
       titleKey: "violations.tabSwitch.title",
       descriptionKey: "violations.tabSwitch.description",
-      imagePath: "/window-switch.png",
+      imagePath: "/window-switch.webp",
     });
   });
 
@@ -991,7 +1036,7 @@ describe("useViolationMonitor leaving the window", () => {
     act(() => result.current.dismissWarning());
     wait(500);
     hide();
-    wait(60_000);
+    wait(20_000);
 
     expect(incrementViolation).toHaveBeenCalledTimes(1);
     expect(result.current.violationInfo.titleKey).toBe("violations.fullscreenExit.title");
@@ -1070,7 +1115,7 @@ describe("useViolationMonitor leaving the window", () => {
     expect(result.current.violationInfo).toMatchObject({
       titleKey: "violations.windowFocus.title",
       descriptionKey: "violations.windowFocus.description",
-      imagePath: "/window-switch.png",
+      imagePath: "/window-switch.webp",
     });
   });
 
@@ -1103,9 +1148,104 @@ describe("useViolationMonitor leaving the window", () => {
     wait(2_000);
     act(() => result.current.dismissWarning());
     exitFullscreen();
-    wait(60_000);
+    wait(20_000);
 
     expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("strikes once more for a candidate still away after 30s, and no more", () => {
+    const events = [];
+    const stop = subscribeToViolationLog((event) => events.push(event));
+    const { result, incrementViolation } = setup();
+
+    hide();
+    act(() => result.current.dismissWarning());
+    wait(29_999);
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+
+    wait(1);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(lastStrike(result).titleKey).toBe("violations.tabSwitch.title");
+    expect(result.current.showTabWarning).toBe(true);
+
+    wait(5 * 60_000);
+    stop();
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        type: "TAB_SWITCH",
+        outcome: "raised",
+        reason: "still_away",
+        away_ms: 30_000,
+      }),
+    );
+  });
+
+  it("does not strike again for a candidate back within 30s", () => {
+    const { incrementViolation } = setup();
+
+    hide();
+    wait(20_000);
+    comeBack();
+    wait(5 * 60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("strikes a candidate who clicked away and stayed away once more", () => {
+    const { incrementViolation } = setup();
+
+    blur();
+    wait(2_000 + 30_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not strike again for staying out of fullscreen on the page", () => {
+    const { result, incrementViolation } = setup();
+
+    exitFullscreen();
+    act(() => result.current.dismissWarning());
+    wait(5 * 60_000);
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops counting the warning down while the candidate is on another tab", () => {
+    const { result } = setup();
+
+    hide();
+    wait(10_000);
+    expect(result.current.showTabWarning).toBe(true);
+
+    comeBack();
+    wait(19_999);
+    expect(result.current.showTabWarning).toBe(true);
+
+    wait(1);
+    expect(result.current.showTabWarning).toBe(false);
+  });
+
+  it("resumes the countdown where it paused after focus comes back", () => {
+    const events = [];
+    const stop = subscribeToViolationLog((event) => events.push(event));
+    const { result } = setup();
+
+    act(() => result.current.handleAiViolation({ titleKey: "t", descriptionKey: "d" }));
+    wait(5_000);
+    blur();
+    wait(1_500);
+    comeBack();
+    wait(14_999);
+    expect(result.current.showTabWarning).toBe(true);
+
+    wait(1);
+    stop();
+    expect(result.current.showTabWarning).toBe(false);
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: "WARNING", outcome: "auto_closed", open_ms: 21_500 }),
+    );
   });
 
   it("ignores focus lost to a permission prompt", async () => {
@@ -1284,7 +1424,7 @@ describe("useViolationMonitor held-back acts", () => {
       document.dispatchEvent(new Event("fullscreenchange"));
     });
     act(() => result.current.dismissWarning());
-    wait(60_000);
+    wait(20_000);
 
     expect(incrementViolation).toHaveBeenCalledTimes(1);
   });

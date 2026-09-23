@@ -16,7 +16,7 @@ export default function LeftPanel({ videoRef, onCameraStatus }) {
       <div className="flex flex-1 flex-col items-center justify-center p-4 backdrop-blur-sm">
         <div className="flex max-h-[420px]  flex-1 items-center justify-center">
           <img
-            src="/robo.png"
+            src="/robo.webp"
             alt={t("leftPanel.aiInterviewerAlt")}
             className="h-full max-h-[360px] w-auto object-contain"
           />

@@ -80,6 +80,27 @@ describe("useLocalFaceWatch", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it("exposes the latest stable count", async () => {
+    const { result } = await watch(detectorSeeing([1, 1, 3, 3]));
+    await samples(1);
+    expect(result.current.current).toBe("one");
+    await samples(2);
+    expect(result.current.current).toBe("multiple");
+  });
+
+  it("exposes no count once it stops", async () => {
+    const detector = detectorSeeing([1, 1]);
+    const { result } = await watch(detector);
+    await samples(1);
+    expect(result.current.current).toBe("one");
+
+    detector.detectForVideo.mockImplementation(() => {
+      throw new Error("bad frame");
+    });
+    await samples(1);
+    expect(result.current.current).toBeNull();
+  });
+
   it("does not load or run while the interview is inactive", async () => {
     await watch(detectorSeeing([1]), { isActive: false });
     expect(loadFaceDetector).not.toHaveBeenCalled();

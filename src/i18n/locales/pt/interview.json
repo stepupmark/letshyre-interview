@@ -146,6 +146,10 @@
       "title": "Câmera desligada",
       "description": "A sua câmera parou de enviar vídeo. Ligue-a novamente para continuar a entrevista."
     },
+    "cameraOffHint": {
+      "title": "A sua câmera parou",
+      "description": "Ligue a sua câmera novamente. Se ela continuar desligada, isso contará como uma violação."
+    },
     "lookingAway": {
       "title": "Olhar desviado por muito tempo",
       "description": "Você desviou o olhar da tela por muito tempo. Mantenha a atenção na entrevista."

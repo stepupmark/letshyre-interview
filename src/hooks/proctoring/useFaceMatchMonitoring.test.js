@@ -150,6 +150,29 @@ function setup(options = {}) {
 
   const unclear = (times) => frames({ ...CLEAR, faceConfidence: 0.6 }, times);
 
+  // As the camera loop sends it: detection's answer is still on its way.
+  const sideBySide = async (response, detection = CLEAR) => {
+    capturedAt += 5000;
+    mutateAsync.mockResolvedValueOnce(response);
+    const callsBefore = mutateAsync.mock.calls.length;
+    let answer;
+    let sentEarly;
+    await act(async () => {
+      let answerDetection;
+      const pending = result.current.verifySample({
+        file: CLEAR.file,
+        capturedAt,
+        detection: new Promise((resolve) => {
+          answerDetection = resolve;
+        }),
+      });
+      sentEarly = mutateAsync.mock.calls.length > callsBefore;
+      answerDetection({ faceCount: detection.faceCount, faceConfidence: detection.faceConfidence });
+      answer = await pending;
+    });
+    return { answer, sentEarly };
+  };
+
   const pause = (ms) => {
     capturedAt += ms;
   };
@@ -165,6 +188,7 @@ function setup(options = {}) {
     failSample,
     frames,
     unclear,
+    sideBySide,
     pause,
     mismatchWarnings,
     result,
@@ -371,7 +395,7 @@ describe("useFaceMatchMonitoring faces the service saw", () => {
     ["a service error", UPSTREAM_ERROR, null],
   ])("reports %s to the camera loop", async (_label, response, faces) => {
     const { sample } = setup();
-    expect(await sample(response)).toEqual({ faces });
+    expect(await sample(response)).toMatchObject({ faces });
   });
 
   it("reports nothing for a frame it did not send", async () => {
@@ -425,6 +449,91 @@ describe("useFaceMatchMonitoring faces the service saw", () => {
         violation: "SOMETHING_NEW",
       }),
     );
+  });
+});
+
+describe("useFaceMatchMonitoring alongside detection", () => {
+  beforeEach(() => {
+    mutateAsync.mockReset();
+    config.strongBelow = 0;
+  });
+
+  it.each([
+    ["a match", MATCH, "one", 0],
+    ["a mismatch", MISMATCH, "one", 1],
+    ["no face", NO_FACE, "none", 0],
+    ["several people", MULTIPLE_FACES, "multiple", 0],
+    ["a mismatch with people behind", MISMATCH_WITH_PEOPLE, "multiple", 1],
+    ["an invalid session", INVALID_SESSION, null, 0],
+  ])(
+    "sends %s before detection answers, then judges it",
+    async (_label, response, faces, warnings) => {
+      const onNotRegistered = vi.fn();
+      const { sideBySide, mismatchWarnings } = setup({ onNotRegistered });
+
+      const { answer, sentEarly } = await sideBySide(response);
+
+      expect(sentEarly).toBe(true);
+      expect(answer).toMatchObject({ faces, verifyMs: expect.any(Number) });
+      expect(mismatchWarnings()).toHaveLength(warnings);
+      expect(onNotRegistered).toHaveBeenCalledTimes(response === INVALID_SESSION ? 1 : 0);
+    },
+  );
+
+  it("ends on two mismatches in a row", async () => {
+    const { autoSubmit, sideBySide } = setup();
+    await sideBySide(MISMATCH);
+    await sideBySide(MISMATCH);
+    expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
+  });
+
+  it("never counts identity on a frame detection found empty, though its faces still count", async () => {
+    const { autoSubmit, sideBySide, mismatchWarnings } = setup();
+    const empty = { ...CLEAR, faceCount: 0 };
+
+    await sideBySide(MISMATCH, empty);
+    await sideBySide(MISMATCH, empty);
+    const { answer } = await sideBySide(MISMATCH_WITH_PEOPLE, empty);
+
+    expect(mutateAsync).toHaveBeenCalledTimes(3);
+    expect(answer.faces).toBe("multiple");
+    expect(mismatchWarnings()).toHaveLength(0);
+    expect(autoSubmit).not.toHaveBeenCalled();
+  });
+
+  it("skips an unclear face once detection scores it", async () => {
+    const { sideBySide, onViolation, requestSample } = setup();
+    const { events, unsubscribe } = captureLog();
+
+    await sideBySide(MISMATCH, { ...CLEAR, faceConfidence: 0.6 });
+    unsubscribe();
+
+    expect(onViolation).not.toHaveBeenCalled();
+    expect(requestSample).toHaveBeenCalledWith("face_unclear");
+    expect(events.map((e) => e.outcome)).toContain("skipped");
+  });
+
+  it("holds the first mismatch after an empty frame for a second look", async () => {
+    const { sideBySide, onViolation, requestSample } = setup();
+
+    await sideBySide(MATCH);
+    await sideBySide(NO_FACE, { ...CLEAR, faceCount: 0 });
+    await sideBySide(MISMATCH);
+
+    expect(onViolation).not.toHaveBeenCalled();
+    expect(requestSample).toHaveBeenCalledWith("face_recheck", 1_000);
+  });
+
+  it("needs one more mismatch when detection failed on the frames", async () => {
+    const { autoSubmit, sideBySide } = setup();
+    const unknown = { faceCount: undefined, faceConfidence: undefined };
+
+    await sideBySide(MISMATCH, unknown);
+    await sideBySide(MISMATCH, unknown);
+    expect(autoSubmit).not.toHaveBeenCalled();
+
+    await sideBySide(MISMATCH, unknown);
+    expect(autoSubmit).toHaveBeenCalledTimes(1);
   });
 });
 

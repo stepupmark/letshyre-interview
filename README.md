@@ -88,6 +88,7 @@ Copy `.env.example` → `.env`. **Never** add a trailing slash to a URL value.
 | `VITE_AI_HELD_RESTRIKE_SECONDS`      | –        | `30`    | Object or camera-off still there this long adds one more strike    |
 | `VITE_AI_SHADOW_RULES`               | –        | `gaze`  | Rules logged but never shown or counted; `none` enforces all       |
 | `VITE_AI_LOCAL_FACE_WATCH`           | –        | `true`  | On-device face count that triggers an immediate check; `false` off |
+| `VITE_AI_LOCAL_OBJECT_WATCH`         | –        | `true`  | On-device phone watch triggering an immediate check; `false` off   |
 | `VITE_DEBUG_LOGS`                    | –        | `false` | `"true"` keeps verbose logs in a production build                  |
 
 All tunables resolve through [`src/config/interview.js`](src/config/interview.js), which
@@ -238,9 +239,17 @@ Detection is deliberately conservative — false strikes are worse than missed o
 - **On-device face watch** — MediaPipe's face detector counts faces in the browser every
   300ms. When the count changes it asks for a server check straight away, so a face
   leaving or a second person arriving is seen in under a second rather than at the next
-  5s check. It never strikes on its own. Its WASM (~12MB, loaded on first use) is copied
-  from `node_modules` into `public/mediapipe/wasm` by `vite.config.js`, which is why the
-  CSP allows `'wasm-unsafe-eval'`.
+  5s check. It never strikes on its own. Its WASM (~12MB) loads only after the first check
+  and face registration, so it never competes with them. `vite.config.js` copies it from
+  `node_modules` into `public/mediapipe/wasm/<version>/`, so it can be cached for good; the
+  CSP allows `'wasm-unsafe-eval'` for it. Models live in `public/mediapipe/models/` with a
+  version in the name: ship a changed model under a new name.
+- **On-device phone watch** — MediaPipe's EfficientDet-Lite0 looks for a `cell phone` once
+  a second and asks for a server check when one appears. It never strikes on its own. The
+  model runs in a classic Web Worker (`src/lib/objectDetector.worker.js`), which loads
+  MediaPipe's IIFE build copied next to the WASM; the page only grabs a 320px frame.
+- **Camera integrity (log only)** — a virtual camera (OBS, ManyCam…) or a picture that
+  doesn't change for 10s is logged as `CAMERA_INTEGRITY`, never shown or counted.
 - **Face verification counts too** — continuous-verify's `NO_FACE`, `MULTIPLE_FACES` and
   `FACE_MISMATCH_AND_MULTIPLE_FACES` are merged into detection's result for the same
   frame, so a face problem either check sees strikes once, under the same rules. Each

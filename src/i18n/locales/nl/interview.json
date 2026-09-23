@@ -146,6 +146,10 @@
       "title": "Camera uitgeschakeld",
       "description": "Uw camera verzendt geen video meer. Schakel deze weer in om het interview voort te zetten."
     },
+    "cameraOffHint": {
+      "title": "Uw camera is gestopt",
+      "description": "Zet uw camera weer aan. Als deze uit blijft, telt dit als een overtreding."
+    },
     "lookingAway": {
       "title": "Te lang weggekeken",
       "description": "U hebt te lang van het scherm weggekeken. Houd uw aandacht bij het interview."

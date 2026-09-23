@@ -4,7 +4,7 @@ const COPY = {
   NO_FACE: {
     titleKey: "violations.noFace.title",
     descriptionKey: "violations.noFace.description",
-    imagePath: "/no-candidate.png",
+    imagePath: "/no-candidate.webp",
   },
   NO_FACE_GUIDANCE: {
     titleKey: "violations.noFaceGuidance.title",
@@ -24,17 +24,17 @@ const COPY = {
   MULTIPLE_FACES: {
     titleKey: "violations.multipleFaces.title",
     descriptionKey: "violations.multipleFaces.description",
-    imagePath: "/multi-people.png",
+    imagePath: "/multi-people.webp",
   },
   PROHIBITED_OBJECT: {
     titleKey: "violations.prohibitedObject.title",
     descriptionKey: "violations.prohibitedObject.description",
-    imagePath: "/laptop.png",
+    imagePath: "/laptop.webp",
   },
   MULTIPLE_OBJECTS: {
     titleKey: "violations.multipleDevices.title",
     descriptionKey: "violations.multipleDevices.description",
-    imagePath: "/laptop.png",
+    imagePath: "/laptop.webp",
   },
   "PROHIBITED_OBJECT:cell phone": {
     titleKey: "violations.cellPhone.title",
@@ -54,14 +54,27 @@ const COPY = {
   LOOKING_AWAY: {
     titleKey: "violations.lookingAway.title",
     descriptionKey: "violations.lookingAway.description",
-    imagePath: "/no-candidate.png",
+    imagePath: "/no-candidate.webp",
   },
   CAMERA_OFF: {
     titleKey: "violations.cameraOff.title",
     descriptionKey: "violations.cameraOff.description",
-    imagePath: "/no-candidate.png",
+    imagePath: "/no-candidate.webp",
+  },
+  CAMERA_OFF_HINT: {
+    titleKey: "violations.cameraOffHint.title",
+    descriptionKey: "violations.cameraOffHint.description",
+    soft: true,
   },
 };
+
+export const WARNING_IMAGES = [
+  ...new Set(
+    Object.values(COPY)
+      .map(({ imagePath }) => imagePath)
+      .filter(Boolean),
+  ),
+];
 
 export function violationCopy(type, label) {
   if (label) {

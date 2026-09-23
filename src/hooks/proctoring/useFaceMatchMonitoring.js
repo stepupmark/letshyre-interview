@@ -236,8 +236,36 @@ export const useFaceMatchMonitoring = ({
     [countMismatch, sawClearFace],
   );
 
+  // What detection saw decides whether a verdict on this frame can count.
+  const judge = useCallback(
+    ({ faceCount, faceConfidence }, at) => {
+      if (faceCount === 0) {
+        lastFrameClearRef.current = false;
+        return { compares: false };
+      }
+
+      if (faceConfidence !== undefined && faceConfidence < MIN_FACE_CONFIDENCE) {
+        lastFrameClearRef.current = false;
+        if (faceCount === 1) {
+          record("skipped", { face_confidence: faceConfidence });
+          checkUnclear(at);
+        }
+        return { compares: false, faceConfidence };
+      }
+
+      // Unknown count or confidence means detection failed on this frame. With
+      // several faces the service may have compared the wrong one.
+      const vetted = faceCount === 1 && faceConfidence !== undefined;
+      const afterGap = vetted && !lastFrameClearRef.current;
+      if (faceCount !== undefined) lastFrameClearRef.current = vetted;
+      if (vetted) sawClearFace(at);
+      return { compares: true, vetted, afterGap, faceConfidence };
+    },
+    [checkUnclear, sawClearFace],
+  );
+
   const evaluate = useCallback(
-    (result, { at, vetted, afterGap, faceConfidence }) => {
+    (result, { at, compares, vetted, afterGap, faceConfidence }) => {
       const classified = classifyVerification(result);
       const { confidence, serverTotal } = classified;
       let { verdict, reason } = classified;
@@ -266,6 +294,9 @@ export const useFaceMatchMonitoring = ({
         return classified;
       }
       markAvailable(at);
+
+      // Sent before detection answered, on a frame it then ruled out.
+      if (!compares && IDENTITY_VERDICTS.has(verdict)) return classified;
 
       if (verdict === "mismatch") {
         sawClearFace(at);
@@ -320,7 +351,9 @@ export const useFaceMatchMonitoring = ({
   // Driven by the proctoring loop's sampler rather than its own timer, so the
   // identity verdict and the object verdict describe the same frame. Resolves
   // with the faces the service saw ("none", "one" or "multiple"), which the
-  // loop counts together with detection's.
+  // loop counts together with detection's, and how long the call took. With
+  // `sample.detection` (a promise) the frame is sent at once and judged once
+  // detection answers.
   const verifySample = useCallback(
     async (sample) => {
       if (!sessionId || stoppedRef.current) return;
@@ -339,49 +372,47 @@ export const useFaceMatchMonitoring = ({
       const at = sample.capturedAt ?? Date.now();
       if (!lastClearAtRef.current) lastClearAtRef.current = at;
 
-      // With no face there is nothing to compare; detection counts that frame.
-      const { faceCount, faceConfidence } = sample;
-      if (faceCount === 0) {
-        lastFrameClearRef.current = false;
-        return;
+      // Already known to be no face or unclear: not worth a call.
+      const known = sample.detection ? null : judge(sample, at);
+      if (known && !known.compares) return;
+
+      let request = null;
+      const probing = unavailableSinceRef.current;
+      if (
+        !inFlightRef.current &&
+        (!probing || at - lastProbeAtRef.current >= FACE_PROBE_INTERVAL_MS)
+      ) {
+        if (probing) lastProbeAtRef.current = at;
+        inFlightRef.current = true;
+        request = (async () => {
+          const sentAt = Date.now();
+          try {
+            const result = await mutateAsync({ imageFile: sample.file });
+            return { result, verifyMs: Date.now() - sentAt };
+          } catch (error) {
+            return { error };
+          }
+        })();
       }
 
-      if (faceConfidence !== undefined && faceConfidence < MIN_FACE_CONFIDENCE) {
-        lastFrameClearRef.current = false;
-        if (faceCount !== 1) return;
-        record("skipped", { face_confidence: faceConfidence });
-        checkUnclear(at);
-        return;
-      }
-
-      // Unknown count or confidence means detection failed on this frame. With
-      // several faces the service may have compared the wrong one.
-      const vetted = faceCount === 1 && faceConfidence !== undefined;
-      const afterGap = vetted && !lastFrameClearRef.current;
-      if (faceCount !== undefined) lastFrameClearRef.current = vetted;
-      if (vetted) sawClearFace(at);
-
-      if (unavailableSinceRef.current) {
-        if (at - lastProbeAtRef.current < FACE_PROBE_INTERVAL_MS) return;
-        lastProbeAtRef.current = at;
-      }
-
-      if (inFlightRef.current) return;
-      inFlightRef.current = true;
       try {
-        const result = await mutateAsync({ imageFile: sample.file });
+        const judged = known ?? judge((await sample.detection) ?? {}, at);
+        if (!request) return;
+        const { result, error, verifyMs } = await request;
         if (stoppedRef.current) return;
-        const { verdict, faces } = evaluate(result, { at, vetted, afterGap, faceConfidence });
+        if (error) {
+          markUnavailable(error?.message || "request_failed", at);
+          return;
+        }
+        const { verdict, faces } = evaluate(result, { at, ...judged });
         // The interview ended on this frame; there is nothing left to count.
         if (stoppedRef.current) return;
-        return { faces: faces ?? (IDENTITY_VERDICTS.has(verdict) ? "one" : null) };
-      } catch (err) {
-        if (!stoppedRef.current) markUnavailable(err?.message || "request_failed", at);
+        return { faces: faces ?? (IDENTITY_VERDICTS.has(verdict) ? "one" : null), verifyMs };
       } finally {
-        inFlightRef.current = false;
+        if (request) inFlightRef.current = false;
       }
     },
-    [sessionId, isReady, mutateAsync, evaluate, checkUnclear, markUnavailable, sawClearFace],
+    [sessionId, isReady, mutateAsync, evaluate, judge, markUnavailable],
   );
 
   return {

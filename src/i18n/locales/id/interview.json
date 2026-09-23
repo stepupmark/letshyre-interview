@@ -146,6 +146,10 @@
       "title": "Kamera Dimatikan",
       "description": "Kamera Anda berhenti mengirimkan video. Nyalakan kembali untuk melanjutkan wawancara."
     },
+    "cameraOffHint": {
+      "title": "Kamera Anda Berhenti",
+      "description": "Nyalakan kembali kamera Anda. Jika tetap mati, ini akan dihitung sebagai pelanggaran."
+    },
     "lookingAway": {
       "title": "Terlalu Lama Memalingkan Pandangan",
       "description": "Anda memalingkan pandangan dari layar terlalu lama. Tetap fokus pada wawancara."

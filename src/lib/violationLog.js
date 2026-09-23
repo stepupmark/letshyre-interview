@@ -80,8 +80,50 @@ export function faceMismatchSummary() {
   return { ...faceMismatches };
 }
 
+// How closely the camera loop actually watched, fed once per check.
+const emptyChecks = () => ({
+  count: 0,
+  firstAt: null,
+  lastAt: null,
+  detectMs: [],
+  verifyMs: [],
+  unobservedMs: 0,
+});
+let checks = emptyChecks();
+
+export function recordCheckStats({ at, detectMs, verifyMs, unobservedMs }) {
+  if (at !== undefined) {
+    checks.count += 1;
+    checks.firstAt ??= at;
+    checks.lastAt = at;
+  }
+  if (typeof detectMs === "number") checks.detectMs.push(detectMs);
+  if (typeof verifyMs === "number") checks.verifyMs.push(verifyMs);
+  if (unobservedMs) checks.unobservedMs += unobservedMs;
+}
+
+function percentiles(values) {
+  if (!values.length) return { p50: null, p95: null };
+  const sorted = [...values].sort((a, b) => a - b);
+  const at = (p) => sorted[Math.ceil(p * sorted.length) - 1];
+  return { p50: at(0.5), p95: at(0.95) };
+}
+
+export function checkSummary() {
+  const minutes = (checks.lastAt - checks.firstAt) / 60_000;
+  return {
+    count: checks.count,
+    per_minute:
+      checks.count > 1 && minutes > 0 ? Math.round(((checks.count - 1) / minutes) * 10) / 10 : null,
+    detect_ms: percentiles(checks.detectMs),
+    verify_ms: percentiles(checks.verifyMs),
+    unobserved_ms: checks.unobservedMs,
+  };
+}
+
 export function resetViolationSummary() {
   faceMismatches = { in_a_row: 0, total: 0 };
+  checks = emptyChecks();
 }
 
 /**
@@ -107,6 +149,7 @@ export function recordInterviewEnded({ outcome, reason, strikes, ...rest }) {
         }
       : {}),
     face_mismatches: faceMismatchSummary(),
+    checks: checkSummary(),
     ...rest,
   });
 }

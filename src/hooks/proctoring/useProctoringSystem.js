@@ -12,23 +12,30 @@ import {
   SHADOW_LABELS,
   SHADOW_RULES,
 } from "@/config/interview";
-import { recordViolationEvent, subscribeToViolationLog } from "@/lib/violationLog";
+import {
+  recordCheckStats,
+  recordViolationEvent,
+  subscribeToViolationLog,
+} from "@/lib/violationLog";
 import { logger } from "@/lib/logger";
 
 const DETECT_INTERVAL_MS = 5_000;
 const IMAGE_QUALITY = 0.7;
 const TARGET_WIDTH = 640;
 const TARGET_HEIGHT = 480;
+const VERIFY_FILE_MAX_WIDTH = 960;
+const VERIFY_FILE_QUALITY = 0.9;
 
-// How long a frame waits for face verification before it is decided on
-// detection alone. A later answer still counts for identity.
+// How long after capture a frame waits for face verification before it is
+// decided on detection alone. A later answer still counts for identity.
 const VERIFY_WAIT_MS = 3_000;
 
 // Detection never answered for this frame, so only verification's faces count.
 const VERIFY_ONLY_FRAME = { success: true, verify_only: true, objects_detected: [] };
+const NO_ANSWER = { faces: null, verifyMs: null };
 
-const faceCountOf = (result) =>
-  result.face_detected ? Math.max(result.face_count ?? 1, result.yolo_person_count ?? 0, 1) : 0;
+// Longer than this between two answered detections is logged as unwatched time.
+const UNOBSERVED_AFTER_MS = 2 * DETECT_INTERVAL_MS;
 
 // The backend keeps one log batch per interview, so it is sent once the ending
 // has settled, or this long after the interview stopped if it never does.
@@ -64,6 +71,7 @@ const CAMERA_GRACE_TICKS = 3;
 // The camera itself going away, as opposed to the AI service failing, which
 // only ever degrades. Checked on its own clock so failure backoff can't stretch it.
 export const CAMERA_OFF_AFTER_MS = 10_000;
+export const CAMERA_OFF_HINT_MS = 1_000;
 const CAMERA_CHECK_MS = 1_000;
 
 // A faint phone or laptop, or a look away, samples faster for a while so a
@@ -72,6 +80,10 @@ export const SUSPICION_CONFIDENCE_FLOOR = 0.2;
 export const SUSPICION_INTERVAL_MS = 2_000;
 export const SUSPICION_WINDOW_MS = 20_000;
 const SUSPICIOUS_LABELS = new Set(["cell phone", "laptop"]);
+
+// On-device watches ("local_*" reasons) can flicker, so they get at most one
+// immediate check per gap.
+export const LOCAL_TRIGGER_GAP_MS = 1_500;
 
 // Looking away for 15s straight, or on 4 separate occasions in 2 minutes.
 // Typing means looking at the keyboard, so a recent keypress resets the streak.
@@ -353,6 +365,13 @@ export function hasMultipleSignificantPeople(result) {
   return (result.face_count ?? 0) > 1 || (result.yolo_person_count ?? 0) > 1;
 }
 
+// The count identity vetting sees. A small figure in the background (a poster,
+// a TV) is not a second person, so it doesn't make the frame unvetted.
+export function faceCountOf(result) {
+  if (!result.face_detected) return 0;
+  return hasMultipleSignificantPeople(result) ? 2 : 1;
+}
+
 /**
  * Every violation the frame shows, most severe first. Empty when it is clean.
  *
@@ -512,9 +531,13 @@ function lookingAwayViolation({ startedAt, reason }) {
 
 /**
  * While `isActive` is true, samples the webcam every DETECT_INTERVAL_MS, sends
- * the frame to the CV detection API, hands the same sample to `onSample` for
- * face verification, and queues the response locally. The queue is flushed to
- * Django in one POST when the interview ends, and on unload as a safety net.
+ * the frame to the CV detection API while handing the same sample to
+ * `onSample` for face verification, and queues the response locally. The
+ * queue is flushed to Django in one POST when the interview ends, and on
+ * unload as a safety net.
+ *
+ * `localFacesRef.current` is the on-device face count ("none", "one",
+ * "multiple" or null). An empty seat isn't sent for verification.
  */
 export function useProctoringSystem(
   videoRef,
@@ -525,6 +548,7 @@ export function useProctoringSystem(
   onViolation,
   onSample,
   logReady = true,
+  localFacesRef,
 ) {
   const queueRef = useRef([]);
   const timerRef = useRef(null);
@@ -551,8 +575,13 @@ export function useProctoringSystem(
   const gazeRef = useRef(createGazeTracker());
   const lastKeyAtRef = useRef(-Infinity);
   const cameraRef = useRef({ hasPlayed: false, offSince: null, lastRaisedAt: -Infinity });
+  const triggerRef = useRef("scheduled");
+  const soonRef = useRef(null);
+  const lastLocalAtRef = useRef(-Infinity);
+  const lastObservedAtRef = useRef(null);
 
   const [isDegraded, setIsDegraded] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
     sessionRef.current = { interviewId, sessionId, proctoringToken };
@@ -591,6 +620,8 @@ export function useProctoringSystem(
       maxWidth: TARGET_WIDTH,
       maxHeight: TARGET_HEIGHT,
       quality: IMAGE_QUALITY,
+      fileMaxWidth: VERIFY_FILE_MAX_WIDTH,
+      fileQuality: VERIFY_FILE_QUALITY,
     });
   }
 
@@ -763,6 +794,7 @@ export function useProctoringSystem(
 
   async function tick() {
     stopIdentityChecks();
+    const trigger = triggerRef.current;
     if (!isActiveRef.current || busyRef.current) {
       scheduleNext();
       return;
@@ -772,7 +804,7 @@ export function useProctoringSystem(
     if (!sample) {
       recordFailure("camera_unavailable");
       if (consecutiveFailuresRef.current <= CAMERA_GRACE_TICKS) {
-        setTickTimer(CAMERA_RETRY_MS);
+        setTickTimer(CAMERA_RETRY_MS, "camera_retry");
       } else {
         scheduleNext();
       }
@@ -780,8 +812,44 @@ export function useProctoringSystem(
     }
 
     busyRef.current = true;
-    let result = null;
+    if (trigger.startsWith("local_")) lastLocalAtRef.current = sample.capturedAt;
+    const localFaces = localFacesRef?.current ?? null;
+    const detecting = detect(sample);
+    // An empty seat isn't sent, but verification still has to see the gap so
+    // the next mismatch gets its re-check.
+    const verifying =
+      localFaces === "none"
+        ? verifyFaces({ ...sample, faceCount: 0 }, null)
+        : verifyFaces(sample, detecting);
 
+    try {
+      const { result, detectMs } = await detecting;
+      recordCheckStats({
+        at: sample.capturedAt,
+        detectMs,
+        unobservedMs: result ? observedAt(sample.capturedAt) : 0,
+      });
+
+      const { faces, verifyMs } = await verifying;
+      const frame = result ?? (faces ? VERIFY_ONLY_FRAME : null);
+      if (frame) {
+        processFrame(faces ? { ...frame, verified_faces: faces } : frame, sample.capturedAt, {
+          trigger,
+          detect_ms: detectMs,
+          verify_ms: verifyMs,
+          ...(localFacesRef ? { local_faces: localFaces } : {}),
+        });
+      }
+    } catch (err) {
+      logger.error("[Proctoring] ❌ Frame processing failed:", err?.message);
+    } finally {
+      busyRef.current = false;
+      scheduleNext(sample.capturedAt);
+    }
+  }
+
+  async function detect(sample) {
+    const startedAt = Date.now();
     try {
       logger.log("[Proctoring] 🤖 Sending frame to AI detection API…");
       const aiResult = await detectFrame(sample.frame);
@@ -796,53 +864,64 @@ export function useProctoringSystem(
       // would leave a stretch of log that looks observed but never was.
       if (cleanResult.success) {
         recordSuccess();
-        result = cleanResult;
-      } else {
-        recordFailure("unsuccessful_response");
+        return { result: cleanResult, detectMs: Date.now() - startedAt };
       }
+      recordFailure("unsuccessful_response");
     } catch (err) {
       logger.error("[Proctoring] ❌ AI detection failed:", err?.response?.status, err?.message);
       recordFailure(err?.message || "request_failed");
     }
+    return { result: null, detectMs: null };
+  }
 
-    try {
-      const faces = await verifyFaces(sample, result);
-      const frame = result ?? (faces ? VERIFY_ONLY_FRAME : null);
-      if (frame) {
-        processFrame(faces ? { ...frame, verified_faces: faces } : frame, sample.capturedAt);
-      }
-    } catch (err) {
-      logger.error("[Proctoring] ❌ Frame processing failed:", err?.message);
-    } finally {
-      busyRef.current = false;
-      scheduleNext(sample.capturedAt);
-    }
+  // Returns how long nothing was watched before this answer, when that gap is
+  // longer than the loop ever leaves on purpose.
+  function observedAt(at) {
+    const last = lastObservedAtRef.current;
+    lastObservedAtRef.current = at;
+    return last !== null && at - last > UNOBSERVED_AFTER_MS ? at - last : 0;
   }
 
   // Verification sees the same frame, and the faces it saw join detection's
-  // before anything is decided, so one person in view can't strike twice.
-  // It waits for detection so it only compares clear frames; both stay
-  // unknown when detection fails, so identity still runs.
-  async function verifyFaces(sample, result) {
-    if (!isActiveRef.current || !onSampleRef.current) return null;
-    let timer;
-    const answer = await Promise.race([
-      Promise.resolve(
-        onSampleRef.current({
-          ...sample,
+  // before anything is decided, so one person in view can't strike twice. It
+  // runs alongside detection and gets detection's view of the frame as a
+  // promise, so it still only compares clear frames; both stay unknown when
+  // detection fails, so identity still runs.
+  async function verifyFaces(sample, detecting) {
+    if (!isActiveRef.current || !onSampleRef.current) return NO_ANSWER;
+    const answering = Promise.resolve(
+      onSampleRef.current({
+        ...sample,
+        detection: detecting?.then(({ result }) => ({
           faceCount: result ? faceCountOf(result) : undefined,
           faceConfidence: result?.confidence_score,
-        }),
-      ).catch(() => null),
+        })),
+      }),
+    ).then(
+      (answer) => {
+        if (!answer) return NO_ANSWER;
+        const verifyMs = answer.verifyMs ?? null;
+        recordCheckStats({ verifyMs });
+        return { faces: answer.faces ?? null, verifyMs };
+      },
+      () => NO_ANSWER,
+    );
+
+    let timer;
+    const answer = await Promise.race([
+      answering,
       new Promise((resolve) => {
-        timer = setTimeout(resolve, VERIFY_WAIT_MS);
+        timer = setTimeout(
+          () => resolve(NO_ANSWER),
+          sample.capturedAt + VERIFY_WAIT_MS - Date.now(),
+        );
       }),
     ]);
     clearTimeout(timer);
-    return answer?.faces ?? null;
+    return answer;
   }
 
-  function processFrame(frame, capturedAt) {
+  function processFrame(frame, capturedAt, check) {
     const now = capturedAt ?? Date.now();
     const verifyOnly = frame.verify_only === true;
 
@@ -850,7 +929,11 @@ export function useProctoringSystem(
       timestamp: new Date().toISOString(),
       source: "cv_detect",
       event_type: verifyOnly ? "verified_frame" : "frame",
-      payload: verifyOnly ? { verified_faces: frame.verified_faces } : frame,
+      payload: {
+        ...(verifyOnly ? { verified_faces: frame.verified_faces } : frame),
+        captured_at: new Date(now).toISOString(),
+        ...check,
+      },
     });
 
     // The room is only baselined when the session starts. Re-seeding after an
@@ -925,7 +1008,12 @@ export function useProctoringSystem(
     };
     for (const violation of detected) {
       if (confirmed.includes(violation)) continue;
-      recordDecision(violation, isHeld(violation) ? "held" : "unconfirmed", frame.frame_quality);
+      const held = isHeld(violation);
+      recordDecision(violation, held ? "held" : "unconfirmed", frame.frame_quality);
+      // Shadow only: measures whether confirming on one frame both checks agree on is safe.
+      if (!held && violation.type === "MULTIPLE_FACES" && violation.seenBy === "both") {
+        recordDecision(violation, "would_confirm_now", frame.frame_quality);
+      }
     }
 
     // Only evidence still waiting to confirm earns a quick second look. A muted
@@ -952,34 +1040,51 @@ export function useProctoringSystem(
     } else if (burstRemainingRef.current === 0) {
       burstsUsedRef.current = 0;
     }
+
+    setHasChecked(true);
   }
 
-  function setTickTimer(delay) {
+  // `trigger` is logged with the frame, so each check says why it ran when it did.
+  function setTickTimer(delay, trigger) {
     clearTimeout(timerRef.current);
+    triggerRef.current = trigger;
     nextTickAtRef.current = Date.now() + delay;
     timerRef.current = setTimeout(() => tickRef.current(), delay);
   }
 
   function scheduleNext(capturedAt) {
     if (!isActiveRef.current) return;
-    const spent = capturedAt ? Date.now() - capturedAt : 0;
-    const after = (interval) => Math.max(MIN_TICK_GAP_MS, interval - spent);
+    const now = Date.now();
+    const spent = capturedAt ? now - capturedAt : 0;
+    const failures = consecutiveFailuresRef.current;
 
+    let interval = DETECT_INTERVAL_MS;
+    let trigger = "scheduled";
     if (burstRemainingRef.current > 0) {
       burstRemainingRef.current -= 1;
-      setTickTimer(after(BURST_INTERVAL_MS));
-      return;
+      interval = BURST_INTERVAL_MS;
+      trigger = "burst";
+    } else if (failures > 0) {
+      interval = Math.min(DETECT_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
+      trigger = "backoff";
+    } else if (now < suspicionUntilRef.current) {
+      interval = SUSPICION_INTERVAL_MS;
+      trigger = "suspicion";
+    }
+    let delay = Math.max(MIN_TICK_GAP_MS, interval - spent);
+
+    // A quicker look asked for while this tick was running.
+    const soon = busyRef.current ? null : soonRef.current;
+    if (soon) {
+      soonRef.current = null;
+      if (failures === 0 && soon.at - now < delay) {
+        delay = Math.max(MIN_TICK_GAP_MS, soon.at - now);
+        trigger = soon.reason;
+      }
     }
 
-    const failures = consecutiveFailuresRef.current;
-    const delay =
-      failures > 0
-        ? Math.min(DETECT_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS)
-        : Date.now() < suspicionUntilRef.current
-          ? SUSPICION_INTERVAL_MS
-          : DETECT_INTERVAL_MS;
-    setTickTimer(after(delay));
-    if (delay > DETECT_INTERVAL_MS) scheduleIdentityChecks();
+    setTickTimer(delay, trigger);
+    if (interval > DETECT_INTERVAL_MS) scheduleIdentityChecks();
   }
 
   // Backing off protects the detection service, but it would slow identity
@@ -991,10 +1096,16 @@ export function useProctoringSystem(
       if (!isActiveRef.current || busyRef.current) return;
       const sample = captureFrame();
       if (sample) {
-        const faces = await verifyFaces(sample, null);
+        recordCheckStats({ at: sample.capturedAt });
+        const { faces, verifyMs } = await verifyFaces(sample, null);
         if (run !== identityRunRef.current) return;
         if (faces && isActiveRef.current) {
-          processFrame({ ...VERIFY_ONLY_FRAME, verified_faces: faces }, sample.capturedAt);
+          processFrame({ ...VERIFY_ONLY_FRAME, verified_faces: faces }, sample.capturedAt, {
+            trigger: "backoff",
+            detect_ms: null,
+            verify_ms: verifyMs,
+            ...(localFacesRef ? { local_faces: localFacesRef.current ?? null } : {}),
+          });
         }
       }
       identityTimerRef.current = setTimeout(check, DETECT_INTERVAL_MS);
@@ -1009,26 +1120,38 @@ export function useProctoringSystem(
   }
 
   // Face verification asks for a quicker next look after a mismatch or while
-  // the face is unclear, and the on-device face watch for an immediate one
-  // when the face count changes. Backoff still wins: the service is
-  // struggling then.
+  // the face is unclear, and the on-device watches for an immediate one when
+  // what they see changes. Backoff still wins: the service is struggling then.
   function sampleSoon(reason, delayMs = SUSPICION_INTERVAL_MS) {
     if (!isActiveRef.current) return;
     const now = Date.now();
-    if (now >= suspicionUntilRef.current) {
-      logger.log(`[Proctoring] 🔎 Sampling every ${SUSPICION_INTERVAL_MS}ms: ${reason}`);
-      queueRef.current.push({
-        timestamp: new Date().toISOString(),
-        source: "cv_detect",
-        event_type: "suspicion_sampling",
-        payload: { reason },
-      });
+    // The device seeing a change is a reason to look, not evidence, so it
+    // doesn't keep the faster pace going afterwards.
+    const onDevice = reason?.startsWith("local_");
+    if (onDevice) {
+      delayMs = Math.max(delayMs, lastLocalAtRef.current + LOCAL_TRIGGER_GAP_MS - now);
+    } else {
+      if (now >= suspicionUntilRef.current) {
+        logger.log(`[Proctoring] 🔎 Sampling every ${SUSPICION_INTERVAL_MS}ms: ${reason}`);
+        queueRef.current.push({
+          timestamp: new Date().toISOString(),
+          source: "cv_detect",
+          event_type: "suspicion_sampling",
+          payload: { reason },
+        });
+      }
+      suspicionUntilRef.current = now + SUSPICION_WINDOW_MS;
     }
-    suspicionUntilRef.current = now + SUSPICION_WINDOW_MS;
+    if (consecutiveFailuresRef.current > 0) return;
 
-    // A tick in progress picks the faster pace up when it schedules the next one.
-    if (busyRef.current || consecutiveFailuresRef.current > 0) return;
-    if (nextTickAtRef.current - now > delayMs) setTickTimer(delayMs);
+    // Verification asks from inside a tick, which takes it up when it
+    // schedules the next one.
+    const at = now + delayMs;
+    if (busyRef.current) {
+      if (!soonRef.current || at < soonRef.current.at) soonRef.current = { at, reason };
+    } else if (nextTickAtRef.current > at) {
+      setTickTimer(delayMs, reason);
+    }
   }
 
   function checkCamera() {
@@ -1054,8 +1177,26 @@ export function useProctoringSystem(
 
     if (state.offSince === null) {
       state.offSince = now;
+      state.hinted = false;
       logger.warn(`[Proctoring] 📷 Camera unavailable: ${reason}`);
       recordViolationEvent({ source: "camera", type: "CAMERA_OFF", outcome: "started", reason });
+    }
+    // Tell the candidate early, long before it costs a strike.
+    if (!state.hinted && now - state.offSince >= CAMERA_OFF_HINT_MS) {
+      state.hinted = true;
+      onViolationRef.current?.({
+        type: "CAMERA_OFF",
+        ...violationCopy("CAMERA_OFF_HINT"),
+        soft: true,
+        countsAsViolation: false,
+      });
+      recordViolationEvent({
+        source: "camera",
+        type: "CAMERA_OFF",
+        outcome: "hint",
+        reason,
+        off_for_ms: now - state.offSince,
+      });
     }
     if (now - state.offSince <= CAMERA_OFF_AFTER_MS) return;
     // Paced like a detection tick so a held incident reminds rather than spams the log.
@@ -1178,11 +1319,16 @@ export function useProctoringSystem(
       struckIncidentsRef.current.clear();
       lastNoFaceGuidanceRef.current = 0;
       suspicionUntilRef.current = 0;
+      soonRef.current = null;
+      lastLocalAtRef.current = -Infinity;
+      lastObservedAtRef.current = null;
       gazeRef.current.reset();
       // Deferred so the setState isn't a direct synchronous call in the effect body.
-      queueMicrotask(() => setIsDegraded(false));
-      nextTickAtRef.current = Date.now() + DETECT_INTERVAL_MS;
-      timerRef.current = setTimeout(() => tickRef.current(), DETECT_INTERVAL_MS);
+      queueMicrotask(() => {
+        setIsDegraded(false);
+        setHasChecked(false);
+      });
+      setTickTimer(DETECT_INTERVAL_MS, "scheduled");
     } else {
       logger.log("[Proctoring] ⏹️ Interview inactive — stopping loop.");
       if (timerRef.current) {
@@ -1202,7 +1348,12 @@ export function useProctoringSystem(
 
   useEffect(() => {
     if (!isActive) return;
-    cameraRef.current = { hasPlayed: false, offSince: null, lastRaisedAt: -Infinity };
+    cameraRef.current = {
+      hasPlayed: false,
+      offSince: null,
+      hinted: false,
+      lastRaisedAt: -Infinity,
+    };
     const timer = setInterval(() => checkCameraRef.current(), CAMERA_CHECK_MS);
     return () => clearInterval(timer);
   }, [isActive]);
@@ -1269,6 +1420,7 @@ export function useProctoringSystem(
     flush: flushQueue,
     pendingCount: () => queueRef.current.length,
     isDegraded,
+    hasChecked,
     sampleSoon: requestSample,
   };
 }

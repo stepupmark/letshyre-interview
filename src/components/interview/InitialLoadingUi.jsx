@@ -9,7 +9,7 @@ export function InitialLoadingUi() {
         <div className="absolute inset-0 animate-ping rounded-full bg-blue-400 opacity-20 duration-1000"></div>
         <div className="absolute inset-2 animate-pulse rounded-full bg-blue-100/50"></div>
         <img
-          src="/robo.png"
+          src="/robo.webp"
           alt="AI Interviewer"
           className="z-10 h-20 w-20 object-contain drop-shadow-md"
         />

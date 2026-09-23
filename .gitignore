@@ -14,8 +14,8 @@ dist-ssr
 .env
 .env.prod
 
-# Copied from node_modules by vite.config.js
-public/mediapipe/wasm
+# Copied from node_modules by vite.config.js, one folder per MediaPipe version
+public/mediapipe/wasm/
 
 /test
 

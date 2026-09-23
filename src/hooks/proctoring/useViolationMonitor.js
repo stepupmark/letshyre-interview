@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { MAX_VIOLATIONS } from "@/config/interview";
+import { HELD_RESTRIKE_SECONDS, MAX_VIOLATIONS } from "@/config/interview";
 import { createStrikePolicy } from "@/lib/strikePolicy";
+import { WARNING_IMAGES } from "@/lib/violationCopy";
 import { recordViolationEvent } from "@/lib/violationLog";
 
 // Slack against OS chrome and DPI rounding when deciding whether the window is
@@ -31,6 +32,10 @@ const CASCADE_WINDOW_MS = 2_000;
 // leaving the interview. They share a strike key so one act strikes once, and
 // each leave after coming back is a new incident that strikes straight away.
 const LEFT_WINDOW = "LEFT_WINDOW";
+// Staying away costs one more strike, like a phone kept in view.
+const STILL_AWAY_MS = HELD_RESTRIKE_SECONDS * 1000;
+// Retry interval when that strike is held back by the policy.
+const STILL_AWAY_RETRY_MS = 1_000;
 // Brief focus blips (OS notifications, a stray click on the taskbar) are not a leave.
 const FOCUS_CONFIRM_MS = 2_000;
 // Each focus loss shorter than that is free, so repeated quick peeks at another
@@ -87,9 +92,20 @@ export function getElectronViolationKey(event = "") {
 // A second display or a mirrored screen is the same concern as a detected
 // laptop; the rest are window-level actions.
 const ELECTRON_IMAGES = {
-  externalDisplay: "/laptop.png",
-  screenSharing: "/laptop.png",
+  externalDisplay: "/laptop.webp",
+  screenSharing: "/laptop.webp",
 };
+const WINDOW_SWITCH_IMAGE = "/window-switch.webp";
+
+// Fetched up front so a warning never opens on a blank picture.
+function preloadWarningImages() {
+  const paths = new Set([
+    ...WARNING_IMAGES,
+    ...Object.values(ELECTRON_IMAGES),
+    WINDOW_SWITCH_IMAGE,
+  ]);
+  for (const path of paths) new Image().src = path;
+}
 
 function electronViolation({ event, severity, count } = {}) {
   const key = getElectronViolationKey(event);
@@ -99,7 +115,7 @@ function electronViolation({ event, severity, count } = {}) {
     detail: { event, severity, electron_count: count },
     titleKey: `violations.electron.${key}.title`,
     descriptionKey: `violations.electron.${key}.description`,
-    imagePath: ELECTRON_IMAGES[key] ?? "/window-switch.png",
+    imagePath: ELECTRON_IMAGES[key] ?? WINDOW_SWITCH_IMAGE,
   };
 }
 
@@ -437,15 +453,45 @@ export function useViolationMonitor({
 
   // requestFullscreen needs a user gesture, so the timer can only close the
   // modal — restoring fullscreen has to wait for a click.
+  // A candidate on another tab must come back to the warning, not to a strike
+  // count that changed with nothing on screen to explain it.
   useEffect(() => {
     if (!showTabWarning) return;
 
-    const timer = setTimeout(() => {
-      closeWarning("auto_closed");
-      if (!document.fullscreenElement) setNeedsFullscreen(true);
-    }, AUTO_DISMISS_MS);
+    let remaining = AUTO_DISMISS_MS;
+    let resumedAt = 0;
+    let timer = null;
 
-    return () => clearTimeout(timer);
+    const pause = () => {
+      if (!timer) return;
+      clearTimeout(timer);
+      timer = null;
+      remaining -= Date.now() - resumedAt;
+    };
+    const resume = () => {
+      if (timer || document.hidden) return;
+      resumedAt = Date.now();
+      timer = setTimeout(() => {
+        closeWarning("auto_closed");
+        if (!document.fullscreenElement) setNeedsFullscreen(true);
+      }, remaining);
+    };
+    const handleVisibilityChange = () => {
+      if (document.hidden) pause();
+      else if (document.hasFocus()) resume();
+    };
+
+    if (document.hasFocus()) resume();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", pause);
+    window.addEventListener("focus", resume);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", pause);
+      window.removeEventListener("focus", resume);
+    };
   }, [showTabWarning, violationInfo, closeWarning]);
 
   const restoreFullscreen = useCallback(() => {
@@ -458,9 +504,11 @@ export function useViolationMonitor({
       if (!isActiveRef.current) return;
       // Gaze and blinking are noisy, so they nudge rather than strike. A nudge
       // over an open warning is noise; the next frame brings it back if needed.
+      // One toast per kind, updated in place as the nudge repeats.
       if (violation.soft) {
         if (isWarningOpenRef.current) return "soft";
         toast.warning(tRef.current(violation.titleKey), {
+          id: `soft:${violation.type ?? violation.titleKey}`,
           description: tRef.current(violation.descriptionKey),
         });
         return "soft";
@@ -576,18 +624,40 @@ export function useViolationMonitor({
     // made while still on the page (a fullscreen exit, a resize) stays joinable
     // for the cascade window so the events one act fires strike once.
     let leftWindow = null;
+    let stillAwayTimer = null;
+
+    const strikeStillAway = (delay) => {
+      stillAwayTimer = setTimeout(() => {
+        stillAwayTimer = null;
+        if (!leftWindow?.away || !isActiveRef.current) return;
+        const outcome = raiseViolation({
+          ...leftWindow.violation,
+          strikeKey: LEFT_WINDOW,
+          incident: true,
+          incidentStartedAt: leftWindow.startedAt,
+          restrikeAfterMs: STILL_AWAY_MS,
+          maxRestrikes: 1,
+          detail: { reason: "still_away", away_ms: Date.now() - leftWindow.startedAt },
+        });
+        // The leave's own strike may have landed late, or another is waiting.
+        if (["cooldown", "reaction_window", "queued"].includes(outcome)) {
+          strikeStillAway(STILL_AWAY_RETRY_MS);
+        }
+      }, delay);
+    };
 
     const leaveWindow = (violation, at = Date.now()) => {
       const away = document.hidden || !document.hasFocus();
       const joins = leftWindow && (leftWindow.away || at - leftWindow.lastAt < CASCADE_WINDOW_MS);
+      const wasAway = joins && leftWindow.away;
       leftWindow = joins
         ? {
             startedAt: leftWindow.startedAt,
             lastAt: Math.max(leftWindow.lastAt, at),
             away: leftWindow.away || away,
-            cause: leftWindow.cause,
+            violation: leftWindow.violation,
           }
-        : { startedAt: at, lastAt: at, away, cause: violation.type };
+        : { startedAt: at, lastAt: at, away, violation };
       raiseViolation({
         ...violation,
         strikeKey: LEFT_WINDOW,
@@ -595,6 +665,7 @@ export function useViolationMonitor({
         incidentStartedAt: leftWindow.startedAt,
         maxRestrikes: 0,
       });
+      if (leftWindow.away && !wasAway) strikeStillAway(STILL_AWAY_MS);
     };
 
     const cameBack = () => {
@@ -603,10 +674,12 @@ export function useViolationMonitor({
           source: "window",
           type: LEFT_WINDOW,
           outcome: "returned",
-          cause: leftWindow.cause,
+          cause: leftWindow.violation.type,
           away_ms: Date.now() - leftWindow.startedAt,
         });
       }
+      clearTimeout(stillAwayTimer);
+      stillAwayTimer = null;
       leftWindow = null;
     };
 
@@ -625,7 +698,7 @@ export function useViolationMonitor({
         source: "tab_switch",
         titleKey: "violations.tabSwitch.title",
         descriptionKey: "violations.tabSwitch.description",
-        imagePath: "/window-switch.png",
+        imagePath: WINDOW_SWITCH_IMAGE,
       });
     };
 
@@ -645,7 +718,7 @@ export function useViolationMonitor({
             source: "window_focus",
             titleKey: "violations.windowFocus.title",
             descriptionKey: "violations.windowFocus.description",
-            imagePath: "/window-switch.png",
+            imagePath: WINDOW_SWITCH_IMAGE,
           },
           leftAt,
         );
@@ -670,7 +743,7 @@ export function useViolationMonitor({
             source: "window_focus",
             titleKey: "violations.windowFocus.title",
             descriptionKey: "violations.windowFocus.description",
-            imagePath: "/window-switch.png",
+            imagePath: WINDOW_SWITCH_IMAGE,
             strikeKey: LEFT_WINDOW,
             incident: true,
             incidentStartedAt: now,
@@ -702,7 +775,7 @@ export function useViolationMonitor({
         source: "fullscreen_exit",
         titleKey: "violations.fullscreenExit.title",
         descriptionKey: "violations.fullscreenExit.description",
-        imagePath: "/window-switch.png",
+        imagePath: WINDOW_SWITCH_IMAGE,
       });
     };
 
@@ -740,7 +813,7 @@ export function useViolationMonitor({
             source: "window_resize",
             titleKey: "violations.windowResize.title",
             descriptionKey: "violations.windowResize.description",
-            imagePath: "/window-switch.png",
+            imagePath: WINDOW_SWITCH_IMAGE,
           });
         }, RESIZE_CONFIRM_MS);
       }, 300);
@@ -768,13 +841,16 @@ export function useViolationMonitor({
       if (resizeTimer) clearTimeout(resizeTimer);
       if (confirmTimer) clearTimeout(confirmTimer);
       clearTimeout(focusTimer);
+      clearTimeout(stillAwayTimer);
       checkPresenceRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ↑ intentional empty deps — raiseViolation reads isActive/incrementViolation via refs
 
   useEffect(() => {
-    if (isActive) checkPresenceRef.current?.();
+    if (!isActive) return;
+    preloadWarningImages();
+    checkPresenceRef.current?.();
   }, [isActive]);
 
   return {

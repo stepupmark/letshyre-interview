@@ -146,6 +146,10 @@
       "title": "Fotocamera disattivata",
       "description": "La fotocamera ha smesso di trasmettere il video. Riattivala per continuare il colloquio."
     },
+    "cameraOffHint": {
+      "title": "La fotocamera si è fermata",
+      "description": "Riattiva la fotocamera. Se resta spenta, verrà conteggiata come violazione."
+    },
     "lookingAway": {
       "title": "Sguardo distolto troppo a lungo",
       "description": "Hai distolto lo sguardo dallo schermo troppo a lungo. Mantieni l'attenzione sul colloquio."

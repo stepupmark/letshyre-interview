@@ -146,6 +146,10 @@
       "title": "Kamera ausgeschaltet",
       "description": "Ihre Kamera überträgt kein Video mehr. Schalten Sie sie wieder ein, um das Interview fortzusetzen."
     },
+    "cameraOffHint": {
+      "title": "Ihre Kamera ist aus",
+      "description": "Schalten Sie Ihre Kamera wieder ein. Bleibt sie aus, wird dies als Verstoß gewertet."
+    },
     "lookingAway": {
       "title": "Zu lange weggeschaut",
       "description": "Sie haben zu lange vom Bildschirm weggeschaut. Bleiben Sie mit Ihrer Aufmerksamkeit beim Interview."

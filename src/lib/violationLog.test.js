@@ -1,5 +1,7 @@
 import {
+  checkSummary,
   faceMismatchSummary,
+  recordCheckStats,
   recordInterviewEnded,
   recordViolationEvent,
   resetViolationSummary,
@@ -135,6 +137,40 @@ describe("recordInterviewEnded", () => {
       strike_count: 2,
       internet_disconnects: 0,
       face_mismatches: { in_a_row: 0, total: 0 },
+      checks: {
+        count: 0,
+        per_minute: null,
+        detect_ms: { p50: null, p95: null },
+        verify_ms: { p50: null, p95: null },
+        unobserved_ms: 0,
+      },
     });
+  });
+
+  it("summarises how closely the camera loop watched", () => {
+    for (let i = 0; i < 13; i += 1) {
+      recordCheckStats({ at: i * 5_000, detectMs: 100 + i * 10 });
+      recordCheckStats({ verifyMs: 400 + i * 100 });
+    }
+    recordCheckStats({ at: 60_000, unobservedMs: 15_000 });
+
+    const { seen, stop } = capture();
+    recordInterviewEnded({ outcome: "completed" });
+    stop();
+
+    expect(seen[0].checks).toEqual({
+      count: 14,
+      per_minute: 13,
+      detect_ms: { p50: 160, p95: 220 },
+      verify_ms: { p50: 1_000, p95: 1_600 },
+      unobserved_ms: 15_000,
+    });
+  });
+
+  it("starts the check summary again on reset", () => {
+    recordCheckStats({ at: 0, detectMs: 100, unobservedMs: 20_000 });
+    resetViolationSummary();
+
+    expect(checkSummary()).toMatchObject({ count: 0, unobserved_ms: 0 });
   });
 });

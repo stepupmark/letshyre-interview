@@ -146,6 +146,10 @@
       "title": "Cámara apagada",
       "description": "Su cámara dejó de enviar video. Vuelva a encenderla para continuar con la entrevista."
     },
+    "cameraOffHint": {
+      "title": "Su cámara se detuvo",
+      "description": "Vuelva a encender su cámara. Si sigue apagada, contará como una infracción."
+    },
     "lookingAway": {
       "title": "Mirada apartada demasiado tiempo",
       "description": "Apartó la mirada de la pantalla durante demasiado tiempo. Mantenga la atención en la entrevista."

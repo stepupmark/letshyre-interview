@@ -1,4 +1,4 @@
-import { objectNameKey, violationCopy, violationTitle } from "./violationCopy";
+import { objectNameKey, violationCopy, violationTitle, WARNING_IMAGES } from "./violationCopy";
 
 describe("objectNameKey", () => {
   it("maps detector labels to camelCase copy keys", () => {
@@ -34,7 +34,7 @@ describe("violationCopy", () => {
 
   it("falls back to default prohibited object copy for other devices", () => {
     const copy = violationCopy("PROHIBITED_OBJECT");
-    expect(copy.imagePath).toBe("/laptop.png");
+    expect(copy.imagePath).toBe("/laptop.webp");
     expect(copy.titleKey).toBe("violations.prohibitedObject.title");
   });
 
@@ -51,13 +51,28 @@ describe("violationCopy", () => {
     expect(violationCopy("CAMERA_OFF")).toEqual({
       titleKey: "violations.cameraOff.title",
       descriptionKey: "violations.cameraOff.description",
-      imagePath: "/no-candidate.png",
+      imagePath: "/no-candidate.webp",
     });
     expect(violationCopy("LOOKING_AWAY")).toEqual({
       titleKey: "violations.lookingAway.title",
       descriptionKey: "violations.lookingAway.description",
-      imagePath: "/no-candidate.png",
+      imagePath: "/no-candidate.webp",
     });
+  });
+
+  it("gives camera-off a soft hint ahead of the strike", () => {
+    expect(violationCopy("CAMERA_OFF_HINT")).toEqual({
+      titleKey: "violations.cameraOffHint.title",
+      descriptionKey: "violations.cameraOffHint.description",
+      soft: true,
+    });
+  });
+
+  it("lists each warning picture once for preloading", () => {
+    expect(WARNING_IMAGES).toEqual(
+      expect.arrayContaining(["/no-candidate.webp", "/multi-people.webp", "/laptop.webp"]),
+    );
+    expect(new Set(WARNING_IMAGES).size).toBe(WARNING_IMAGES.length);
   });
 
   it("returns null for unknown violation types", () => {

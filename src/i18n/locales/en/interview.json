@@ -146,6 +146,10 @@
       "title": "Camera Turned Off",
       "description": "Your camera stopped sending video. Turn it back on to continue the interview."
     },
+    "cameraOffHint": {
+      "title": "Your Camera Stopped",
+      "description": "Turn your camera back on. If it stays off, it will count as a violation."
+    },
     "lookingAway": {
       "title": "Looking Away Too Long",
       "description": "You looked away from the screen for too long. Keep your attention on the interview."

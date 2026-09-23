@@ -43,6 +43,10 @@ export const FACE_STRONG_MISMATCH_BELOW = num(
 // second one arriving is looked at straight away. "false" turns it off.
 export const LOCAL_FACE_WATCH = import.meta.env.VITE_AI_LOCAL_FACE_WATCH !== "false";
 
+// Looks for a phone on the device once a second so one coming into view is
+// checked straight away. "false" turns it off.
+export const LOCAL_OBJECT_WATCH = import.meta.env.VITE_AI_LOCAL_OBJECT_WATCH !== "false";
+
 // Internet disconnects allowed before auto-submit. Tracked separately from
 // proctoring violations — a dropped connection is not misconduct.
 export const MAX_INTERNET_DISCONNECTS = num(import.meta.env.VITE_AI_MAX_INTERNET_DISCONNECTS, 3);

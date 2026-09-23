@@ -1,6 +1,6 @@
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
-import { subscribeToViolationLog } from "@/lib/violationLog";
+import { checkSummary, resetViolationSummary, subscribeToViolationLog } from "@/lib/violationLog";
 import { LOG_SEND_FALLBACK_MS, useProctoringSystem } from "./useProctoringSystem";
 
 vi.mock("@/services/proctoring.api", () => ({
@@ -203,9 +203,10 @@ describe("useProctoringSystem sampling", () => {
 
     await vi.advanceTimersByTimeAsync(5_000);
 
-    expect(onSample).toHaveBeenCalledWith(
-      expect.objectContaining({ faceCount: 1, faceConfidence: 0.64 }),
-    );
+    expect(await onSample.mock.calls[0][0].detection).toEqual({
+      faceCount: 1,
+      faceConfidence: 0.64,
+    });
   });
 
   describe("multi-tiered NO_FACE escalation", () => {
@@ -289,6 +290,8 @@ const notLooking = () => ({ ...frame(), looking_at_camera: false });
 const ofType = (onViolation, type) =>
   onViolation.mock.calls.map(([violation]) => violation).filter((v) => v.type === type);
 
+const strikesOf = (onViolation, type) => ofType(onViolation, type).filter((v) => !v.soft);
+
 const softAware = () => vi.fn((violation) => (violation.soft ? "soft" : "raised"));
 
 const pressKey = () => window.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
@@ -360,10 +363,10 @@ describe("camera turned off", () => {
     await vi.advanceTimersByTimeAsync(3_000);
     track.readyState = "ended";
     await vi.advanceTimersByTimeAsync(11_000);
-    expect(ofType(onViolation, "CAMERA_OFF")).toHaveLength(0);
+    expect(strikesOf(onViolation, "CAMERA_OFF")).toHaveLength(0);
 
     await vi.advanceTimersByTimeAsync(1_000);
-    const [strike] = ofType(onViolation, "CAMERA_OFF");
+    const [strike] = strikesOf(onViolation, "CAMERA_OFF");
     expect(strike).toMatchObject({
       strikeKey: "CAMERA_OFF",
       incident: true,
@@ -372,7 +375,7 @@ describe("camera turned off", () => {
       maxRestrikes: 1,
       titleKey: "violations.cameraOff.title",
       descriptionKey: "violations.cameraOff.description",
-      imagePath: "/no-candidate.png",
+      imagePath: "/no-candidate.webp",
       detail: { reason: "track_ended" },
     });
     expect(strike.countsAsViolation).not.toBe(false);
@@ -390,7 +393,7 @@ describe("camera turned off", () => {
     track.muted = true;
     await vi.advanceTimersByTimeAsync(12_000);
 
-    const starts = ofType(onViolation, "CAMERA_OFF").map((v) => v.incidentStartedAt);
+    const starts = strikesOf(onViolation, "CAMERA_OFF").map((v) => v.incidentStartedAt);
     expect(starts).toEqual([2_000, 2_000, 2_000, 26_000]);
     expect(events).toContainEqual(
       expect.objectContaining({ type: "CAMERA_OFF", outcome: "recovered" }),
@@ -407,7 +410,33 @@ describe("camera turned off", () => {
     track.readyState = "live";
     await vi.advanceTimersByTimeAsync(20_000);
 
+    expect(strikesOf(onViolation, "CAMERA_OFF")).toHaveLength(0);
+  });
+
+  it("hints once, a second after the camera goes off, without a strike", async () => {
+    const track = liveTrack();
+    const { onViolation } = start(undefined, undefined, videoWith(track));
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    track.readyState = "ended";
+    await vi.advanceTimersByTimeAsync(1_000);
     expect(ofType(onViolation, "CAMERA_OFF")).toHaveLength(0);
+
+    await vi.advanceTimersByTimeAsync(1_000);
+    const hints = () => ofType(onViolation, "CAMERA_OFF").filter((v) => v.soft);
+    expect(hints()).toEqual([expect.objectContaining({ soft: true, countsAsViolation: false })]);
+    expect(events).toContainEqual(
+      expect.objectContaining({ source: "camera", type: "CAMERA_OFF", outcome: "hint" }),
+    );
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(hints()).toHaveLength(1);
+
+    track.readyState = "live";
+    await vi.advanceTimersByTimeAsync(2_000);
+    track.readyState = "ended";
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(hints()).toHaveLength(2);
   });
 
   it("strikes when the video stops producing frames", async () => {
@@ -417,7 +446,7 @@ describe("camera turned off", () => {
     camera.ready = false;
     await vi.advanceTimersByTimeAsync(12_000);
 
-    expect(ofType(onViolation, "CAMERA_OFF")[0]).toMatchObject({
+    expect(strikesOf(onViolation, "CAMERA_OFF")[0]).toMatchObject({
       detail: { reason: "no_frames" },
     });
   });
@@ -458,7 +487,7 @@ describe("looking away", () => {
       incidentStartedAt: 5_000,
       titleKey: "violations.lookingAway.title",
       descriptionKey: "violations.lookingAway.description",
-      imagePath: "/no-candidate.png",
+      imagePath: "/no-candidate.webp",
       detail: { reason: "held" },
     });
     expect(strikes[0].countsAsViolation).not.toBe(false);
@@ -605,6 +634,25 @@ describe("faces seen by verification", () => {
     expect(strikes(onViolation, "MULTIPLE_FACES")).toEqual([
       expect.objectContaining({ detail: expect.objectContaining({ seen_by: "both" }) }),
     ]);
+  });
+
+  it("logs that a second person both checks saw could have been confirmed at once", async () => {
+    replay(Array.from({ length: 10 }, () => ({ ...frame(), face_count: 2 })));
+    const { onViolation } = start(undefined, verified("multiple"));
+
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    expect(strikes(onViolation, "MULTIPLE_FACES")).toHaveLength(0);
+    expect(decisions("MULTIPLE_FACES")).toEqual(["unconfirmed", "would_confirm_now"]);
+  });
+
+  it("does not log it for a second person only one check saw", async () => {
+    replay(Array.from({ length: 10 }, () => ({ ...frame(), face_count: 2 })));
+    start(undefined, verified("one"));
+
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    expect(decisions("MULTIPLE_FACES")).toEqual(["unconfirmed"]);
   });
 
   it("strikes no face when verification finds none on a frame detection saw a face in", async () => {
@@ -768,5 +816,257 @@ describe("check timing", () => {
     await vi.advanceTimersByTimeAsync(1_000);
 
     expect(calls).toEqual([5_000, 6_000]);
+  });
+});
+
+describe("detection and verification side by side", () => {
+  const later = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));
+
+  function slowDetection(ms, result = frame) {
+    detectFrame.mockImplementation(async () => {
+      calls.push(Date.now());
+      return later(ms, result());
+    });
+  }
+
+  function render(onSample, localFacesRef) {
+    const onViolation = vi.fn(() => "raised");
+    const { result } = renderHook(() =>
+      useProctoringSystem(
+        { current: {} },
+        "i1",
+        "s1",
+        true,
+        "token",
+        onViolation,
+        onSample,
+        true,
+        localFacesRef,
+      ),
+    );
+    return { result, onViolation };
+  }
+
+  async function frameRecords(result) {
+    submitProctoringLogs.mockReset().mockResolvedValue({});
+    await result.current.flush();
+    return submitProctoringLogs.mock.calls[0][0].payload.records.filter((record) =>
+      ["frame", "verified_frame"].includes(record.event_type),
+    );
+  }
+
+  it("starts verification the moment the frame is captured", async () => {
+    slowDetection(2_000);
+    const askedAt = [];
+    render(
+      vi.fn(async () => {
+        askedAt.push(Date.now());
+        return { faces: "one" };
+      }),
+    );
+
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    expect(calls).toEqual([5_000]);
+    expect(askedAt).toEqual([5_000]);
+  });
+
+  it("merges an answer that took longer than detection, within 3s of capture", async () => {
+    slowDetection(2_000);
+    render(vi.fn(() => later(2_500, { faces: "multiple" })));
+
+    await vi.advanceTimersByTimeAsync(7_500);
+
+    expect(events.find((e) => e.type === "MULTIPLE_FACES")).toMatchObject({
+      outcome: "unconfirmed",
+      seen_by: "verify",
+    });
+  });
+
+  it("stops waiting 3s after capture, however long detection took", async () => {
+    slowDetection(2_000);
+    const { result, onViolation } = render(vi.fn(() => later(3_500, { faces: "multiple" })));
+
+    await vi.advanceTimersByTimeAsync(8_000);
+    const [record] = await frameRecords(result);
+
+    expect(record.timestamp).toBe(new Date(8_000).toISOString());
+    expect(record.payload.verified_faces).toBeUndefined();
+    expect(record.payload.verify_ms).toBeNull();
+    expect(ofType(onViolation, "MULTIPLE_FACES")).toHaveLength(0);
+  });
+
+  it("tells verification the device sees an empty seat, without waiting on detection", async () => {
+    replay(Array.from({ length: 10 }, () => ({ ...frame(), face_detected: false, face_count: 0 })));
+    const onSample = vi.fn(async () => undefined);
+    const { result } = render(onSample, { current: "none" });
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    const [record] = await frameRecords(result);
+
+    expect(onSample).toHaveBeenCalledWith(
+      expect.objectContaining({ faceCount: 0, detection: undefined }),
+    );
+    expect(decisions("NO_FACE")).toEqual(["unconfirmed"]);
+    expect(record.payload.local_faces).toBe("none");
+  });
+
+  it("logs what triggered each check and how long each service took", async () => {
+    slowDetection(300);
+    const onSample = vi.fn(() => later(400, { faces: "one", verifyMs: 380 }));
+    const { result } = render(onSample, { current: "one" });
+
+    await vi.advanceTimersByTimeAsync(10_500);
+    const records = await frameRecords(result);
+
+    expect(records.map((record) => record.payload)).toEqual([
+      expect.objectContaining({
+        trigger: "scheduled",
+        captured_at: new Date(5_000).toISOString(),
+        detect_ms: 300,
+        verify_ms: 380,
+        local_faces: "one",
+      }),
+      expect.objectContaining({
+        trigger: "scheduled",
+        captured_at: new Date(10_000).toISOString(),
+      }),
+    ]);
+  });
+
+  it("names the burst, the suspicion pace and the request behind a check", async () => {
+    replay([frame([BLURRY_PHONE]), frame(), frame(), frame([FAINT_PHONE])]);
+    const { result } = render(vi.fn());
+
+    await vi.advanceTimersByTimeAsync(12_000);
+    result.current.sampleSoon("face_mismatch", 500);
+    await vi.advanceTimersByTimeAsync(2_500);
+    const records = await frameRecords(result);
+
+    expect(records.map((record) => record.payload.trigger)).toEqual([
+      "scheduled",
+      "burst",
+      "burst",
+      "scheduled",
+      "face_mismatch",
+      "suspicion",
+    ]);
+  });
+
+  it("marks the first answered check", async () => {
+    replay([]);
+    const { result } = render(vi.fn());
+
+    await act(() => vi.advanceTimersByTimeAsync(4_900));
+    expect(result.current.hasChecked).toBe(false);
+
+    await act(() => vi.advanceTimersByTimeAsync(100));
+    expect(result.current.hasChecked).toBe(true);
+  });
+
+  it("feeds the check summary, counting a detection outage as unwatched time", async () => {
+    resetViolationSummary();
+    detectFrame.mockImplementation(async () => {
+      calls.push(Date.now());
+      if (calls.length === 2) throw new Error("offline");
+      return later(200, frame());
+    });
+    render(vi.fn(async () => ({ faces: "one", verifyMs: 150 })));
+
+    await vi.advanceTimersByTimeAsync(21_000);
+
+    // The identity-only check at 15s is a check too.
+    expect(calls).toEqual([5_000, 10_000, 20_000]);
+    expect(checkSummary()).toMatchObject({
+      count: 4,
+      detect_ms: { p50: 200 },
+      verify_ms: { p50: 150 },
+      unobserved_ms: 15_000,
+    });
+  });
+});
+
+describe("quick looks", () => {
+  it("takes up a recheck asked for while the frame is still being checked", async () => {
+    replay([]);
+    let hook;
+    const onSample = vi.fn(async (sample) => {
+      await sample.detection;
+      if (onSample.mock.calls.length === 1) hook.result.current.sampleSoon("face_recheck", 1_000);
+      return { faces: "one" };
+    });
+    hook = renderHook(() =>
+      useProctoringSystem({ current: {} }, "i1", "s1", true, "token", vi.fn(), onSample),
+    );
+
+    await vi.advanceTimersByTimeAsync(6_000);
+
+    expect(calls).toEqual([5_000, 6_000]);
+  });
+
+  it("still backs off after a failure when a recheck was asked for mid-check", async () => {
+    let hook;
+    detectFrame.mockImplementation(async () => {
+      calls.push(Date.now());
+      throw new Error("offline");
+    });
+    const onSample = vi.fn(async () => {
+      hook.result.current.sampleSoon("face_recheck", 1_000);
+    });
+    hook = renderHook(() =>
+      useProctoringSystem({ current: {} }, "i1", "s1", true, "token", vi.fn(), onSample),
+    );
+
+    await vi.advanceTimersByTimeAsync(14_000);
+
+    expect(calls).toEqual([5_000]);
+  });
+
+  describe("from the device", () => {
+    const render = () =>
+      renderHook(() =>
+        useProctoringSystem({ current: {} }, "i1", "s1", true, "token", vi.fn(), vi.fn()),
+      ).result;
+
+    it("looks at once, but only once per 1.5s", async () => {
+      replay([]);
+      const result = render();
+
+      await vi.advanceTimersByTimeAsync(5_500);
+      result.current.sampleSoon("local_face_change", 0);
+      await vi.advanceTimersByTimeAsync(100);
+      result.current.sampleSoon("local_face_change", 0);
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect(calls).toEqual([5_000, 5_500, 7_000]);
+    });
+
+    it("moves a change seen mid-check to the end of the gap", async () => {
+      detectFrame.mockImplementation(async () => {
+        calls.push(Date.now());
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        return frame();
+      });
+      const result = render();
+
+      await vi.advanceTimersByTimeAsync(5_000);
+      result.current.sampleSoon("local_face_change", 0);
+      await vi.advanceTimersByTimeAsync(800);
+      result.current.sampleSoon("local_object_change", 0);
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect(calls).toEqual([5_000, 5_750, 7_250]);
+    });
+
+    it("does not switch to the faster pace", async () => {
+      replay([]);
+      const result = render();
+
+      await vi.advanceTimersByTimeAsync(5_500);
+      result.current.sampleSoon("local_face_change", 0);
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      expect(calls).toEqual([5_000, 5_500, 10_500, 15_500]);
+    });
   });
 });

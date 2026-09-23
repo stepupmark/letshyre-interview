@@ -24,6 +24,8 @@ import { useProctoringSystem } from "@hooks/proctoring/useProctoringSystem";
 import { useViolationMonitor } from "@hooks/proctoring/useViolationMonitor";
 import { useFaceMatchMonitoring } from "@hooks/proctoring/useFaceMatchMonitoring";
 import { useLocalFaceWatch } from "@hooks/proctoring/useLocalFaceWatch";
+import { useLocalObjectWatch } from "@hooks/proctoring/useLocalObjectWatch";
+import { useCameraIntegrity } from "@hooks/proctoring/useCameraIntegrity";
 import { useElectronViolation } from "@hooks/electron/useElectronViolation";
 import { useInterviewComplete } from "@hooks/electron/useInterviewComplete";
 import { useElectronScreenRecording } from "@hooks/electron/useElectronScreenRecording";
@@ -33,7 +35,7 @@ import { logger } from "@/lib/logger";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { draftKeyFor } from "@/lib/answerDraft";
 import { recordViolationEvent } from "@/lib/violationLog";
-import { LOCAL_FACE_WATCH } from "@/config/interview";
+import { LOCAL_FACE_WATCH, LOCAL_OBJECT_WATCH } from "@/config/interview";
 
 const FACE_REGISTERED_KEY = "face_registered_for";
 const REGISTER_RETRY_MS = 15_000;
@@ -191,8 +193,30 @@ export function Interview() {
   const logReady =
     autoSubmitSuccess || !!autoSubmitError || (!autoSubmitting && (isCompleted || isTerminated));
 
+  // The on-device watches download about 16 MB, so they wait until the first
+  // check has run and face registration is done with, rather than compete
+  // with both as the interview starts. Once on, they stay on.
+  const [localWatchReady, setLocalWatchReady] = useState(false);
+  const localWatchActive = isActive && localWatchReady;
+
+  // A face leaving or a second one arriving, or a phone coming into view, is
+  // looked at straight away rather than at the next scheduled check.
+  const lookAtFaces = useCallback(() => sampleSoonRef.current?.("local_face_change", 0), []);
+  const lookAtObjects = useCallback(() => sampleSoonRef.current?.("local_object_change", 0), []);
+  const localFacesRef = useLocalFaceWatch(
+    videoRef,
+    localWatchActive && LOCAL_FACE_WATCH,
+    lookAtFaces,
+  );
+  useLocalObjectWatch(videoRef, localWatchActive && LOCAL_OBJECT_WATCH, lookAtObjects);
+  useCameraIntegrity(videoRef, isActive);
+
   // Owns the only camera clock; face verification reads the frames it samples.
-  const { isDegraded: isProctoringDegraded, sampleSoon } = useProctoringSystem(
+  const {
+    isDegraded: isProctoringDegraded,
+    sampleSoon,
+    hasChecked,
+  } = useProctoringSystem(
     videoRef,
     session?.interview_id,
     session?.session_id,
@@ -201,16 +225,18 @@ export function Interview() {
     handleAiViolation,
     verifySample,
     logReady,
+    localFacesRef,
   );
 
   useEffect(() => {
     sampleSoonRef.current = sampleSoon;
   }, [sampleSoon]);
 
-  // A face leaving or a second one arriving is looked at straight away
-  // rather than at the next scheduled check.
-  const lookNow = useCallback(() => sampleSoonRef.current?.("local_face_change", 0), []);
-  useLocalFaceWatch(videoRef, isActive && LOCAL_FACE_WATCH, lookNow);
+  const registrationSettled =
+    isFaceRegistered || registerFailures > 0 || !sessionStorage.getItem("candidate_photo");
+  useEffect(() => {
+    if (hasChecked && registrationSettled) setLocalWatchReady(true);
+  }, [hasChecked, registrationSettled]);
 
   const {
     visible: showTermination,
