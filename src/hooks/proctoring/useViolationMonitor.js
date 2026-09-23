@@ -33,6 +33,10 @@ const CASCADE_WINDOW_MS = 2_000;
 const LEFT_WINDOW = "LEFT_WINDOW";
 // Brief focus blips (OS notifications, a stray click on the taskbar) are not a leave.
 const FOCUS_CONFIRM_MS = 2_000;
+// Each focus loss shorter than that is free, so repeated quick peeks at another
+// window add up: this many within the window cost one strike.
+export const BRIEF_FOCUS_LIMIT = 3;
+export const BRIEF_FOCUS_WINDOW_MS = 120_000;
 
 let permissionPrompts = 0;
 
@@ -136,6 +140,7 @@ export function useViolationMonitor({
   const isWarningOpenRef = useRef(false);
   const shownKeyRef = useRef(null);
   const shownAtRef = useRef(0);
+  const checkPresenceRef = useRef(null);
   const heldRef = useRef(new Map());
 
   // Buffer Electron blocks that arrived before isActive was true. Flushed by the
@@ -607,6 +612,7 @@ export function useViolationMonitor({
 
     let focusTimer = null;
     let blurredAt = 0;
+    let briefLosses = [];
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -646,15 +652,33 @@ export function useViolationMonitor({
       }, FOCUS_CONFIRM_MS);
     };
 
-    // Back before the focus loss was confirmed: no strike, but it happened.
+    // Back before the focus loss was confirmed: no strike on its own, but it
+    // happened, and enough of them close together are one.
     const handleFocus = () => {
       if (focusTimer && isActiveRef.current) {
+        const now = Date.now();
         recordViolationEvent({
           source: "window_focus",
           type: "WINDOW_FOCUS",
           outcome: "brief",
-          away_ms: Date.now() - blurredAt,
+          away_ms: now - blurredAt,
         });
+        briefLosses = [...briefLosses.filter((at) => now - at < BRIEF_FOCUS_WINDOW_MS), now];
+        if (briefLosses.length >= BRIEF_FOCUS_LIMIT) {
+          raiseViolation({
+            type: "WINDOW_FOCUS",
+            source: "window_focus",
+            titleKey: "violations.windowFocus.title",
+            descriptionKey: "violations.windowFocus.description",
+            imagePath: "/window-switch.png",
+            strikeKey: LEFT_WINDOW,
+            incident: true,
+            incidentStartedAt: now,
+            maxRestrikes: 0,
+            detail: { reason: "repeated_brief", brief_count: briefLosses.length },
+          });
+          briefLosses = [];
+        }
       }
       clearTimeout(focusTimer);
       focusTimer = null;
@@ -722,6 +746,13 @@ export function useViolationMonitor({
       }, 300);
     };
 
+    // A candidate already away when the interview starts fired their leave
+    // while it was inactive, so it is looked at again once it is active.
+    checkPresenceRef.current = () => {
+      if (document.hidden) handleVisibilityChange();
+      else if (!document.hasFocus()) handleBlur();
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     window.addEventListener("resize", handleResize);
@@ -737,9 +768,14 @@ export function useViolationMonitor({
       if (resizeTimer) clearTimeout(resizeTimer);
       if (confirmTimer) clearTimeout(confirmTimer);
       clearTimeout(focusTimer);
+      checkPresenceRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ↑ intentional empty deps — raiseViolation reads isActive/incrementViolation via refs
+
+  useEffect(() => {
+    if (isActive) checkPresenceRef.current?.();
+  }, [isActive]);
 
   return {
     showTabWarning,

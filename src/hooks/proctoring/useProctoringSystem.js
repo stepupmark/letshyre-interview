@@ -34,6 +34,10 @@ const faceCountOf = (result) =>
 // has settled, or this long after the interview stopped if it never does.
 export const LOG_SEND_FALLBACK_MS = 30_000;
 
+// The next frame is timed from when this one was captured, so a slow answer
+// doesn't stretch the interval; this is the least gap left between two.
+const MIN_TICK_GAP_MS = 250;
+
 // Exponential backoff ceiling for AI service failures.
 const MAX_BACKOFF_MS = 40_000;
 const DEGRADED_AFTER_FAILURES = 3;
@@ -811,7 +815,7 @@ export function useProctoringSystem(
       logger.error("[Proctoring] ❌ Frame processing failed:", err?.message);
     } finally {
       busyRef.current = false;
-      scheduleNext();
+      scheduleNext(sample.capturedAt);
     }
   }
 
@@ -956,12 +960,14 @@ export function useProctoringSystem(
     timerRef.current = setTimeout(() => tickRef.current(), delay);
   }
 
-  function scheduleNext() {
+  function scheduleNext(capturedAt) {
     if (!isActiveRef.current) return;
+    const spent = capturedAt ? Date.now() - capturedAt : 0;
+    const after = (interval) => Math.max(MIN_TICK_GAP_MS, interval - spent);
 
     if (burstRemainingRef.current > 0) {
       burstRemainingRef.current -= 1;
-      setTickTimer(BURST_INTERVAL_MS);
+      setTickTimer(after(BURST_INTERVAL_MS));
       return;
     }
 
@@ -972,7 +978,7 @@ export function useProctoringSystem(
         : Date.now() < suspicionUntilRef.current
           ? SUSPICION_INTERVAL_MS
           : DETECT_INTERVAL_MS;
-    setTickTimer(delay);
+    setTickTimer(after(delay));
     if (delay > DETECT_INTERVAL_MS) scheduleIdentityChecks();
   }
 
@@ -1003,8 +1009,10 @@ export function useProctoringSystem(
   }
 
   // Face verification asks for a quicker next look after a mismatch or while
-  // the face is unclear. Backoff still wins: the service is struggling then.
-  function sampleSoon(reason) {
+  // the face is unclear, and the on-device face watch for an immediate one
+  // when the face count changes. Backoff still wins: the service is
+  // struggling then.
+  function sampleSoon(reason, delayMs = SUSPICION_INTERVAL_MS) {
     if (!isActiveRef.current) return;
     const now = Date.now();
     if (now >= suspicionUntilRef.current) {
@@ -1020,7 +1028,7 @@ export function useProctoringSystem(
 
     // A tick in progress picks the faster pace up when it schedules the next one.
     if (busyRef.current || consecutiveFailuresRef.current > 0) return;
-    if (nextTickAtRef.current - now > SUSPICION_INTERVAL_MS) setTickTimer(SUSPICION_INTERVAL_MS);
+    if (nextTickAtRef.current - now > delayMs) setTickTimer(delayMs);
   }
 
   function checkCamera() {
@@ -1150,7 +1158,10 @@ export function useProctoringSystem(
     checkCameraRef.current = checkCamera;
     sampleSoonRef.current = sampleSoon;
   });
-  const requestSample = useCallback((reason) => sampleSoonRef.current(reason), []);
+  const requestSample = useCallback(
+    (reason, delayMs) => sampleSoonRef.current(reason, delayMs),
+    [],
+  );
 
   useEffect(() => {
     if (isActive) {

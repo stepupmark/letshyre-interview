@@ -23,6 +23,7 @@ import { useTerminationNotice } from "@hooks/interview/useTerminationNotice";
 import { useProctoringSystem } from "@hooks/proctoring/useProctoringSystem";
 import { useViolationMonitor } from "@hooks/proctoring/useViolationMonitor";
 import { useFaceMatchMonitoring } from "@hooks/proctoring/useFaceMatchMonitoring";
+import { useLocalFaceWatch } from "@hooks/proctoring/useLocalFaceWatch";
 import { useElectronViolation } from "@hooks/electron/useElectronViolation";
 import { useInterviewComplete } from "@hooks/electron/useInterviewComplete";
 import { useElectronScreenRecording } from "@hooks/electron/useElectronScreenRecording";
@@ -32,6 +33,7 @@ import { logger } from "@/lib/logger";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { draftKeyFor } from "@/lib/answerDraft";
 import { recordViolationEvent } from "@/lib/violationLog";
+import { LOCAL_FACE_WATCH } from "@/config/interview";
 
 const FACE_REGISTERED_KEY = "face_registered_for";
 const REGISTER_RETRY_MS = 15_000;
@@ -108,7 +110,10 @@ export function Interview() {
   // The two hooks need each other: verification asks the camera loop for a
   // quicker look, and the loop feeds verification its frames.
   const sampleSoonRef = useRef(null);
-  const requestSample = useCallback((reason) => sampleSoonRef.current?.(reason), []);
+  const requestSample = useCallback(
+    (reason, delayMs) => sampleSoonRef.current?.(reason, delayMs),
+    [],
+  );
 
   const { verifySample, isVerificationUnavailable } = useFaceMatchMonitoring({
     sessionId: session?.session_id,
@@ -140,7 +145,7 @@ export function Interview() {
           logger.error("[Interview] face registration failed:", err?.message);
           recordViolationEvent({
             source: "face_match",
-            type: "FACE_MISMATCH",
+            type: "FACE_CHECK",
             outcome: "registration_failed",
             error: err?.response?.status ?? err?.message,
           });
@@ -163,7 +168,7 @@ export function Interview() {
     const id = setTimeout(() => {
       recordViolationEvent({
         source: "face_match",
-        type: "FACE_MISMATCH",
+        type: "FACE_CHECK",
         outcome: "identity_unverified",
         reason: sessionStorage.getItem("candidate_photo")
           ? "registration_failed"
@@ -201,6 +206,11 @@ export function Interview() {
   useEffect(() => {
     sampleSoonRef.current = sampleSoon;
   }, [sampleSoon]);
+
+  // A face leaving or a second one arriving is looked at straight away
+  // rather than at the next scheduled check.
+  const lookNow = useCallback(() => sampleSoonRef.current?.("local_face_change", 0), []);
+  useLocalFaceWatch(videoRef, isActive && LOCAL_FACE_WATCH, lookNow);
 
   const {
     visible: showTermination,

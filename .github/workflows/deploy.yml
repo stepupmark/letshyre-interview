@@ -50,6 +50,7 @@ jobs:
           VITE_AI_PROHIBIT_LAPTOP: ${{ vars.VITE_AI_PROHIBIT_LAPTOP }}
           VITE_AI_SHADOW_LABELS: ${{ vars.VITE_AI_SHADOW_LABELS }}
           VITE_AI_SHADOW_RULES: ${{ vars.VITE_AI_SHADOW_RULES }}
+          VITE_AI_LOCAL_FACE_WATCH: ${{ vars.VITE_AI_LOCAL_FACE_WATCH }}
           VITE_AI_OBJECT_CONFIDENCE_FLOOR: ${{ vars.VITE_AI_OBJECT_CONFIDENCE_FLOOR }}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0

@@ -324,7 +324,8 @@ describe("useFaceMatchMonitoring mismatches", () => {
 
     await s.sample(MISMATCH);
     await between(s);
-    await s.sample(MISMATCH);
+    // After a frame that wasn't clear, the first mismatch waits for a second look.
+    await s.sample(MISMATCH, 2);
 
     expect(s.autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
   });
@@ -544,7 +545,7 @@ describe("useFaceMatchMonitoring unclear faces", () => {
     await unclear(1);
     expect(result.current.mismatchCount).toBe(1);
 
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
   });
 });
@@ -763,5 +764,93 @@ describe("useFaceMatchMonitoring log", () => {
       total_count: 2,
       rule: "in_a_row",
     });
+  });
+});
+
+describe("useFaceMatchMonitoring after the face comes back", () => {
+  beforeEach(() => {
+    mutateAsync.mockReset();
+    config.strongBelow = 0;
+  });
+
+  const noFace = { ...CLEAR, faceCount: 0 };
+
+  it("holds the first mismatch and drops it when a second look matches", async () => {
+    const { sample, frames, onViolation, requestSample, result } = setup();
+    const { events, unsubscribe } = captureLog();
+
+    await sample(MATCH);
+    await frames(noFace);
+    await sample(MISMATCH);
+
+    expect(onViolation).not.toHaveBeenCalled();
+    expect(requestSample).toHaveBeenCalledWith("face_recheck", 1_000);
+
+    await sample(MATCH);
+    unsubscribe();
+
+    expect(result.current.mismatchCount).toBe(0);
+    expect(events.map((event) => [event.type, event.outcome])).toEqual(
+      expect.arrayContaining([
+        ["FACE_MISMATCH", "held"],
+        ["FACE_CHECK", "settled"],
+      ]),
+    );
+  });
+
+  it("counts it once the second look agrees", async () => {
+    const { sample, frames, mismatchWarnings } = setup();
+
+    await sample(MATCH);
+    await frames({ ...CLEAR, faceConfidence: 0.6 });
+    await sample(MISMATCH, 2);
+
+    expect(mismatchWarnings()).toHaveLength(1);
+  });
+
+  it("still catches someone else sitting down after the seat was empty", async () => {
+    const { autoSubmit, sample, frames } = setup();
+
+    await sample(MATCH);
+    await frames(noFace, 2);
+    await sample(MISMATCH, 3);
+
+    expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
+  });
+
+  it("does not hold a mismatch that follows a clear frame", async () => {
+    const { sample, mismatchWarnings } = setup();
+
+    await sample(MATCH);
+    await sample(MISMATCH);
+
+    expect(mismatchWarnings()).toHaveLength(1);
+  });
+
+  it("does not hold a mismatch below the instant-ending cutoff", async () => {
+    config.strongBelow = 0.1;
+    const { autoSubmit, sample, frames } = setup();
+
+    await sample(MATCH);
+    await frames(noFace);
+    await sample(LIVE_MISMATCH);
+
+    expect(autoSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("names records that are not mismatches FACE_CHECK", async () => {
+    const { sample } = setup();
+    const { events, unsubscribe } = captureLog();
+
+    await sample(MATCH);
+    await sample(MISMATCH);
+    await sample(MATCH);
+    unsubscribe();
+
+    expect(events.map((event) => [event.type, event.outcome])).toEqual([
+      ["FACE_CHECK", "matched"],
+      ["FACE_MISMATCH", "raised"],
+      ["FACE_CHECK", "cleared"],
+    ]);
   });
 });

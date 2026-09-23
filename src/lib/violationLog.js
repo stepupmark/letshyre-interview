@@ -16,6 +16,7 @@ const listeners = new Set();
 const CATEGORY_BY_TYPE = {
   FACE_MISMATCH: "identity",
   FACE_UNCLEAR: "identity",
+  FACE_CHECK: "identity",
   VOICE_MISMATCH: "voice",
   RECORDING: "voice",
   NETWORK_DISCONNECT: "network",
@@ -26,6 +27,7 @@ const CATEGORY_BY_TYPE = {
 const CATEGORY_BY_SOURCE = {
   ai: "detection",
   camera: "detection",
+  local: "detection",
   face_match: "identity",
   voice: "voice",
   electron: "desktop",

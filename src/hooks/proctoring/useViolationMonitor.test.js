@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import {
+  BRIEF_FOCUS_WINDOW_MS,
   getElectronViolationKey,
   HELD_TTL_MS,
   useViolationMonitor,
@@ -17,6 +18,11 @@ vi.mock("sonner", () => ({
 }));
 
 import { toast } from "sonner";
+
+// jsdom starts without focus; a real interview page has it.
+beforeEach(() => {
+  vi.spyOn(document, "hasFocus").mockReturnValue(true);
+});
 
 function setup({ isActive = true, sessionViolations = 0, startCount = 0, onHardBlock } = {}) {
   let count = startCount;
@@ -1511,6 +1517,79 @@ describe("useViolationMonitor log", () => {
     expect(logged("WINDOW_FOCUS")).toEqual([
       expect.objectContaining({ outcome: "brief", away_ms: 500, category: "window" }),
     ]);
+    expect(incrementViolation).not.toHaveBeenCalled();
+  });
+});
+
+describe("useViolationMonitor focus rules", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    Object.defineProperty(document, "hidden", { value: false, configurable: true });
+  });
+
+  const briefLoss = () => {
+    act(() => window.dispatchEvent(new Event("blur")));
+    act(() => vi.advanceTimersByTime(500));
+    act(() => window.dispatchEvent(new Event("focus")));
+  };
+
+  it("counts three brief focus losses within two minutes as one strike", () => {
+    const { result, incrementViolation } = setup();
+
+    briefLoss();
+    act(() => vi.advanceTimersByTime(20_000));
+    briefLoss();
+    expect(incrementViolation).not.toHaveBeenCalled();
+
+    act(() => vi.advanceTimersByTime(20_000));
+    briefLoss();
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo.titleKey).toBe("violations.windowFocus.title");
+  });
+
+  it("does not count brief losses spread further apart", () => {
+    const { incrementViolation } = setup();
+
+    for (let i = 0; i < 3; i += 1) {
+      briefLoss();
+      act(() => vi.advanceTimersByTime(BRIEF_FOCUS_WINDOW_MS / 2 + 1_000));
+    }
+
+    expect(incrementViolation).not.toHaveBeenCalled();
+  });
+
+  it("strikes a candidate whose window is not focused when the interview starts", () => {
+    document.hasFocus.mockReturnValue(false);
+    const { rerender, incrementViolation } = setup({ isActive: false });
+
+    rerender({ isActive: true, incrementViolation, sessionViolations: 0 });
+    act(() => vi.advanceTimersByTime(2_000));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+  });
+
+  it("strikes a candidate on another tab when the interview starts", () => {
+    Object.defineProperty(document, "hidden", { value: true, configurable: true });
+    const { rerender, incrementViolation, result } = setup({ isActive: false });
+
+    act(() => rerender({ isActive: true, incrementViolation, sessionViolations: 0 }));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo.titleKey).toBe("violations.tabSwitch.title");
+  });
+
+  it("does nothing at the start for a candidate who is present", () => {
+    const { rerender, incrementViolation } = setup({ isActive: false });
+
+    rerender({ isActive: true, incrementViolation, sessionViolations: 0 });
+    act(() => vi.advanceTimersByTime(5_000));
+
     expect(incrementViolation).not.toHaveBeenCalled();
   });
 });

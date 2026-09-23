@@ -24,8 +24,28 @@ export const MIN_FACE_CONFIDENCE = 0.8;
 // enough for a reviewer to see identity was being checked.
 export const MATCH_LOG_INTERVAL_MS = 60_000;
 
+// Both honest mismatches in live logs came on the first clear frame after the
+// face was missing or unclear, and cleared on the next one. Such a mismatch
+// waits this long for a second look before it counts.
+const RECHECK_MS = 1_000;
+
+// Only these describe a mismatch. Every other record is a FACE_CHECK, so a
+// reviewer filtering for mismatches sees only mismatches.
+const MISMATCH_OUTCOMES = new Set(["raised", "held", "terminated"]);
+
 const record = (outcome, extra) =>
-  recordViolationEvent({ source: "face_match", type: "FACE_MISMATCH", outcome, ...extra });
+  recordViolationEvent({
+    source: "face_match",
+    type: MISMATCH_OUTCOMES.has(outcome) ? "FACE_MISMATCH" : "FACE_CHECK",
+    outcome,
+    ...extra,
+  });
+
+const isStrongMismatch = (vetted, similarity) =>
+  vetted &&
+  FACE_STRONG_MISMATCH_BELOW > 0 &&
+  typeof similarity === "number" &&
+  similarity < FACE_STRONG_MISMATCH_BELOW;
 
 // What each `violation` means for identity and for the faces in the frame.
 const VIOLATIONS = {
@@ -93,6 +113,8 @@ export const useFaceMatchMonitoring = ({
   const lastClearAtRef = useRef(0);
   const unclearHintedRef = useRef(false);
   const lastMatchLoggedAtRef = useRef(null);
+  const lastFrameClearRef = useRef(true);
+  const heldRef = useRef(false);
   const onViolationRef = useRef(onViolation);
   const autoSubmitRef = useRef(autoSubmit);
   const onNotRegisteredRef = useRef(onNotRegistered);
@@ -132,12 +154,7 @@ export const useFaceMatchMonitoring = ({
     record("raised", counts);
 
     const extra = vetted ? 0 : 1;
-    const strong =
-      vetted &&
-      FACE_STRONG_MISMATCH_BELOW > 0 &&
-      typeof similarity === "number" &&
-      similarity < FACE_STRONG_MISMATCH_BELOW;
-    const rule = strong
+    const rule = isStrongMismatch(vetted, similarity)
       ? "strong"
       : streak >= FACE_MISMATCH_LIMIT + extra
         ? "in_a_row"
@@ -220,7 +237,7 @@ export const useFaceMatchMonitoring = ({
   );
 
   const evaluate = useCallback(
-    (result, { at, vetted, faceConfidence }) => {
+    (result, { at, vetted, afterGap, faceConfidence }) => {
       const classified = classifyVerification(result);
       const { confidence, serverTotal } = classified;
       let { verdict, reason } = classified;
@@ -252,12 +269,23 @@ export const useFaceMatchMonitoring = ({
 
       if (verdict === "mismatch") {
         sawClearFace(at);
+        if (afterGap && !heldRef.current && !isStrongMismatch(vetted, confidence)) {
+          heldRef.current = true;
+          record("held", scores);
+          requestSampleRef.current?.("face_recheck", RECHECK_MS);
+          return classified;
+        }
+        heldRef.current = false;
         countMismatch({ vetted, similarity: confidence, detail: scores });
         return classified;
       }
 
       if (verdict === "match") {
         sawClearFace(at);
+        if (heldRef.current) {
+          heldRef.current = false;
+          record("settled", scores);
+        }
         const hadStreak = streakRef.current > 0;
         streakRef.current = 0;
         setMismatchCount(0);
@@ -313,9 +341,13 @@ export const useFaceMatchMonitoring = ({
 
       // With no face there is nothing to compare; detection counts that frame.
       const { faceCount, faceConfidence } = sample;
-      if (faceCount === 0) return;
+      if (faceCount === 0) {
+        lastFrameClearRef.current = false;
+        return;
+      }
 
       if (faceConfidence !== undefined && faceConfidence < MIN_FACE_CONFIDENCE) {
+        lastFrameClearRef.current = false;
         if (faceCount !== 1) return;
         record("skipped", { face_confidence: faceConfidence });
         checkUnclear(at);
@@ -325,6 +357,8 @@ export const useFaceMatchMonitoring = ({
       // Unknown count or confidence means detection failed on this frame. With
       // several faces the service may have compared the wrong one.
       const vetted = faceCount === 1 && faceConfidence !== undefined;
+      const afterGap = vetted && !lastFrameClearRef.current;
+      if (faceCount !== undefined) lastFrameClearRef.current = vetted;
       if (vetted) sawClearFace(at);
 
       if (unavailableSinceRef.current) {
@@ -337,7 +371,7 @@ export const useFaceMatchMonitoring = ({
       try {
         const result = await mutateAsync({ imageFile: sample.file });
         if (stoppedRef.current) return;
-        const { verdict, faces } = evaluate(result, { at, vetted, faceConfidence });
+        const { verdict, faces } = evaluate(result, { at, vetted, afterGap, faceConfidence });
         // The interview ended on this frame; there is nothing left to count.
         if (stoppedRef.current) return;
         return { faces: faces ?? (IDENTITY_VERDICTS.has(verdict) ? "one" : null) };

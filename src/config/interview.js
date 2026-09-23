@@ -39,6 +39,10 @@ export const FACE_STRONG_MISMATCH_BELOW = num(
   0,
 );
 
+// Counts faces on the device between server checks so a face leaving or a
+// second one arriving is looked at straight away. "false" turns it off.
+export const LOCAL_FACE_WATCH = import.meta.env.VITE_AI_LOCAL_FACE_WATCH !== "false";
+
 // Internet disconnects allowed before auto-submit. Tracked separately from
 // proctoring violations — a dropped connection is not misconduct.
 export const MAX_INTERNET_DISCONNECTS = num(import.meta.env.VITE_AI_MAX_INTERNET_DISCONNECTS, 3);

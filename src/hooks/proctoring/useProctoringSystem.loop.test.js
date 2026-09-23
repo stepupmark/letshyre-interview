@@ -640,9 +640,9 @@ describe("faces seen by verification", () => {
       vi.fn(() => new Promise(() => {})),
     );
 
-    await vi.advanceTimersByTimeAsync(13_000);
+    await vi.advanceTimersByTimeAsync(10_000);
 
-    expect(calls).toEqual([5_000, 13_000]);
+    expect(calls).toEqual([5_000, 10_000]);
   });
 
   it("only logs what verification alone saw while verify_faces is muted", async () => {
@@ -740,5 +740,33 @@ describe("hints in the log", () => {
     await vi.advanceTimersByTimeAsync(20_000);
 
     expect(decisions("NOT_LOOKING")).toContain("hint");
+  });
+});
+
+describe("check timing", () => {
+  it("keeps a 5s pace however long each answer takes", async () => {
+    detectFrame.mockImplementation(async () => {
+      calls.push(Date.now());
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      return frame();
+    });
+    start();
+
+    await vi.advanceTimersByTimeAsync(15_000);
+
+    expect(calls).toEqual([5_000, 10_000, 15_000]);
+  });
+
+  it("looks again after the delay verification asked for", async () => {
+    replay([]);
+    const { result } = renderHook(() =>
+      useProctoringSystem({ current: {} }, "i1", "s1", true, "token", vi.fn(), vi.fn()),
+    );
+
+    await vi.advanceTimersByTimeAsync(5_000);
+    result.current.sampleSoon("face_recheck", 1_000);
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(calls).toEqual([5_000, 6_000]);
   });
 });

@@ -72,22 +72,23 @@ redirects to `/interview`. Without valid tokens, `privateLoader` redirects to
 
 Copy `.env.example` → `.env`. **Never** add a trailing slash to a URL value.
 
-| Variable                             | Required | Default | Description                                                       |
-| ------------------------------------ | -------- | ------- | ----------------------------------------------------------------- |
-| `VITE_API_BASE_URL`                  | ✅       | —       | Main Django API base                                              |
-| `VITE_AI_DETECTION_URL`              | ✅       | —       | AI detection / face verification base                             |
-| `VITE_AI_MAX_VIOLATIONS_ALLOWED`     | –        | `3`     | Proctoring strikes before auto-submit                             |
-| `VITE_AI_FACE_MISMATCH_LIMIT`        | –        | `2`     | Face mismatches with no match between them before auto-submit     |
-| `VITE_AI_FACE_MISMATCH_TOTAL_LIMIT`  | –        | `3`     | Face mismatches in the whole interview before auto-submit         |
-| `VITE_AI_FACE_UNCLEAR_HINT_SECONDS`  | –        | `30`    | No clear face this long shows a hint                              |
-| `VITE_AI_FACE_UNCLEAR_LIMIT_SECONDS` | –        | `60`    | No clear face this long counts as a mismatch                      |
-| `VITE_AI_FACE_STRONG_MISMATCH_BELOW` | –        | off     | Similarity below this on a clear frame ends the interview at once |
-| `VITE_AI_MAX_INTERNET_DISCONNECTS`   | –        | `3`     | Network drops before auto-submit                                  |
-| `VITE_AI_INTERVIEW_DURATION_MINUTES` | –        | `15`    | Interview length                                                  |
-| `VITE_AI_TERMINATION_NOTICE_SECONDS` | –        | `12`    | How long the termination notice holds                             |
-| `VITE_AI_HELD_RESTRIKE_SECONDS`      | –        | `30`    | Object or camera-off still there this long adds one more strike   |
-| `VITE_AI_SHADOW_RULES`               | –        | `gaze`  | Rules logged but never shown or counted; `none` enforces all      |
-| `VITE_DEBUG_LOGS`                    | –        | `false` | `"true"` keeps verbose logs in a production build                 |
+| Variable                             | Required | Default | Description                                                        |
+| ------------------------------------ | -------- | ------- | ------------------------------------------------------------------ |
+| `VITE_API_BASE_URL`                  | ✅       | —       | Main Django API base                                               |
+| `VITE_AI_DETECTION_URL`              | ✅       | —       | AI detection / face verification base                              |
+| `VITE_AI_MAX_VIOLATIONS_ALLOWED`     | –        | `3`     | Proctoring strikes before auto-submit                              |
+| `VITE_AI_FACE_MISMATCH_LIMIT`        | –        | `2`     | Face mismatches with no match between them before auto-submit      |
+| `VITE_AI_FACE_MISMATCH_TOTAL_LIMIT`  | –        | `3`     | Face mismatches in the whole interview before auto-submit          |
+| `VITE_AI_FACE_UNCLEAR_HINT_SECONDS`  | –        | `30`    | No clear face this long shows a hint                               |
+| `VITE_AI_FACE_UNCLEAR_LIMIT_SECONDS` | –        | `60`    | No clear face this long counts as a mismatch                       |
+| `VITE_AI_FACE_STRONG_MISMATCH_BELOW` | –        | off     | Similarity below this on a clear frame ends the interview at once  |
+| `VITE_AI_MAX_INTERNET_DISCONNECTS`   | –        | `3`     | Network drops before auto-submit                                   |
+| `VITE_AI_INTERVIEW_DURATION_MINUTES` | –        | `15`    | Interview length                                                   |
+| `VITE_AI_TERMINATION_NOTICE_SECONDS` | –        | `12`    | How long the termination notice holds                              |
+| `VITE_AI_HELD_RESTRIKE_SECONDS`      | –        | `30`    | Object or camera-off still there this long adds one more strike    |
+| `VITE_AI_SHADOW_RULES`               | –        | `gaze`  | Rules logged but never shown or counted; `none` enforces all       |
+| `VITE_AI_LOCAL_FACE_WATCH`           | –        | `true`  | On-device face count that triggers an immediate check; `false` off |
+| `VITE_DEBUG_LOGS`                    | –        | `false` | `"true"` keeps verbose logs in a production build                  |
 
 All tunables resolve through [`src/config/interview.js`](src/config/interview.js), which
 coerces and falls back — read them from there, never from `import.meta.env` directly.
@@ -234,6 +235,12 @@ Detection is deliberately conservative — false strikes are worse than missed o
 - **Rate limits** — a 30s per-type cooldown plus a 10s reaction window after every
   strike. Anything confirmed during the window is queued and lands after it, oldest first.
 - **Soft violations** (gaze, eyes closed) show a toast and never count as a strike.
+- **On-device face watch** — MediaPipe's face detector counts faces in the browser every
+  300ms. When the count changes it asks for a server check straight away, so a face
+  leaving or a second person arriving is seen in under a second rather than at the next
+  5s check. It never strikes on its own. Its WASM (~12MB, loaded on first use) is copied
+  from `node_modules` into `public/mediapipe/wasm` by `vite.config.js`, which is why the
+  CSP allows `'wasm-unsafe-eval'`.
 - **Face verification counts too** — continuous-verify's `NO_FACE`, `MULTIPLE_FACES` and
   `FACE_MISMATCH_AND_MULTIPLE_FACES` are merged into detection's result for the same
   frame, so a face problem either check sees strikes once, under the same rules. Each
