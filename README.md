@@ -81,6 +81,7 @@ Copy `.env.example` → `.env`. **Never** add a trailing slash to a URL value.
 | `VITE_AI_FACE_MISMATCH_TOTAL_LIMIT`  | –        | `3`     | Face mismatches in the whole interview before auto-submit          |
 | `VITE_AI_FACE_UNCLEAR_HINT_SECONDS`  | –        | `30`    | No clear face this long shows a hint                               |
 | `VITE_AI_FACE_UNCLEAR_LIMIT_SECONDS` | –        | `60`    | No clear face this long counts as a mismatch                       |
+| `VITE_AI_FACE_MISMATCH_BELOW`        | –        | `0.4`   | Similarity must be below this to count as a mismatch               |
 | `VITE_AI_FACE_STRONG_MISMATCH_BELOW` | –        | off     | Similarity below this on a clear frame ends the interview at once  |
 | `VITE_AI_MAX_INTERNET_DISCONNECTS`   | –        | `3`     | Network drops before auto-submit                                   |
 | `VITE_AI_INTERVIEW_DURATION_MINUTES` | –        | `15`    | Interview length                                                   |

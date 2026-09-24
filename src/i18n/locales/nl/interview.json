@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "Overtreding {{violationCount}} van {{total}}",
     "warning": "Waarschuwing",
+    "identityCheck": "Identiteitscontrole {{count}} van {{total}}",
     "defaultTitle": "Waarschuwing: venster gewisseld",
     "defaultDescription": "Het verlaten van het interviewscherm wordt geregistreerd als een overtreding",
     "defaultButtonText": "Ik begrijp het, terug naar interview",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Identiteitscontrole mislukt",
-      "description": "We konden niet bevestigen dat u nog voor de camera zit. Zorg dat uw gezicht duidelijk zichtbaar en goed verlicht is."
+      "description": "We konden niet bevestigen dat jij nog voor de camera zit. Blijf alleen voor de camera, kijk naar het scherm en zorg dat je gezicht goed verlicht is. Als dit blijft gebeuren, wordt je interview beëindigd."
     },
     "faceUnclear": {
       "title": "Kijk naar de camera",

@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "Pelanggaran {{violationCount}} dari {{total}}",
     "warning": "Peringatan",
+    "identityCheck": "Pemeriksaan identitas {{count}} dari {{total}}",
     "defaultTitle": "Peringatan Perpindahan Jendela",
     "defaultDescription": "Berpindah dari layar wawancara sedang dicatat sebagai pelanggaran",
     "defaultButtonText": "Saya Mengerti, Kembali ke Wawancara",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Verifikasi Identitas Gagal",
-      "description": "Kami tidak dapat memastikan bahwa ini masih Anda di kamera. Pastikan wajah Anda terlihat jelas dan cukup cahaya."
+      "description": "Kami tidak dapat memastikan bahwa masih Anda yang ada di kamera. Tetaplah sendirian di depan kamera, hadap ke layar, dan pastikan wajah Anda cukup terang. Jika ini terus terjadi, wawancara Anda akan diakhiri."
     },
     "faceUnclear": {
       "title": "Hadap ke kamera",

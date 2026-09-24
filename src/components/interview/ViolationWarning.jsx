@@ -16,6 +16,7 @@ export default function ViolationWarning({
   labels,
   buttonText,
   finalWarning,
+  identityCheck,
   alsoDetected = [],
 }) {
   const { t, i18n } = useTranslation("interview");
@@ -55,7 +56,12 @@ export default function ViolationWarning({
               </div>
             ) : (
               <div className="rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-600">
-                {t("violationWarning.warning")}
+                {identityCheck
+                  ? t("violationWarning.identityCheck", {
+                      count: identityCheck.count,
+                      total: identityCheck.limit,
+                    })
+                  : t("violationWarning.warning")}
               </div>
             )}
           </div>

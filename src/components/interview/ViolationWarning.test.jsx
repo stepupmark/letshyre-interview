@@ -48,6 +48,19 @@ describe("ViolationWarning", () => {
     expect(screen.getByText(/फ़ोन .* लैपटॉप/)).toBeInTheDocument();
   });
 
+  it("counts failed identity checks in the badge instead of a plain warning", () => {
+    renderWarning({
+      titleKey: "violations.faceMismatch.title",
+      descriptionKey: "violations.faceMismatch.description",
+      counts: false,
+      identityCheck: { count: 1, limit: 3 },
+    });
+
+    expect(screen.getByText("Identity check 1 of 3")).toBeInTheDocument();
+    expect(screen.queryByText("Warning")).not.toBeInTheDocument();
+    expect(screen.getByText(/Stay alone in front of the camera/)).toBeInTheDocument();
+  });
+
   it("lists what else was detected under the current warning", () => {
     renderWarning({
       titleKey: "violations.cellPhone.title",

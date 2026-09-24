@@ -104,6 +104,17 @@ describe("useProctoringSystem sampling", () => {
     expect(calls).toEqual([5_000, 6_000, 7_000, 12_000]);
   });
 
+  it("gives a second person quick looks after an absence used its own", async () => {
+    const noFace = { ...frame(), face_detected: false, face_count: 0 };
+    const twoFaces = { ...frame(), face_count: 2 };
+    replay([...Array(9).fill(noFace), twoFaces, twoFaces]);
+    start();
+
+    await vi.advanceTimersByTimeAsync(16_000);
+
+    expect(calls.slice(-3)).toEqual([14_000, 15_000, 16_000]);
+  });
+
   it("strikes a clear phone on the one frame it was seen", async () => {
     replay([frame([CLEAR_PHONE])]);
     const { onViolation } = start();

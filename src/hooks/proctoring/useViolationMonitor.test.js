@@ -753,6 +753,7 @@ describe("useViolationMonitor modal lifecycle", () => {
         descriptionKey: "violations.faceMismatch.description",
         countsAsViolation: false,
         finalWarning: true,
+        identityCheck: { count: 2, limit: 3 },
       }),
     );
 
@@ -762,6 +763,7 @@ describe("useViolationMonitor modal lifecycle", () => {
       titleKey: "violations.faceMismatch.title",
       counts: false,
       finalWarning: true,
+      identityCheck: { count: 2, limit: 3 },
     });
   });
 

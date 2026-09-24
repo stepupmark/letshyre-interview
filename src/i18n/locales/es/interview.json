@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "Infracción {{violationCount}} de {{total}}",
     "warning": "Advertencia",
+    "identityCheck": "Verificación de identidad {{count}} de {{total}}",
     "defaultTitle": "Advertencia de cambio de ventana",
     "defaultDescription": "Salir de la pantalla de la entrevista se está registrando como una infracción",
     "defaultButtonText": "Entendido, volver a la entrevista",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Verificación de identidad fallida",
-      "description": "No pudimos confirmar que siga siendo usted en la cámara. Asegúrese de que su rostro esté bien visible e iluminado."
+      "description": "No pudimos confirmar que sigues siendo tú frente a la cámara. Mantente solo frente a la cámara, mira la pantalla y asegúrate de que tu rostro esté bien iluminado. Si esto sigue ocurriendo, tu entrevista terminará."
     },
     "faceUnclear": {
       "title": "Mire a la cámara",

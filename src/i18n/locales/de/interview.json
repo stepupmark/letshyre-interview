@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "Verstoß {{violationCount}} von {{total}}",
     "warning": "Warnung",
+    "identityCheck": "Identitätsprüfung {{count}} von {{total}}",
     "defaultTitle": "Warnung: Fensterwechsel",
     "defaultDescription": "Das Verlassen des Interviewbildschirms wird als Verstoß protokolliert",
     "defaultButtonText": "Verstanden, zurück zum Interview",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Identitätsprüfung fehlgeschlagen",
-      "description": "Wir konnten nicht bestätigen, dass Sie noch vor der Kamera sind. Achten Sie auf ein gut sichtbares, gut beleuchtetes Gesicht."
+      "description": "Wir konnten nicht bestätigen, dass Sie noch vor der Kamera sind. Bleiben Sie allein vor der Kamera, schauen Sie auf den Bildschirm und sorgen Sie für gute Beleuchtung Ihres Gesichts. Wenn das weiterhin passiert, wird Ihr Interview beendet."
     },
     "faceUnclear": {
       "title": "Zur Kamera schauen",

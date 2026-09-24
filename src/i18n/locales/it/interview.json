@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "Violazione {{violationCount}} di {{total}}",
     "warning": "Avviso",
+    "identityCheck": "Verifica dell'identità {{count}} di {{total}}",
     "defaultTitle": "Avviso di cambio finestra",
     "defaultDescription": "L'uscita dalla schermata del colloquio viene registrata come violazione",
     "defaultButtonText": "Ho capito, torna al colloquio",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Verifica dell'identità non riuscita",
-      "description": "Non abbiamo potuto confermare che sei ancora tu davanti alla fotocamera. Assicurati che il viso sia ben visibile e illuminato."
+      "description": "Non siamo riusciti a confermare che ci sia ancora tu davanti alla fotocamera. Resta da solo davanti alla fotocamera, guarda lo schermo e tieni il viso ben illuminato. Se continua a succedere, il colloquio verrà terminato."
     },
     "faceUnclear": {
       "title": "Guarda la fotocamera",

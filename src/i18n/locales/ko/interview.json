@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "위반 {{violationCount}} / {{total}}",
     "warning": "경고",
+    "identityCheck": "본인 확인 {{count}}/{{total}}",
     "defaultTitle": "창 전환 경고",
     "defaultDescription": "인터뷰 화면을 벗어나는 행위는 위반 사항으로 기록됩니다",
     "defaultButtonText": "확인했습니다, 인터뷰로 돌아가기",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "신원 확인 실패",
-      "description": "카메라에 보이는 사람이 본인인지 확인할 수 없습니다. 얼굴이 밝고 선명하게 보이도록 해주세요."
+      "description": "카메라에 계속 본인이 있는지 확인할 수 없었습니다. 카메라 앞에 혼자 있고, 화면을 바라보며, 얼굴이 밝게 보이도록 해 주세요. 이런 일이 계속되면 면접이 종료됩니다."
     },
     "faceUnclear": {
       "title": "카메라를 바라봐 주세요",

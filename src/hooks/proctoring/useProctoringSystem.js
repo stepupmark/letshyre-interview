@@ -54,9 +54,8 @@ const BURST_INTERVAL_MS = 1_000;
 const BURST_SAMPLES = 2;
 export const BURST_TYPES = new Set(["PROHIBITED_OBJECT", "MULTIPLE_FACES", "NO_FACE"]);
 
-// Cap consecutive burst requests to prevent API rate exhaustion.
+// Quick looks one incident may use. NO_FACE gets enough to reach its strike at 7s.
 const MAX_BURSTS = 4;
-// Extended burst cap for NO_FACE to span the 0-3s grace and 3-7s guidance windows until strike (>7s)
 const MAX_NO_FACE_BURSTS = 9;
 
 // Multi-tiered NO_FACE escalation thresholds
@@ -401,7 +400,12 @@ export function detectViolations(result, classified) {
     return [faceViolation("MULTIPLE_FACES", manyByDetect, verified === "multiple")];
   }
 
-  const noneByDetect = !result.verify_only && (!result.face_detected || result.face_count === 0);
+  // Detection misses a face half hidden behind a phone. Verification finding
+  // one on the same frame means someone is there, so the phone still counts.
+  const noneByDetect =
+    !result.verify_only &&
+    (!result.face_detected || result.face_count === 0) &&
+    verified !== "one";
   if (noneByDetect || verified === "none") {
     return [faceViolation("NO_FACE", noneByDetect, verified === "none")];
   }
@@ -420,6 +424,7 @@ export function detectViolations(result, classified) {
   const violations = [...objectViolations];
 
   // Soft-warning only for gaze and eye-closure events when candidate is visible alone.
+  if (!result.face_detected) return violations;
   if (result.looking_at_camera === false) {
     violations.push({ type: "NOT_LOOKING", ...violationCopy("NOT_LOOKING") });
   } else if (result.eyes_open === false) {
@@ -564,7 +569,7 @@ export function useProctoringSystem(
   const consecutiveFailuresRef = useRef(0);
   const serviceFailuresRef = useRef(0);
   const burstRemainingRef = useRef(0);
-  const burstsUsedRef = useRef(0);
+  const burstsUsedRef = useRef(new Map());
   const nextTickAtRef = useRef(0);
   const identityTimerRef = useRef(null);
   const identityRunRef = useRef(0);
@@ -1019,26 +1024,34 @@ export function useProctoringSystem(
     // Only evidence still waiting to confirm earns a quick second look. A muted
     // or already struck laptop used to spend the whole budget, so a phone shown
     // later never got one. Not while detection is down: its backoff comes first.
-    const worthBursting =
-      !verifyOnly &&
-      detected.some(
-        (violation) =>
-          BURST_TYPES.has(violation.type) &&
-          !violation.shadow &&
-          violation.countsAsViolation !== false &&
-          (!confirmed.includes(violation) ||
-            (violation.type === "NO_FACE" && !isHeld(violation))) &&
-          !isHeld(violation),
-      );
-    if (worthBursting) {
-      const hasNoFace = detected.some((v) => v.type === "NO_FACE" && !isHeld(v));
-      const maxBursts = hasNoFace ? MAX_NO_FACE_BURSTS : MAX_BURSTS;
-      if (burstsUsedRef.current < maxBursts) {
-        burstRemainingRef.current = BURST_SAMPLES;
-        burstsUsedRef.current += 1;
-      }
-    } else if (burstRemainingRef.current === 0) {
-      burstsUsedRef.current = 0;
+    // Each incident has its own budget, so one that used it up can't leave the
+    // next without quick looks.
+    const burstable = verifyOnly
+      ? []
+      : detected.filter(
+          (violation) =>
+            BURST_TYPES.has(violation.type) &&
+            !violation.shadow &&
+            violation.countsAsViolation !== false &&
+            (!confirmed.includes(violation) || violation.type === "NO_FACE") &&
+            !isHeld(violation),
+        );
+    const used = burstsUsedRef.current;
+    const budgetKey = (violation) => {
+      const key = incidentKeyOf(violation);
+      return `${key}@${incidentsRef.current.startedAt(key)}`;
+    };
+    const next = burstable.find(
+      (violation) =>
+        (used.get(budgetKey(violation)) ?? 0) <
+        (violation.type === "NO_FACE" ? MAX_NO_FACE_BURSTS : MAX_BURSTS),
+    );
+    if (next) {
+      const key = budgetKey(next);
+      used.set(key, (used.get(key) ?? 0) + 1);
+      burstRemainingRef.current = BURST_SAMPLES;
+    } else if (!burstable.length && burstRemainingRef.current === 0) {
+      used.clear();
     }
 
     setHasChecked(true);
@@ -1314,7 +1327,7 @@ export function useProctoringSystem(
       consecutiveFailuresRef.current = 0;
       serviceFailuresRef.current = 0;
       burstRemainingRef.current = 0;
-      burstsUsedRef.current = 0;
+      burstsUsedRef.current.clear();
       incidentsRef.current.reset();
       struckIncidentsRef.current.clear();
       lastNoFaceGuidanceRef.current = 0;

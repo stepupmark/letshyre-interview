@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "Infraction {{violationCount}} sur {{total}}",
     "warning": "Avertissement",
+    "identityCheck": "Vérification d'identité {{count}} sur {{total}}",
     "defaultTitle": "Avertissement de changement de fenêtre",
     "defaultDescription": "Le fait de quitter l'écran de l'entretien est enregistré comme une violation",
     "defaultButtonText": "J'ai compris, retourner à l'entretien",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Échec de la vérification d'identité",
-      "description": "Nous n'avons pas pu confirmer que c'est toujours vous devant la caméra. Veillez à ce que votre visage soit bien visible et éclairé."
+      "description": "Nous n'avons pas pu confirmer que c'est toujours vous devant la caméra. Restez seul face à la caméra, regardez l'écran et gardez votre visage bien éclairé. Si cela se reproduit, votre entretien prendra fin."
     },
     "faceUnclear": {
       "title": "Faites face à la caméra",

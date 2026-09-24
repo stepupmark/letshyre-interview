@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useContinuousVerifyMutation } from "@mutations/useContinuousVerifyMutation";
 import {
+  FACE_MISMATCH_BELOW,
   FACE_MISMATCH_LIMIT,
   FACE_MISMATCH_TOTAL_LIMIT,
   FACE_PROBE_INTERVAL_MS,
@@ -24,9 +25,9 @@ export const MIN_FACE_CONFIDENCE = 0.8;
 // enough for a reviewer to see identity was being checked.
 export const MATCH_LOG_INTERVAL_MS = 60_000;
 
-// Both honest mismatches in live logs came on the first clear frame after the
-// face was missing or unclear, and cleared on the next one. Such a mismatch
-// waits this long for a second look before it counts.
+// Honest mismatches in live logs (0.32-0.55) came one at a time, right after a
+// gap or out of a run of matches, and cleared on the next check. The first
+// mismatch of a run waits this long for a second look before it counts.
 const RECHECK_MS = 1_000;
 
 // Only these describe a mismatch. Every other record is a FACE_CHECK, so a
@@ -181,6 +182,7 @@ export const useFaceMatchMonitoring = ({
       ...violationCopy("FACE_MISMATCH"),
       countsAsViolation: false,
       finalWarning: streak + 1 >= FACE_MISMATCH_LIMIT || total + 1 >= FACE_MISMATCH_TOTAL_LIMIT,
+      identityCheck: { count: total, limit: FACE_MISMATCH_TOTAL_LIMIT + extra },
       detail: { origin: "face_match", ...counts },
     });
     requestSampleRef.current?.("face_mismatch");
@@ -258,10 +260,9 @@ export const useFaceMatchMonitoring = ({
       const vetted = faceCount === 1 && faceConfidence !== undefined;
       const afterGap = vetted && !lastFrameClearRef.current;
       if (faceCount !== undefined) lastFrameClearRef.current = vetted;
-      if (vetted) sawClearFace(at);
       return { compares: true, vetted, afterGap, faceConfidence };
     },
-    [checkUnclear, sawClearFace],
+    [checkUnclear],
   );
 
   const evaluate = useCallback(
@@ -299,8 +300,18 @@ export const useFaceMatchMonitoring = ({
       if (!compares && IDENTITY_VERDICTS.has(verdict)) return classified;
 
       if (verdict === "mismatch") {
+        // The candidate's own face dips to about 0.5 on a bad frame; someone
+        // else scores near 0. In between says nothing either way, so it runs
+        // the unclear clock: a look-alike still gets counted once a minute.
+        if (typeof confidence === "number" && confidence >= FACE_MISMATCH_BELOW) {
+          lastFrameClearRef.current = false;
+          record("borderline", scores);
+          checkUnclear(at);
+          return classified;
+        }
         sawClearFace(at);
-        if (afterGap && !heldRef.current && !isStrongMismatch(vetted, confidence)) {
+        const firstOfRun = afterGap || streakRef.current === 0;
+        if (firstOfRun && !heldRef.current && !isStrongMismatch(vetted, confidence)) {
           heldRef.current = true;
           record("held", scores);
           requestSampleRef.current?.("face_recheck", RECHECK_MS);
@@ -345,7 +356,7 @@ export const useFaceMatchMonitoring = ({
       });
       return classified;
     },
-    [countMismatch, markAvailable, markUnavailable, sawClearFace],
+    [checkUnclear, countMismatch, markAvailable, markUnavailable, sawClearFace],
   );
 
   // Driven by the proctoring loop's sampler rather than its own timer, so the
@@ -406,7 +417,7 @@ export const useFaceMatchMonitoring = ({
         }
         const { verdict, faces } = evaluate(result, { at, ...judged });
         // The interview ended on this frame; there is nothing left to count.
-        if (stoppedRef.current) return;
+        if (stoppedRef.current) return { faces: null, verifyMs };
         return { faces: faces ?? (IDENTITY_VERDICTS.has(verdict) ? "one" : null), verifyMs };
       } finally {
         if (request) inFlightRef.current = false;

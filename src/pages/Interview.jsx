@@ -437,6 +437,7 @@ export function Interview() {
         label={violationInfo.label}
         labels={violationInfo.labels}
         finalWarning={violationInfo.finalWarning}
+        identityCheck={violationInfo.identityCheck}
         alsoDetected={alsoDetected}
       />
     </div>

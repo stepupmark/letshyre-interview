@@ -32,6 +32,11 @@ export const FACE_UNCLEAR_LIMIT_MS =
 // whether it is back.
 export const FACE_PROBE_INTERVAL_MS = 30_000;
 
+// A mismatch only counts below this similarity. The candidate's own face dips
+// to about 0.5 on a bad frame while someone else scores near 0, so a score in
+// between is treated as an unclear face rather than as someone else.
+export const FACE_MISMATCH_BELOW = num(import.meta.env.VITE_AI_FACE_MISMATCH_BELOW, 0.4);
+
 // Similarity below this on a clear frame ends the interview on the first
 // mismatch. Off until real interviews show where honest candidates never land.
 export const FACE_STRONG_MISMATCH_BELOW = num(

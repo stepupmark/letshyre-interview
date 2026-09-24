@@ -32,6 +32,24 @@ describe("detectViolations", () => {
     expect(violation.type).toBe("NO_FACE");
   });
 
+  it("checks a phone held by someone detection lost but verification saw", () => {
+    const phoneOverFace = {
+      ...CLEAN_RESULT,
+      face_detected: false,
+      face_count: 0,
+      looking_at_camera: false,
+      verified_faces: "one",
+      objects_detected: [{ label: "cell phone", confidence: 0.87 }],
+    };
+    expect(types(phoneOverFace)).toEqual(["PROHIBITED_OBJECT"]);
+  });
+
+  it("still reports no face when verification saw none either or didn't answer", () => {
+    const empty = { ...CLEAN_RESULT, face_detected: false, face_count: 0 };
+    expect(types({ ...empty, verified_faces: "none" })).toEqual(["NO_FACE"]);
+    expect(types(empty)).toEqual(["NO_FACE"]);
+  });
+
   it("returns a MULTIPLE_FACES violation that counts as a strike", () => {
     const violation = first({ ...CLEAN_RESULT, face_count: 2 });
     expect(violation).not.toBeNull();

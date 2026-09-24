@@ -273,6 +273,7 @@ export function useViolationMonitor({
         maxRestrikes,
         remindWhileHeld = false,
         finalWarning,
+        identityCheck,
       } = violation;
       const key = strikeKey ?? type ?? titleKey;
 
@@ -305,6 +306,7 @@ export function useViolationMonitor({
           violationCount,
           counts,
           finalWarning,
+          identityCheck,
         });
         setShowTabWarning(true);
         refreshAlsoDetected();
@@ -530,6 +532,7 @@ export function useViolationMonitor({
         imagePath: violation.imagePath,
         countsAsViolation: violation.countsAsViolation !== false,
         finalWarning: violation.finalWarning,
+        identityCheck: violation.identityCheck,
       });
     },
     [raiseViolation],

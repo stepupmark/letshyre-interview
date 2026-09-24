@@ -56,6 +56,7 @@
     "rec": "REC",
     "securityFlag": "Violation {{violationCount}} of {{total}}",
     "warning": "Warning",
+    "identityCheck": "Identity check {{count}} of {{total}}",
     "defaultTitle": "Window Switch Warning",
     "defaultDescription": "Navigating away from the interview screen is being logged as a violation",
     "defaultButtonText": "I Understand, Return to Interview",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Identity Check Failed",
-      "description": "We could not confirm it is still you on camera. Make sure your face is clearly visible and well lit."
+      "description": "We couldn't confirm it's still you on camera. Stay alone in front of the camera, face the screen and keep your face well lit. If this keeps happening, your interview will end."
     },
     "faceUnclear": {
       "title": "Face the Camera",

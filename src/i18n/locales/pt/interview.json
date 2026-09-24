@@ -56,6 +56,7 @@
     "rec": "GRAV",
     "securityFlag": "Violação {{violationCount}} de {{total}}",
     "warning": "Aviso",
+    "identityCheck": "Verificação de identidade {{count}} de {{total}}",
     "defaultTitle": "Aviso de troca de janela",
     "defaultDescription": "Sair da tela da entrevista está sendo registrado como uma violação",
     "defaultButtonText": "Entendi, voltar à entrevista",
@@ -189,7 +190,7 @@
     },
     "faceMismatch": {
       "title": "Falha na verificação de identidade",
-      "description": "Não conseguimos confirmar que ainda é você na câmara. Garanta que o seu rosto está bem visível e iluminado."
+      "description": "Não conseguimos confirmar que ainda é você na câmera. Fique sozinho em frente à câmera, olhe para a tela e mantenha o rosto bem iluminado. Se isso continuar acontecendo, sua entrevista será encerrada."
     },
     "faceUnclear": {
       "title": "Olhe para a câmara",

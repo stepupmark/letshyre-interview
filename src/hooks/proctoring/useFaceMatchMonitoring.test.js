@@ -34,14 +34,17 @@ const MATCH = {
   total_violations: 0,
   error: null,
 };
+// Someone else in the seat.
 const MISMATCH = {
   success: true,
   same_person: false,
-  confidence: 0.515070378780365,
+  confidence: 0.02764659747481346,
   violation: "FACE_MISMATCH",
   total_violations: 2,
   error: null,
 };
+// The candidate's own face on a bad frame, which the service still calls a mismatch.
+const BORDERLINE = { ...MISMATCH, confidence: 0.515070378780365 };
 const LIVE_MISMATCH = {
   success: true,
   same_person: false,
@@ -204,7 +207,7 @@ function captureLog() {
 describe("classifyVerification", () => {
   it.each([
     ["the same person", MATCH, { verdict: "match" }],
-    ["a mismatch", MISMATCH, { verdict: "mismatch", confidence: 0.515070378780365 }],
+    ["a mismatch", MISMATCH, { verdict: "mismatch", confidence: MISMATCH.confidence }],
     ["no face", NO_FACE, { verdict: "condition", faces: "none" }],
     ["several people", MULTIPLE_FACES, { verdict: "condition", faces: "multiple" }],
     [
@@ -256,7 +259,7 @@ describe("useFaceMatchMonitoring mismatches", () => {
   it("ends the interview on two mismatches in a row", async () => {
     const { autoSubmit, sample, result } = setup();
 
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     expect(autoSubmit).not.toHaveBeenCalled();
     expect(result.current.mismatchCount).toBe(1);
 
@@ -269,7 +272,7 @@ describe("useFaceMatchMonitoring mismatches", () => {
 
   it("ends the interview on two live mismatch payloads", async () => {
     const { autoSubmit, sample } = setup();
-    await sample(LIVE_MISMATCH, 2);
+    await sample(LIVE_MISMATCH, 3);
     expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
   });
 
@@ -282,7 +285,7 @@ describe("useFaceMatchMonitoring mismatches", () => {
 
   it("warns on the first mismatch without a strike and looks again soon", async () => {
     const { autoSubmit, onViolation, requestSample, sample } = setup();
-    await sample(LIVE_MISMATCH);
+    await sample(LIVE_MISMATCH, 2);
 
     expect(autoSubmit).not.toHaveBeenCalled();
     expect(onViolation).toHaveBeenCalledWith(
@@ -297,8 +300,9 @@ describe("useFaceMatchMonitoring mismatches", () => {
   });
 
   it("shows no warning on the mismatch that ends the interview", async () => {
-    const { sample, mismatchWarnings } = setup();
-    await sample(LIVE_MISMATCH, 2);
+    const { autoSubmit, sample, mismatchWarnings } = setup();
+    await sample(LIVE_MISMATCH, 3);
+    expect(autoSubmit).toHaveBeenCalled();
     expect(mismatchWarnings()).toHaveLength(1);
   });
 
@@ -311,9 +315,9 @@ describe("useFaceMatchMonitoring mismatches", () => {
   it("resets the run on a match", async () => {
     const { autoSubmit, sample, result } = setup();
 
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     await sample(MATCH);
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
 
     expect(result.current.mismatchCount).toBe(1);
     expect(autoSubmit).not.toHaveBeenCalled();
@@ -322,13 +326,13 @@ describe("useFaceMatchMonitoring mismatches", () => {
   it("ends on the third mismatch of the interview, matches or not", async () => {
     const { autoSubmit, sample, mismatchWarnings } = setup();
 
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     await sample(MATCH, 3);
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     await sample(MATCH, 3);
     expect(autoSubmit).not.toHaveBeenCalled();
 
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
 
     expect(autoSubmit).toHaveBeenCalledTimes(1);
     expect(mismatchWarnings()).toHaveLength(2);
@@ -346,7 +350,7 @@ describe("useFaceMatchMonitoring mismatches", () => {
   ])("keeps the run across %s", async (_label, between) => {
     const s = setup();
 
-    await s.sample(MISMATCH);
+    await s.sample(MISMATCH, 2);
     await between(s);
     // After a frame that wasn't clear, the first mismatch waits for a second look.
     await s.sample(MISMATCH, 2);
@@ -406,10 +410,10 @@ describe("useFaceMatchMonitoring faces the service saw", () => {
   it("counts a mismatch with people behind towards identity too", async () => {
     const { autoSubmit, sample, mismatchWarnings } = setup();
 
-    await sample(MISMATCH_WITH_PEOPLE);
+    await sample(MISMATCH_WITH_PEOPLE, 2);
     expect(mismatchWarnings()).toHaveLength(1);
 
-    expect(await sample(MISMATCH_WITH_PEOPLE)).toBeUndefined();
+    expect(await sample(MISMATCH_WITH_PEOPLE)).toMatchObject({ faces: null });
     expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
   });
 
@@ -417,8 +421,8 @@ describe("useFaceMatchMonitoring faces the service saw", () => {
     const { autoSubmit, sample } = setup();
     const crowded = { ...CLEAR, faceCount: 2 };
 
-    await sample(MISMATCH_WITH_PEOPLE, 2, crowded);
-    expect(mutateAsync).toHaveBeenCalledTimes(2);
+    await sample(MISMATCH_WITH_PEOPLE, 3, crowded);
+    expect(mutateAsync).toHaveBeenCalledTimes(3);
     expect(autoSubmit).not.toHaveBeenCalled();
 
     await sample(MISMATCH_WITH_PEOPLE, 1, crowded);
@@ -459,29 +463,32 @@ describe("useFaceMatchMonitoring alongside detection", () => {
   });
 
   it.each([
-    ["a match", MATCH, "one", 0],
-    ["a mismatch", MISMATCH, "one", 1],
-    ["no face", NO_FACE, "none", 0],
-    ["several people", MULTIPLE_FACES, "multiple", 0],
-    ["a mismatch with people behind", MISMATCH_WITH_PEOPLE, "multiple", 1],
-    ["an invalid session", INVALID_SESSION, null, 0],
+    ["a match", MATCH, "one", undefined],
+    ["a mismatch", MISMATCH, "one", "held"],
+    ["no face", NO_FACE, "none", "condition"],
+    ["several people", MULTIPLE_FACES, "multiple", "condition"],
+    ["a mismatch with people behind", MISMATCH_WITH_PEOPLE, "multiple", "held"],
+    ["an invalid session", INVALID_SESSION, null, "reregistering"],
   ])(
     "sends %s before detection answers, then judges it",
-    async (_label, response, faces, warnings) => {
+    async (_label, response, faces, outcome) => {
       const onNotRegistered = vi.fn();
-      const { sideBySide, mismatchWarnings } = setup({ onNotRegistered });
+      const { sideBySide } = setup({ onNotRegistered });
+      const { events, unsubscribe } = captureLog();
 
       const { answer, sentEarly } = await sideBySide(response);
+      unsubscribe();
 
       expect(sentEarly).toBe(true);
       expect(answer).toMatchObject({ faces, verifyMs: expect.any(Number) });
-      expect(mismatchWarnings()).toHaveLength(warnings);
+      if (outcome) expect(events.map((e) => e.outcome)).toContain(outcome);
       expect(onNotRegistered).toHaveBeenCalledTimes(response === INVALID_SESSION ? 1 : 0);
     },
   );
 
   it("ends on two mismatches in a row", async () => {
     const { autoSubmit, sideBySide } = setup();
+    await sideBySide(MISMATCH);
     await sideBySide(MISMATCH);
     await sideBySide(MISMATCH);
     expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
@@ -530,6 +537,7 @@ describe("useFaceMatchMonitoring alongside detection", () => {
 
     await sideBySide(MISMATCH, unknown);
     await sideBySide(MISMATCH, unknown);
+    await sideBySide(MISMATCH, unknown);
     expect(autoSubmit).not.toHaveBeenCalled();
 
     await sideBySide(MISMATCH, unknown);
@@ -552,7 +560,7 @@ describe("useFaceMatchMonitoring frames detection could not check", () => {
   it("needs one more mismatch before they can end the interview", async () => {
     const { autoSubmit, sample, mismatchWarnings } = setup();
 
-    await sample(MISMATCH, 2, UNCHECKED);
+    await sample(MISMATCH, 3, UNCHECKED);
     expect(autoSubmit).not.toHaveBeenCalled();
     expect(mismatchWarnings()).toHaveLength(2);
 
@@ -563,7 +571,7 @@ describe("useFaceMatchMonitoring frames detection could not check", () => {
   it("ends on a clear mismatch after an unchecked one", async () => {
     const { autoSubmit, sample } = setup();
 
-    await sample(MISMATCH, 1, UNCHECKED);
+    await sample(MISMATCH, 2, UNCHECKED);
     await sample(MISMATCH);
 
     expect(autoSubmit).toHaveBeenCalledTimes(1);
@@ -626,11 +634,11 @@ describe("useFaceMatchMonitoring unclear faces", () => {
   });
 
   it("restarts the clock on a clear face", async () => {
-    const { sample, unclear, frames, onViolation } = setup();
+    const { sample, unclear, onViolation } = setup();
     await sample(MATCH);
 
     await unclear(5);
-    await frames(CLEAR);
+    await sample(MATCH);
     await unclear(5);
 
     expect(onViolation).not.toHaveBeenCalled();
@@ -650,7 +658,7 @@ describe("useFaceMatchMonitoring unclear faces", () => {
   it("keeps the run across an unclear face", async () => {
     const { autoSubmit, sample, unclear, result } = setup();
 
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     await unclear(1);
     expect(result.current.mismatchCount).toBe(1);
 
@@ -690,9 +698,50 @@ describe("useFaceMatchMonitoring strong mismatches", () => {
 
     await sample(LIVE_MISMATCH, 1, UNCHECKED);
     await sample(MATCH);
-    await sample(MISMATCH);
+    await sample({ ...MISMATCH, confidence: 0.2 }, 2);
 
     expect(autoSubmit).not.toHaveBeenCalled();
+  });
+});
+
+describe("useFaceMatchMonitoring borderline scores", () => {
+  beforeEach(() => {
+    mutateAsync.mockReset();
+    config.strongBelow = 0;
+  });
+
+  it("does not warn when the candidate's own face dips below the service's line", async () => {
+    const { sample, mismatchWarnings, result } = setup();
+    const { events, unsubscribe } = captureLog();
+
+    await sample(MATCH);
+    await sample(BORDERLINE, 3);
+    await sample(MATCH);
+    unsubscribe();
+
+    expect(mismatchWarnings()).toHaveLength(0);
+    expect(result.current.mismatchCount).toBe(0);
+    expect(events.filter((e) => e.outcome === "borderline")).toHaveLength(3);
+    expect(events.find((e) => e.outcome === "borderline")).toMatchObject({ type: "FACE_CHECK" });
+  });
+
+  it("counts a look-alike who never scores clearly once a minute, like an unclear face", async () => {
+    const { autoSubmit, sample, mismatchWarnings } = setup();
+
+    await sample(MATCH);
+    await sample(BORDERLINE, 12);
+    expect(mismatchWarnings()).toHaveLength(1);
+
+    await sample(BORDERLINE, 12);
+    expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
+  });
+
+  it("shows how many identity checks have failed on the warning", async () => {
+    const { sample, onViolation } = setup();
+    await sample(MISMATCH, 2);
+    expect(onViolation).toHaveBeenCalledWith(
+      expect.objectContaining({ identityCheck: { count: 1, limit: 3 } }),
+    );
   });
 });
 
@@ -810,7 +859,7 @@ describe("useFaceMatchMonitoring log", () => {
   it("counts a cleared mismatch as the minute's match record", async () => {
     const { events, unsubscribe } = captureLog();
     const { sample } = setup();
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     await sample(MATCH, 5);
     unsubscribe();
 
@@ -820,7 +869,7 @@ describe("useFaceMatchMonitoring log", () => {
   it("logs both counts, the scores and the service tally with a mismatch", async () => {
     const { events, unsubscribe } = captureLog();
     const { sample } = setup();
-    await sample(LIVE_MISMATCH);
+    await sample(LIVE_MISMATCH, 2);
     unsubscribe();
 
     expect(events).toContainEqual(
@@ -839,7 +888,7 @@ describe("useFaceMatchMonitoring log", () => {
   it("logs the recovery when a mismatch clears", async () => {
     const { events, unsubscribe } = captureLog();
     const { sample } = setup();
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     await sample(MATCH, 3);
     unsubscribe();
 
@@ -859,7 +908,7 @@ describe("useFaceMatchMonitoring log", () => {
     const { events, unsubscribe } = captureLog();
     const { sample } = setup();
     await sample(NO_FACE);
-    await sample(MISMATCH, 2);
+    await sample(MISMATCH, 3);
     unsubscribe();
 
     expect(events.find((e) => e.outcome === "condition")).toMatchObject({
@@ -927,12 +976,23 @@ describe("useFaceMatchMonitoring after the face comes back", () => {
     expect(autoSubmit).toHaveBeenCalledWith(TERMINATION_REASONS.FACE_MISMATCH);
   });
 
-  it("does not hold a mismatch that follows a clear frame", async () => {
-    const { sample, mismatchWarnings } = setup();
+  it("holds a lone mismatch among matches and drops it when the next look matches", async () => {
+    const { sample, mismatchWarnings, requestSample, result } = setup();
 
     await sample(MATCH);
     await sample(MISMATCH);
+    expect(mismatchWarnings()).toHaveLength(0);
+    expect(requestSample).toHaveBeenCalledWith("face_recheck", 1_000);
 
+    await sample(MATCH);
+    expect(result.current.mismatchCount).toBe(0);
+  });
+
+  it("does not hold a mismatch inside a run", async () => {
+    const { sample, mismatchWarnings } = setup();
+
+    await sample(MATCH);
+    await sample(MISMATCH, 2);
     expect(mismatchWarnings()).toHaveLength(1);
   });
 
@@ -952,12 +1012,13 @@ describe("useFaceMatchMonitoring after the face comes back", () => {
     const { events, unsubscribe } = captureLog();
 
     await sample(MATCH);
-    await sample(MISMATCH);
+    await sample(MISMATCH, 2);
     await sample(MATCH);
     unsubscribe();
 
     expect(events.map((event) => [event.type, event.outcome])).toEqual([
       ["FACE_CHECK", "matched"],
+      ["FACE_MISMATCH", "held"],
       ["FACE_MISMATCH", "raised"],
       ["FACE_CHECK", "cleared"],
     ]);
