@@ -65,7 +65,7 @@ describe("useViolationMonitor", () => {
       result.current.handleAiViolation({
         titleKey: "violations.noFace.title",
         descriptionKey: "violations.noFace.description",
-        imagePath: "/no-candidate.webp",
+        imagePath: "/empty-seat.svg",
       });
     });
 
@@ -133,10 +133,10 @@ describe("useViolationMonitor", () => {
 
     expect(loaded).toEqual(
       expect.arrayContaining([
-        "/window-switch.webp",
-        "/laptop.webp",
-        "/no-candidate.webp",
-        "/multi-people.webp",
+        "/window-switch.svg",
+        "/laptop.svg",
+        "/empty-seat.svg",
+        "/multi-people.svg",
       ]),
     );
     expect(new Set(loaded).size).toBe(loaded.length);
@@ -377,7 +377,7 @@ describe("useViolationMonitor modal lifecycle", () => {
   const hardViolation = {
     titleKey: "violations.noFace.title",
     descriptionKey: "violations.noFace.description",
-    imagePath: "/no-candidate.webp",
+    imagePath: "/empty-seat.svg",
   };
 
   it("closes the modal on its own so it cannot be held open as a mute", () => {
@@ -566,7 +566,7 @@ describe("useViolationMonitor modal lifecycle", () => {
         label: "cell phone",
         titleKey: "violations.prohibitedObject.title",
         descriptionKey: "violations.prohibitedObject.description",
-        imagePath: "/laptop.webp",
+        imagePath: "/laptop.svg",
       }),
     );
 
@@ -897,12 +897,12 @@ describe("useViolationMonitor strike summary", () => {
   const tabSwitch = {
     type: "TAB_SWITCH",
     titleKey: "violations.tabSwitch.title",
-    imagePath: "/window-switch.webp",
+    imagePath: "/window-switch.svg",
   };
   const devices = {
     type: "PROHIBITED_OBJECT",
     titleKey: "violations.multipleDevices.title",
-    imagePath: "/laptop.webp",
+    imagePath: "/laptop.svg",
     label: "cell phone",
     labels: ["cell phone", "laptop"],
     incident: true,
@@ -1027,7 +1027,7 @@ describe("useViolationMonitor leaving the window", () => {
     expect(result.current.violationInfo).toMatchObject({
       titleKey: "violations.tabSwitch.title",
       descriptionKey: "violations.tabSwitch.description",
-      imagePath: "/window-switch.webp",
+      imagePath: "/window-switch.svg",
     });
   });
 
@@ -1117,7 +1117,7 @@ describe("useViolationMonitor leaving the window", () => {
     expect(result.current.violationInfo).toMatchObject({
       titleKey: "violations.windowFocus.title",
       descriptionKey: "violations.windowFocus.description",
-      imagePath: "/window-switch.webp",
+      imagePath: "/window-switch.svg",
     });
   });
 

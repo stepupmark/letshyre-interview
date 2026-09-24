@@ -386,7 +386,7 @@ describe("camera turned off", () => {
       maxRestrikes: 1,
       titleKey: "violations.cameraOff.title",
       descriptionKey: "violations.cameraOff.description",
-      imagePath: "/no-candidate.webp",
+      imagePath: "/camera-off.svg",
       detail: { reason: "track_ended" },
     });
     expect(strike.countsAsViolation).not.toBe(false);
@@ -498,7 +498,7 @@ describe("looking away", () => {
       incidentStartedAt: 5_000,
       titleKey: "violations.lookingAway.title",
       descriptionKey: "violations.lookingAway.description",
-      imagePath: "/no-candidate.webp",
+      imagePath: "/looking-away.svg",
       detail: { reason: "held" },
     });
     expect(strikes[0].countsAsViolation).not.toBe(false);
@@ -920,6 +920,20 @@ describe("detection and verification side by side", () => {
     );
     expect(decisions("NO_FACE")).toEqual(["unconfirmed"]);
     expect(record.payload.local_faces).toBe("none");
+  });
+
+  it("logs verification's no face without counting it when detection and the device see one", async () => {
+    replay([]);
+    const { onViolation } = render(
+      vi.fn(async () => ({ faces: "none" })),
+      { current: "one" },
+    );
+
+    await vi.advanceTimersByTimeAsync(12_000);
+
+    expect(decisions("NO_FACE")).toContain("outvoted");
+    expect(decisions("NO_FACE")).not.toContain("unconfirmed");
+    expect(onViolation).not.toHaveBeenCalled();
   });
 
   it("logs what triggered each check and how long each service took", async () => {

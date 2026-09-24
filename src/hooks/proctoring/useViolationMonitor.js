@@ -92,10 +92,10 @@ export function getElectronViolationKey(event = "") {
 // A second display or a mirrored screen is the same concern as a detected
 // laptop; the rest are window-level actions.
 const ELECTRON_IMAGES = {
-  externalDisplay: "/laptop.webp",
-  screenSharing: "/laptop.webp",
+  externalDisplay: "/laptop.svg",
+  screenSharing: "/laptop.svg",
 };
-const WINDOW_SWITCH_IMAGE = "/window-switch.webp";
+const WINDOW_SWITCH_IMAGE = "/window-switch.svg";
 
 // Fetched up front so a warning never opens on a blank picture.
 function preloadWarningImages() {

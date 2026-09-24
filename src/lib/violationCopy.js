@@ -4,7 +4,7 @@ const COPY = {
   NO_FACE: {
     titleKey: "violations.noFace.title",
     descriptionKey: "violations.noFace.description",
-    imagePath: "/no-candidate.webp",
+    imagePath: "/empty-seat.svg",
   },
   NO_FACE_GUIDANCE: {
     titleKey: "violations.noFaceGuidance.title",
@@ -24,17 +24,17 @@ const COPY = {
   MULTIPLE_FACES: {
     titleKey: "violations.multipleFaces.title",
     descriptionKey: "violations.multipleFaces.description",
-    imagePath: "/multi-people.webp",
+    imagePath: "/multi-people.svg",
   },
   PROHIBITED_OBJECT: {
     titleKey: "violations.prohibitedObject.title",
     descriptionKey: "violations.prohibitedObject.description",
-    imagePath: "/laptop.webp",
+    imagePath: "/laptop.svg",
   },
   MULTIPLE_OBJECTS: {
     titleKey: "violations.multipleDevices.title",
     descriptionKey: "violations.multipleDevices.description",
-    imagePath: "/laptop.webp",
+    imagePath: "/laptop.svg",
   },
   "PROHIBITED_OBJECT:cell phone": {
     titleKey: "violations.cellPhone.title",
@@ -54,12 +54,12 @@ const COPY = {
   LOOKING_AWAY: {
     titleKey: "violations.lookingAway.title",
     descriptionKey: "violations.lookingAway.description",
-    imagePath: "/no-candidate.webp",
+    imagePath: "/looking-away.svg",
   },
   CAMERA_OFF: {
     titleKey: "violations.cameraOff.title",
     descriptionKey: "violations.cameraOff.description",
-    imagePath: "/no-candidate.webp",
+    imagePath: "/camera-off.svg",
   },
   CAMERA_OFF_HINT: {
     titleKey: "violations.cameraOffHint.title",

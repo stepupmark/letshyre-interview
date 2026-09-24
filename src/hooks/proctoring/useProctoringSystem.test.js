@@ -50,6 +50,13 @@ describe("detectViolations", () => {
     expect(types(empty)).toEqual(["NO_FACE"]);
   });
 
+  it("does not count verification's no face when detection and the device both see one", () => {
+    const dim = { ...CLEAN_RESULT, verified_faces: "none" };
+    expect(types({ ...dim, local_faces: "one" })).toEqual([]);
+    expect(types({ ...dim, local_faces: "none" })).toEqual(["NO_FACE"]);
+    expect(types(dim)).toEqual(["NO_FACE"]);
+  });
+
   it("returns a MULTIPLE_FACES violation that counts as a strike", () => {
     const violation = first({ ...CLEAN_RESULT, face_count: 2 });
     expect(violation).not.toBeNull();
@@ -447,7 +454,7 @@ describe("detectViolations", () => {
       });
     });
 
-    it("assigns laptop.webp to other prohibited devices like laptops", () => {
+    it("assigns laptop.svg to other prohibited devices like laptops", () => {
       const violation = first({
         ...CLEAN_RESULT,
         objects_detected: [{ label: "laptop", confidence: 0.9, area_ratio: 0.02 }],
@@ -455,7 +462,7 @@ describe("detectViolations", () => {
       expect(violation).toMatchObject({
         type: "PROHIBITED_OBJECT",
         label: "laptop",
-        imagePath: "/laptop.webp",
+        imagePath: "/laptop.svg",
         titleKey: "violations.prohibitedObject.title",
       });
     });

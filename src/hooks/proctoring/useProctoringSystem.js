@@ -371,6 +371,15 @@ export function faceCountOf(result) {
   return hasMultipleSignificantPeople(result) ? 2 : 1;
 }
 
+// Verification misses faces in a dim room. When detection and the device both
+// see one, its "none" is logged but doesn't count.
+export const verifyOutvoted = (result) =>
+  result.verified_faces === "none" &&
+  !result.verify_only &&
+  !!result.face_detected &&
+  result.face_count !== 0 &&
+  (result.local_faces === "one" || result.local_faces === "multiple");
+
 /**
  * Every violation the frame shows, most severe first. Empty when it is clean.
  *
@@ -406,8 +415,9 @@ export function detectViolations(result, classified) {
     !result.verify_only &&
     (!result.face_detected || result.face_count === 0) &&
     verified !== "one";
-  if (noneByDetect || verified === "none") {
-    return [faceViolation("NO_FACE", noneByDetect, verified === "none")];
+  const noneByVerify = verified === "none" && !verifyOutvoted(result);
+  if (noneByDetect || noneByVerify) {
+    return [faceViolation("NO_FACE", noneByDetect, noneByVerify)];
   }
 
   if (result.verify_only) return [];
@@ -838,7 +848,12 @@ export function useProctoringSystem(
       const { faces, verifyMs } = await verifying;
       const frame = result ?? (faces ? VERIFY_ONLY_FRAME : null);
       if (frame) {
-        processFrame(faces ? { ...frame, verified_faces: faces } : frame, sample.capturedAt, {
+        const seen = {
+          ...frame,
+          ...(faces ? { verified_faces: faces } : {}),
+          ...(localFacesRef ? { local_faces: localFaces } : {}),
+        };
+        processFrame(seen, sample.capturedAt, {
           trigger,
           detect_ms: detectMs,
           verify_ms: verifyMs,
@@ -953,6 +968,9 @@ export function useProctoringSystem(
     if (SHADOW_RULES.has("verify_faces") && detected.some((v) => v.seenBy === "verify")) {
       for (const violation of detected) recordDecision(violation, "shadow", frame.frame_quality);
       detected = detectViolations({ ...frame, verified_faces: undefined }, classified);
+    }
+    if (verifyOutvoted(frame)) {
+      recordDecision({ type: "NO_FACE", seenBy: "verify" }, "outvoted", frame.frame_quality);
     }
     if (!detected.some((violation) => violation.type === "NO_FACE")) {
       lastNoFaceGuidanceRef.current = 0;

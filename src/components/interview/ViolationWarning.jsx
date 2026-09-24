@@ -10,7 +10,7 @@ export default function ViolationWarning({
   violationCount = 1,
   counts = true,
   titleKey,
-  imagePath = "/multi-people.webp",
+  imagePath = "/multi-people.svg",
   descriptionKey,
   label,
   labels,

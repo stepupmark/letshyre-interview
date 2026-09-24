@@ -34,7 +34,7 @@ describe("violationCopy", () => {
 
   it("falls back to default prohibited object copy for other devices", () => {
     const copy = violationCopy("PROHIBITED_OBJECT");
-    expect(copy.imagePath).toBe("/laptop.webp");
+    expect(copy.imagePath).toBe("/laptop.svg");
     expect(copy.titleKey).toBe("violations.prohibitedObject.title");
   });
 
@@ -51,12 +51,12 @@ describe("violationCopy", () => {
     expect(violationCopy("CAMERA_OFF")).toEqual({
       titleKey: "violations.cameraOff.title",
       descriptionKey: "violations.cameraOff.description",
-      imagePath: "/no-candidate.webp",
+      imagePath: "/camera-off.svg",
     });
     expect(violationCopy("LOOKING_AWAY")).toEqual({
       titleKey: "violations.lookingAway.title",
       descriptionKey: "violations.lookingAway.description",
-      imagePath: "/no-candidate.webp",
+      imagePath: "/looking-away.svg",
     });
   });
 
@@ -70,7 +70,7 @@ describe("violationCopy", () => {
 
   it("lists each warning picture once for preloading", () => {
     expect(WARNING_IMAGES).toEqual(
-      expect.arrayContaining(["/no-candidate.webp", "/multi-people.webp", "/laptop.webp"]),
+      expect.arrayContaining(["/empty-seat.svg", "/multi-people.svg", "/laptop.svg"]),
     );
     expect(new Set(WARNING_IMAGES).size).toBe(WARNING_IMAGES.length);
   });
