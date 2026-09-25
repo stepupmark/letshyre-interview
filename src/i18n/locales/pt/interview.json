@@ -257,5 +257,9 @@
       "pill": "Submetida automaticamente",
       "description": "A sua entrevista foi submetida com as respostas que completou."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Atualize o aplicativo para desktop",
+    "description": "Esta versão do aplicativo para desktop LetsHyre está desatualizada. Feche-o, instale a versão mais recente e inicie sua entrevista novamente."
   }
 }

@@ -257,5 +257,9 @@
       "pill": "Enviada automáticamente",
       "description": "Su entrevista se envió con las respuestas que completó."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Actualiza la aplicación de escritorio",
+    "description": "Esta versión de la aplicación de escritorio de LetsHyre está desactualizada. Ciérrala, instala la versión más reciente y vuelve a iniciar tu entrevista."
   }
 }

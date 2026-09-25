@@ -257,5 +257,9 @@
       "pill": "Automatisch eingereicht",
       "description": "Ihr Interview wurde mit den bereits gegebenen Antworten eingereicht."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Desktop-App aktualisieren",
+    "description": "Diese Version der LetsHyre-Desktop-App ist veraltet. Schließen Sie sie, installieren Sie die neueste Version und starten Sie Ihr Interview dann erneut."
   }
 }

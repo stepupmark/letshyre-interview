@@ -257,5 +257,9 @@
       "pill": "Auto-submitted",
       "description": "Your interview has been submitted with the answers you completed."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Update the desktop app",
+    "description": "This version of the LetsHyre desktop app is out of date. Close it, install the latest version, then start your interview again."
   }
 }

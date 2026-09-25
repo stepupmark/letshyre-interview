@@ -257,5 +257,9 @@
       "pill": "Inviato automaticamente",
       "description": "Il colloquio è stato inviato con le risposte completate."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Aggiorna l'app desktop",
+    "description": "Questa versione dell'app desktop LetsHyre non è aggiornata. Chiudila, installa la versione più recente e poi riavvia il colloquio."
   }
 }

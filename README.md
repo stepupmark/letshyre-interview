@@ -84,6 +84,7 @@ Copy `.env.example` → `.env`. **Never** add a trailing slash to a URL value.
 | `VITE_AI_FACE_MISMATCH_BELOW`        | –        | `0.4`   | Similarity must be below this to count as a mismatch               |
 | `VITE_AI_FACE_STRONG_MISMATCH_BELOW` | –        | off     | Similarity below this on a clear frame ends the interview at once  |
 | `VITE_AI_MAX_INTERNET_DISCONNECTS`   | –        | `3`     | Network drops before auto-submit                                   |
+| `VITE_MIN_DESKTOP_VERSION`           | –        | –       | Oldest desktop app that may start an interview (e.g. `1.4.5`)      |
 | `VITE_AI_INTERVIEW_DURATION_MINUTES` | –        | `15`    | Interview length                                                   |
 | `VITE_AI_TERMINATION_NOTICE_SECONDS` | –        | `12`    | How long the termination notice holds                              |
 | `VITE_AI_HELD_RESTRIKE_SECONDS`      | –        | `30`    | Object or camera-off still there this long adds one more strike    |
@@ -490,6 +491,11 @@ to matching the text.
   the termination notice names the apps found.
 - **Soft violations** (an overlay or a fullscreen exit the first time) strike through the
   same path as everything else.
+- **Leaving the window** (`focus_lost`, `virtual_desktop`) is only logged: the page's
+  own focus tracking already strikes it, and the desktop app brings the window back.
+- **An outdated desktop app** is stopped before the interview with an "update the app"
+  screen when `VITE_MIN_DESKTOP_VERSION` is set. The app adds
+  `LetsHyreSecureInterview/<version>` to its user agent; builds without it count as too old.
 - Each violation is acknowledged by its `id` and handled once: a re-send with the same id
   is only logged (`duplicate`). Everything that arrives before the session is ready is kept
   in order and replayed; a hard block among it wins.

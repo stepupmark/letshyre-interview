@@ -94,9 +94,19 @@ function preloadWarningImages() {
 }
 
 function electronViolation(payload) {
-  const { type, detail, titleKey, descriptionKey, imagePath, apps, strike } =
+  const { type, detail, titleKey, descriptionKey, imagePath, apps, strike, logOnly } =
     resolveElectronViolation(payload);
-  return { type, source: "electron", detail, titleKey, descriptionKey, imagePath, apps, strike };
+  return {
+    type,
+    source: "electron",
+    detail,
+    titleKey,
+    descriptionKey,
+    imagePath,
+    apps,
+    strike,
+    logOnly,
+  };
 }
 
 /**
@@ -522,6 +532,15 @@ export function useViolationMonitor({
   const handleElectronViolation = useCallback(
     (violation) => {
       const raised = electronViolation(violation);
+      if (raised.logOnly) {
+        recordViolationEvent({
+          source: "electron",
+          type: raised.type,
+          outcome: "logged",
+          ...raised.detail,
+        });
+        return "logged";
+      }
       if (!isActiveRef.current) {
         pendingElectronRef.current.push(violation);
         recordViolationEvent({

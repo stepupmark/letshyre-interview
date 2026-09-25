@@ -1863,3 +1863,35 @@ describe("useViolationMonitor desktop-app hard blocks with codes", () => {
     );
   });
 });
+
+describe("useViolationMonitor desktop focus reports", () => {
+  it("logs them without a strike or a warning", () => {
+    const events = [];
+    const unsubscribe = subscribeToViolationLog((event) => events.push(event));
+    const { result, incrementViolation } = setup();
+
+    let outcome;
+    act(() => {
+      outcome = result.current.handleElectronViolation({
+        id: "f1",
+        code: "focus_lost",
+        apps: ["Google Chrome"],
+        event: "Left the interview window: Google Chrome",
+        isHardBlock: false,
+      });
+    });
+    unsubscribe();
+
+    expect(outcome).toBe("logged");
+    expect(incrementViolation).not.toHaveBeenCalled();
+    expect(result.current.showTabWarning).toBe(false);
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        source: "electron",
+        outcome: "logged",
+        code: "focus_lost",
+        apps: ["Google Chrome"],
+      }),
+    );
+  });
+});

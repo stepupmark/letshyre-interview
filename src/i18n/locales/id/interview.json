@@ -257,5 +257,9 @@
       "pill": "Dikirim otomatis",
       "description": "Wawancara Anda dikirim beserta jawaban yang telah diselesaikan."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Perbarui Aplikasi Desktop",
+    "description": "Versi aplikasi desktop LetsHyre ini sudah usang. Tutup aplikasi, instal versi terbaru, lalu mulai wawancara Anda lagi."
   }
 }

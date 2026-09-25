@@ -257,5 +257,9 @@
       "pill": "Automatisch ingediend",
       "description": "Uw interview is ingediend met de antwoorden die u heeft voltooid."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Werk de desktop-app bij",
+    "description": "Deze versie van de LetsHyre-desktop-app is verouderd. Sluit de app, installeer de nieuwste versie en start je interview daarna opnieuw."
   }
 }

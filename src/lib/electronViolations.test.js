@@ -27,6 +27,8 @@ const CODES = [
   ["window_minimize", "windowAction"],
   ["close_attempt", "windowAction"],
   ["fullscreen_exit", "fullscreenExit"],
+  ["focus_lost", "focusLost"],
+  ["virtual_desktop", "virtualDesktop"],
 ];
 
 describe("resolveElectronViolation", () => {
@@ -98,6 +100,17 @@ describe("getElectronViolationKey (desktop builds without codes)", () => {
     ["", "generic"],
   ])("maps %j to %j", (event, expected) => {
     expect(getElectronViolationKey(event)).toBe(expected);
+  });
+});
+
+describe("leaving the window", () => {
+  it("is only logged: the site's own focus tracking already strikes it", () => {
+    for (const code of ["focus_lost", "virtual_desktop"]) {
+      const resolved = resolveElectronViolation({ code });
+      expect(resolved.logOnly).toBe(true);
+      expect(resolved.strike).toBe(false);
+      expect(isElectronHardBlock({ code, isHardBlock: true })).toBe(false);
+    }
   });
 });
 

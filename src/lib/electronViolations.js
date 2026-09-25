@@ -29,6 +29,19 @@ const BY_KEY = {
     descriptionKey: "violations.fullscreenExit.description",
   },
   generic: electronCopy("generic"),
+  // The site's own focus tracking already strikes leaving the window, so these are only logged.
+  focusLost: {
+    key: "focusLost",
+    titleKey: "violations.windowFocus.title",
+    descriptionKey: "violations.windowFocus.description",
+    logOnly: true,
+  },
+  virtualDesktop: {
+    key: "virtualDesktop",
+    titleKey: "violations.windowFocus.title",
+    descriptionKey: "violations.windowFocus.description",
+    logOnly: true,
+  },
 };
 
 const KEY_BY_CODE = {
@@ -46,6 +59,8 @@ const KEY_BY_CODE = {
   window_minimize: "windowAction",
   close_attempt: "windowAction",
   fullscreen_exit: "fullscreenExit",
+  focus_lost: "focusLost",
+  virtual_desktop: "virtualDesktop",
 };
 
 export const ELECTRON_IMAGES = [
@@ -93,6 +108,7 @@ export function resolveElectronViolation(payload = {}) {
     descriptionKey: copy.descriptionKey,
     imagePath: copy.imagePath ?? WINDOW_IMAGE,
     strike: copy.strike === true,
+    logOnly: copy.logOnly === true,
     apps: appNames(payload.apps),
     detail: {
       ...(typeof payload.code === "string" ? { code: payload.code } : {}),
@@ -109,7 +125,8 @@ export function resolveElectronViolation(payload = {}) {
 
 /** An extra display is a strike even when an older desktop build marks it a hard block. */
 export function isElectronHardBlock(payload = {}) {
-  return payload.isHardBlock === true && !resolveElectronViolation(payload).strike;
+  const { strike, logOnly } = resolveElectronViolation(payload);
+  return payload.isHardBlock === true && !strike && !logOnly;
 }
 
 const SEEN_KEY = "electron_violations_seen";

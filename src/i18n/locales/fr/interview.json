@@ -257,5 +257,9 @@
       "pill": "Soumis automatiquement",
       "description": "Votre entretien a été soumis avec les réponses complétées."
     }
+  },
+  "desktopUpdate": {
+    "heading": "Mettez à jour l'application de bureau",
+    "description": "Cette version de l'application de bureau LetsHyre est obsolète. Fermez-la, installez la dernière version, puis relancez votre entretien."
   }
 }

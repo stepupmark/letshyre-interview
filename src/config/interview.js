@@ -56,6 +56,10 @@ export const LOCAL_OBJECT_WATCH = import.meta.env.VITE_AI_LOCAL_OBJECT_WATCH !==
 // proctoring violations — a dropped connection is not misconduct.
 export const MAX_INTERNET_DISCONNECTS = num(import.meta.env.VITE_AI_MAX_INTERNET_DISCONNECTS, 3);
 
+// The oldest desktop app allowed to start an interview, e.g. "1.4.5". Unset lets
+// every build through, so set it only once the new build is out.
+export const MIN_DESKTOP_VERSION = import.meta.env.VITE_MIN_DESKTOP_VERSION ?? "";
+
 // How long the final termination notice stays on screen before it proceeds on
 // its own. The candidate can acknowledge sooner; they can never delay past it.
 export const TERMINATION_NOTICE_SECONDS = num(
