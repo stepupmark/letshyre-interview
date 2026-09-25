@@ -156,3 +156,22 @@ describe("TerminationNotice security block", () => {
     expect(screen.queryByText("Detected")).not.toBeInTheDocument();
   });
 });
+
+describe("TerminationNotice desktop-app block", () => {
+  it("names the apps that were found", () => {
+    render(
+      <TerminationNotice
+        reason={TERMINATION_REASONS.ELECTRON_SECURITY}
+        secondsLeft={5}
+        onAcknowledge={() => {}}
+        securityBlock={{
+          type: "ELECTRON_BLOCKEDAPP",
+          titleKey: "violations.electron.blockedApp.title",
+          apps: ["Google Chrome", "Zoom"],
+        }}
+      />,
+    );
+    expect(screen.getByText("Blocked App Detected")).toBeInTheDocument();
+    expect(screen.getByText("Google Chrome and Zoom")).toBeInTheDocument();
+  });
+});

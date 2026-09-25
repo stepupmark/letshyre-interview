@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { HELD_RESTRIKE_SECONDS, MAX_VIOLATIONS } from "@/config/interview";
 import { createStrikePolicy } from "@/lib/strikePolicy";
+import { ELECTRON_IMAGES, resolveElectronViolation } from "@/lib/electronViolations";
 import { WARNING_IMAGES } from "@/lib/violationCopy";
 import { recordViolationEvent } from "@/lib/violationLog";
 
@@ -79,44 +80,23 @@ function writeStrikes(sessionId, strikes) {
   }
 }
 
-export function getElectronViolationKey(event = "") {
-  const e = event.toLowerCase();
-  if (e.includes("overlay")) return "overlay";
-  if (e.includes("hdmi") || e.includes("display")) return "externalDisplay";
-  if (e.includes("mirror") || e.includes("sharing")) return "screenSharing";
-  if (e.includes("agent") || e.includes("tamper")) return "securityMonitor";
-  if (e.includes("minimize") || e.includes("close")) return "windowAction";
-  return "generic";
-}
-
-// A second display or a mirrored screen is the same concern as a detected
-// laptop; the rest are window-level actions.
-const ELECTRON_IMAGES = {
-  externalDisplay: "/laptop.svg",
-  screenSharing: "/laptop.svg",
-};
+// The desktop app re-sends a connected display every 15s. A gap longer than
+// this means it was unplugged, so the next report is a new incident.
+export const DISPLAY_GONE_MS = 25_000;
+// A display left connected strikes again after this, until the limit ends it.
+const DISPLAY_RESTRIKE_MS = HELD_RESTRIKE_SECONDS * 1000;
 const WINDOW_SWITCH_IMAGE = "/window-switch.svg";
 
 // Fetched up front so a warning never opens on a blank picture.
 function preloadWarningImages() {
-  const paths = new Set([
-    ...WARNING_IMAGES,
-    ...Object.values(ELECTRON_IMAGES),
-    WINDOW_SWITCH_IMAGE,
-  ]);
+  const paths = new Set([...WARNING_IMAGES, ...ELECTRON_IMAGES]);
   for (const path of paths) new Image().src = path;
 }
 
-function electronViolation({ event, severity, count } = {}) {
-  const key = getElectronViolationKey(event);
-  return {
-    type: `ELECTRON_${key.toUpperCase()}`,
-    source: "electron",
-    detail: { event, severity, electron_count: count },
-    titleKey: `violations.electron.${key}.title`,
-    descriptionKey: `violations.electron.${key}.description`,
-    imagePath: ELECTRON_IMAGES[key] ?? WINDOW_SWITCH_IMAGE,
-  };
+function electronViolation(payload) {
+  const { type, detail, titleKey, descriptionKey, imagePath, apps, strike } =
+    resolveElectronViolation(payload);
+  return { type, source: "electron", detail, titleKey, descriptionKey, imagePath, apps, strike };
 }
 
 /**
@@ -159,10 +139,11 @@ export function useViolationMonitor({
   const checkPresenceRef = useRef(null);
   const heldRef = useRef(new Map());
 
-  // Buffer Electron blocks that arrived before isActive was true. Flushed by the
-  // effect below once the session loads.
-  const pendingElectronViolationRef = useRef(null);
+  // Electron violations that arrived before isActive was true, in order.
+  // Flushed by the effect below once the session loads.
+  const pendingElectronRef = useRef([]);
   const pendingHardBlockRef = useRef(false);
+  const displayRef = useRef({ startedAt: 0, lastSeenAt: 0 });
 
   // Strikes held back by the reaction window, one per strike key, landed in the
   // order they started once the window is over.
@@ -540,12 +521,34 @@ export function useViolationMonitor({
 
   const handleElectronViolation = useCallback(
     (violation) => {
+      const raised = electronViolation(violation);
       if (!isActiveRef.current) {
-        // Session still loading — buffer and replay once isActive becomes true.
-        pendingElectronViolationRef.current = violation;
+        pendingElectronRef.current.push(violation);
+        recordViolationEvent({
+          source: "electron",
+          type: raised.type,
+          outcome: "buffered",
+          ...raised.detail,
+        });
         return "buffered";
       }
-      return raiseViolation(electronViolation(violation));
+      if (!raised.strike) return raiseViolation(raised);
+
+      // One connected display is one incident however often it is reported.
+      const now = Date.now();
+      const display = displayRef.current;
+      if (!display.lastSeenAt || now - display.lastSeenAt > DISPLAY_GONE_MS) {
+        display.startedAt = now;
+      }
+      display.lastSeenAt = now;
+      return raiseViolation({
+        ...raised,
+        strikeKey: "ELECTRON_DISPLAY",
+        incident: true,
+        ongoing: true,
+        incidentStartedAt: display.startedAt,
+        restrikeAfterMs: DISPLAY_RESTRIKE_MS,
+      });
     },
     [raiseViolation],
   );
@@ -574,18 +577,15 @@ export function useViolationMonitor({
   // Flush anything that arrived before the session was ready.
   useEffect(() => {
     if (!isActive) return;
+    const pending = pendingElectronRef.current;
+    pendingElectronRef.current = [];
     if (pendingHardBlockRef.current) {
       pendingHardBlockRef.current = false;
-      pendingElectronViolationRef.current = null;
       onHardBlockRef.current?.();
       return;
     }
-    if (pendingElectronViolationRef.current) {
-      const v = pendingElectronViolationRef.current;
-      pendingElectronViolationRef.current = null;
-      raiseViolation(electronViolation(v));
-    }
-  }, [isActive, raiseViolation]);
+    for (const violation of pending) handleElectronViolation(violation);
+  }, [isActive, handleElectronViolation]);
 
   // Anti-cheat: disable right-click, copy, paste, cut
   useEffect(() => {

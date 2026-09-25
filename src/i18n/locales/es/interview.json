@@ -179,6 +179,30 @@
       "generic": {
         "title": "Infracción de seguridad detectada",
         "description": "Se detectó una infracción de la política de seguridad. Resuélvala de inmediato."
+      },
+      "blockedApp": {
+        "title": "Aplicación bloqueada detectada",
+        "description": "Se abrió una aplicación que no está permitida durante la entrevista."
+      },
+      "aiTool": {
+        "title": "Asistente de IA detectado",
+        "description": "Una aplicación de asistente de IA estaba en ejecución durante la entrevista."
+      },
+      "renamedApp": {
+        "title": "Aplicación camuflada detectada",
+        "description": "Una aplicación bloqueada se estaba ejecutando con otro nombre."
+      },
+      "mirroredDisplay": {
+        "title": "Duplicación de pantalla detectada",
+        "description": "Tu pantalla se está duplicando en otra pantalla. Detén la duplicación y desconecta la pantalla adicional ahora."
+      },
+      "remoteSession": {
+        "title": "Escritorio remoto detectado",
+        "description": "Este equipo se estaba usando a través de una sesión de escritorio remoto."
+      },
+      "virtualMachine": {
+        "title": "Máquina virtual detectada",
+        "description": "La entrevista se estaba ejecutando dentro de una máquina virtual, lo cual no está permitido."
       }
     },
     "objects": {

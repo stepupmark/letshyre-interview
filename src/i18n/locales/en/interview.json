@@ -179,6 +179,30 @@
       "generic": {
         "title": "Security Violation Detected",
         "description": "A security policy violation was detected. Please resolve it immediately."
+      },
+      "blockedApp": {
+        "title": "Blocked App Detected",
+        "description": "An app that isn't allowed during the interview was opened."
+      },
+      "aiTool": {
+        "title": "AI Assistant Detected",
+        "description": "An AI assistant app was running during the interview."
+      },
+      "renamedApp": {
+        "title": "Disguised App Detected",
+        "description": "A blocked app was running under a different name."
+      },
+      "mirroredDisplay": {
+        "title": "Screen Mirroring Detected",
+        "description": "Your screen is being duplicated to another display. Stop mirroring and unplug the extra display now."
+      },
+      "remoteSession": {
+        "title": "Remote Desktop Detected",
+        "description": "This computer was being used through a remote desktop session."
+      },
+      "virtualMachine": {
+        "title": "Virtual Machine Detected",
+        "description": "The interview was running inside a virtual machine, which isn't allowed."
       }
     },
     "objects": {

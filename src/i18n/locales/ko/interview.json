@@ -179,6 +179,30 @@
       "generic": {
         "title": "보안 위반 감지됨",
         "description": "보안 정책 위반이 감지되었습니다. 즉시 해결해 주세요."
+      },
+      "blockedApp": {
+        "title": "차단된 앱 감지됨",
+        "description": "면접 중 허용되지 않는 앱이 열렸습니다."
+      },
+      "aiTool": {
+        "title": "AI 도우미 감지됨",
+        "description": "면접 중 AI 도우미 앱이 실행되고 있었습니다."
+      },
+      "renamedApp": {
+        "title": "위장된 앱 감지됨",
+        "description": "차단된 앱이 다른 이름으로 실행되고 있었습니다."
+      },
+      "mirroredDisplay": {
+        "title": "화면 미러링 감지됨",
+        "description": "화면이 다른 디스플레이에 복제되고 있습니다. 지금 미러링을 중지하고 추가 디스플레이를 분리하세요."
+      },
+      "remoteSession": {
+        "title": "원격 데스크톱 감지됨",
+        "description": "이 컴퓨터는 원격 데스크톱 세션을 통해 사용되고 있었습니다."
+      },
+      "virtualMachine": {
+        "title": "가상 머신 감지됨",
+        "description": "면접이 가상 머신 안에서 실행되고 있었으며, 이는 허용되지 않습니다."
       }
     },
     "objects": {

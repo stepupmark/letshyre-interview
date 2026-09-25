@@ -1,13 +1,24 @@
 import { useEffect, useRef } from "react";
 import { logger } from "@/lib/logger";
+import {
+  firstDelivery,
+  isElectronHardBlock,
+  resolveElectronViolation,
+} from "@/lib/electronViolations";
+import { recordViolationEvent } from "@/lib/violationLog";
 
 /**
  * @typedef {Object} ViolationPayload
+ * @property {string}          id           - UUID; acknowledge with it, repeats keep it
+ * @property {string}          code         - What happened, e.g. "blocked_app", "external_display"
+ * @property {string|null}     category     - The security check that raised it
+ * @property {string[]}        apps         - Display names of the apps involved
  * @property {string}          event        - Human-readable reason e.g. "External display detected"
  * @property {"high"|"medium"} severity     - Raw severity from the Electron detector
  * @property {number}          count        - How many times this event has fired this session
  * @property {boolean}         isHardBlock  - true → terminate session; false → show warning
  * @property {"electron"}      source       - Always "electron"
+ * @property {boolean}         [redelivered] - Sent again because it wasn't acknowledged
  * @property {string}          timestamp    - ISO 8601 UTC string
  */
 
@@ -16,6 +27,10 @@ import { logger } from "@/lib/logger";
  * via the preload IPC bridge (window.electronAPI.onViolation).
  *
  * - Silently no-ops when running in a normal browser (window.electronAPI absent).
+ * - Acknowledges by id and handles each id once: the app re-sends anything not
+ *   acknowledged, and everything pending after a page load.
+ * - An extra display is always a strike (onSoftBlock), even from an older desktop
+ *   build that marks it a hard block.
  * - Safe to call multiple times — deregisters the previous listener before
  *   registering a new one (handled by the preload bridge).
  * - Callbacks are always called with the latest version without re-registering
@@ -23,9 +38,9 @@ import { logger } from "@/lib/logger";
  *
  * @param {Object}   options
  * @param {(v: ViolationPayload) => void} options.onHardBlock
- *   Called when isHardBlock === true.  Use to terminate the session.
+ *   Called for a hard block.  Use to terminate the session.
  * @param {(v: ViolationPayload) => void} [options.onSoftBlock]
- *   Called when isHardBlock === false.  Use to show a warning toast.
+ *   Called for everything else.  Use to raise a strike.
  *
  * @returns {{ isElectron: boolean }}
  *   isElectron — true if the page is running inside the Electron BrowserWindow.
@@ -57,10 +72,18 @@ export function useElectronViolation({ onHardBlock, onSoftBlock }) {
     if (!isElectron) return;
 
     function handler(violation) {
-      // Tells Electron this page got it; an unacknowledged hard block is sent again.
-      window.electronAPI.acknowledgeViolation?.();
+      window.electronAPI.acknowledgeViolation?.(violation?.id);
+      if (!firstDelivery(violation?.id)) {
+        recordViolationEvent({
+          source: "electron",
+          type: resolveElectronViolation(violation).type,
+          outcome: "duplicate",
+          electron_id: violation.id,
+        });
+        return;
+      }
       try {
-        if (violation.isHardBlock) {
+        if (isElectronHardBlock(violation)) {
           onHardRef.current?.(violation);
         } else {
           onSoftRef.current?.(violation);

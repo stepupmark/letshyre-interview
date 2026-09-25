@@ -179,6 +179,30 @@
       "generic": {
         "title": "Sicherheitsverstoß erkannt",
         "description": "Ein Verstoß gegen die Sicherheitsrichtlinien wurde erkannt. Bitte beheben Sie ihn sofort."
+      },
+      "blockedApp": {
+        "title": "Blockierte App erkannt",
+        "description": "Während des Interviews wurde eine nicht erlaubte App geöffnet."
+      },
+      "aiTool": {
+        "title": "KI-Assistent erkannt",
+        "description": "Während des Interviews lief eine KI-Assistenten-App."
+      },
+      "renamedApp": {
+        "title": "Getarnte App erkannt",
+        "description": "Eine blockierte App lief unter einem anderen Namen."
+      },
+      "mirroredDisplay": {
+        "title": "Bildschirmspiegelung erkannt",
+        "description": "Ihr Bildschirm wird auf einem anderen Display dupliziert. Beenden Sie die Spiegelung und trennen Sie das zusätzliche Display jetzt."
+      },
+      "remoteSession": {
+        "title": "Remotedesktop erkannt",
+        "description": "Dieser Computer wurde über eine Remotedesktopsitzung verwendet."
+      },
+      "virtualMachine": {
+        "title": "Virtuelle Maschine erkannt",
+        "description": "Das Interview lief in einer virtuellen Maschine, was nicht erlaubt ist."
       }
     },
     "objects": {

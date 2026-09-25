@@ -179,6 +179,30 @@
       "generic": {
         "title": "Infraction de sécurité détectée",
         "description": "Une infraction à la politique de sécurité a été détectée. Veuillez la corriger immédiatement."
+      },
+      "blockedApp": {
+        "title": "Application bloquée détectée",
+        "description": "Une application non autorisée pendant l'entretien a été ouverte."
+      },
+      "aiTool": {
+        "title": "Assistant IA détecté",
+        "description": "Une application d'assistant IA était en cours d'exécution pendant l'entretien."
+      },
+      "renamedApp": {
+        "title": "Application déguisée détectée",
+        "description": "Une application bloquée s'exécutait sous un autre nom."
+      },
+      "mirroredDisplay": {
+        "title": "Duplication d'écran détectée",
+        "description": "Votre écran est dupliqué sur un autre affichage. Arrêtez la duplication et débranchez l'écran supplémentaire maintenant."
+      },
+      "remoteSession": {
+        "title": "Bureau à distance détecté",
+        "description": "Cet ordinateur était utilisé via une session de bureau à distance."
+      },
+      "virtualMachine": {
+        "title": "Machine virtuelle détectée",
+        "description": "L'entretien s'exécutait dans une machine virtuelle, ce qui n'est pas autorisé."
       }
     },
     "objects": {

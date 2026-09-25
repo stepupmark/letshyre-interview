@@ -179,6 +179,30 @@
       "generic": {
         "title": "Violazione della sicurezza rilevata",
         "description": "È stata rilevata una violazione delle regole di sicurezza. Risolvila immediatamente."
+      },
+      "blockedApp": {
+        "title": "App bloccata rilevata",
+        "description": "È stata aperta un'app non consentita durante il colloquio."
+      },
+      "aiTool": {
+        "title": "Assistente IA rilevato",
+        "description": "Durante il colloquio era in esecuzione un'app di assistente IA."
+      },
+      "renamedApp": {
+        "title": "App camuffata rilevata",
+        "description": "Un'app bloccata era in esecuzione con un altro nome."
+      },
+      "mirroredDisplay": {
+        "title": "Duplicazione dello schermo rilevata",
+        "description": "Il tuo schermo viene duplicato su un altro display. Interrompi la duplicazione e scollega subito il display aggiuntivo."
+      },
+      "remoteSession": {
+        "title": "Desktop remoto rilevato",
+        "description": "Questo computer veniva usato tramite una sessione di desktop remoto."
+      },
+      "virtualMachine": {
+        "title": "Macchina virtuale rilevata",
+        "description": "Il colloquio era in esecuzione in una macchina virtuale, il che non è consentito."
       }
     },
     "objects": {

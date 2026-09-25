@@ -1,7 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import {
   BRIEF_FOCUS_WINDOW_MS,
-  getElectronViolationKey,
   HELD_TTL_MS,
   useViolationMonitor,
   whilePermissionPrompt,
@@ -34,24 +33,6 @@ function setup({ isActive = true, sessionViolations = 0, startCount = 0, onHardB
 
   return { ...utils, incrementViolation };
 }
-
-describe("getElectronViolationKey", () => {
-  it.each([
-    ["HDMI cable connected", "externalDisplay"],
-    ["External display detected", "externalDisplay"],
-    ["Screen mirroring active", "screenSharing"],
-    ["Screen sharing detected", "screenSharing"],
-    ["Security agent stopped", "securityMonitor"],
-    ["Tamper detected", "securityMonitor"],
-    ["Window minimize blocked", "windowAction"],
-    ["Close attempt blocked", "windowAction"],
-    ["Suspicious transparent overlay detected: 'x.exe' (PID 1)", "overlay"],
-    ["Something unexpected", "generic"],
-    ["", "generic"],
-  ])("maps %j to %j", (event, expected) => {
-    expect(getElectronViolationKey(event)).toBe(expected);
-  });
-});
 
 describe("useViolationMonitor", () => {
   beforeEach(() => {
@@ -1733,5 +1714,152 @@ describe("useViolationMonitor focus rules", () => {
     act(() => vi.advanceTimersByTime(5_000));
 
     expect(incrementViolation).not.toHaveBeenCalled();
+  });
+});
+
+describe("useViolationMonitor extra displays", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const display = (id) => ({
+    id,
+    code: "external_display",
+    category: "hdmi",
+    apps: [],
+    event: "External display detected",
+    severity: "high",
+    isHardBlock: false,
+  });
+  const wait = (ms) => act(() => vi.advanceTimersByTime(ms));
+  // The desktop app re-sends a display that stays connected every 15s.
+  function keepConnected(result, seconds) {
+    for (let t = 15; t <= seconds; t += 15) {
+      wait(15_000);
+      act(() => result.current.handleElectronViolation(display(`d${t}`)));
+    }
+  }
+
+  it("warns with the HDMI art and counts one strike", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleElectronViolation(display("d0")));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.showTabWarning).toBe(true);
+    expect(result.current.violationInfo).toMatchObject({
+      titleKey: "violations.electron.externalDisplay.title",
+      imagePath: "/hdmi-display.svg",
+      violationCount: 1,
+      counts: true,
+    });
+  });
+
+  it("strikes again while it stays connected until the violation limit ends the interview", () => {
+    const { result, incrementViolation } = setup();
+
+    act(() => result.current.handleElectronViolation(display("d0")));
+    keepConnected(result, 15);
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+
+    keepConnected(result, 30 * (MAX_VIOLATIONS - 1) - 15);
+    expect(incrementViolation).toHaveBeenCalledTimes(MAX_VIOLATIONS);
+    expect(result.current.showTabWarning).toBe(false);
+  });
+
+  it("unplugged and plugged back in is a new incident that strikes straight away", () => {
+    const { result, incrementViolation } = setup({ startCount: -10 });
+
+    act(() => result.current.handleElectronViolation(display("d0")));
+    act(() => result.current.dismissWarning());
+    wait(40_000);
+    act(() => result.current.handleElectronViolation(display("d40")));
+
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+  });
+
+  it("replays everything that arrived while loading, in order", () => {
+    const { result, rerender, incrementViolation } = setup({ isActive: false, startCount: -10 });
+
+    act(() => {
+      result.current.handleElectronViolation({ id: "o1", code: "overlay", event: "Overlay" });
+      result.current.handleElectronViolation(display("d0"));
+    });
+    rerender({ isActive: true, incrementViolation, sessionViolations: 0 });
+
+    expect(incrementViolation).toHaveBeenCalledTimes(1);
+    expect(result.current.violationInfo.titleKey).toBe("violations.electron.overlay.title");
+
+    act(() => result.current.dismissWarning());
+    wait(10_000);
+    expect(incrementViolation).toHaveBeenCalledTimes(2);
+    expect(result.current.violationInfo.titleKey).toBe("violations.electron.externalDisplay.title");
+  });
+
+  it("sends the structured detail to the proctoring log", () => {
+    const events = [];
+    const unsubscribe = subscribeToViolationLog((event) => events.push(event));
+    const { result } = setup();
+
+    act(() => result.current.handleElectronViolation(display("d0")));
+    unsubscribe();
+
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        source: "electron",
+        type: "ELECTRON_EXTERNALDISPLAY",
+        strike_key: "ELECTRON_DISPLAY",
+        outcome: "raised",
+        code: "external_display",
+        electron_category: "hdmi",
+        electron_id: "d0",
+        counts_as_strike: true,
+        strike_count: 1,
+      }),
+    );
+  });
+});
+
+describe("useViolationMonitor desktop-app hard blocks with codes", () => {
+  it("keeps the apps for the termination notice and logs them", () => {
+    const events = [];
+    const unsubscribe = subscribeToViolationLog((event) => events.push(event));
+    const onHardBlock = vi.fn();
+    const { result } = setup({ onHardBlock });
+
+    act(() => {
+      result.current.handleElectronHardBlock({
+        id: "b1",
+        code: "blocked_app",
+        category: "browser",
+        apps: ["Google Chrome"],
+        event: "Blocked application running during interview: Google Chrome",
+        severity: "high",
+        count: 1,
+        isHardBlock: true,
+      });
+    });
+    unsubscribe();
+
+    expect(onHardBlock).toHaveBeenCalledTimes(1);
+    expect(result.current.securityBlock).toMatchObject({
+      type: "ELECTRON_BLOCKEDAPP",
+      titleKey: "violations.electron.blockedApp.title",
+      apps: ["Google Chrome"],
+    });
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        outcome: "terminated",
+        hard_block: true,
+        code: "blocked_app",
+        apps: ["Google Chrome"],
+        electron_id: "b1",
+      }),
+    );
   });
 });

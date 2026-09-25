@@ -179,6 +179,30 @@
       "generic": {
         "title": "Beveiligingsovertreding gedetecteerd",
         "description": "Er is een overtreding van het beveiligingsbeleid gedetecteerd. Los dit onmiddellijk op."
+      },
+      "blockedApp": {
+        "title": "Geblokkeerde app gedetecteerd",
+        "description": "Er is een app geopend die tijdens het interview niet is toegestaan."
+      },
+      "aiTool": {
+        "title": "AI-assistent gedetecteerd",
+        "description": "Er draaide een AI-assistent-app tijdens het interview."
+      },
+      "renamedApp": {
+        "title": "Vermomde app gedetecteerd",
+        "description": "Een geblokkeerde app draaide onder een andere naam."
+      },
+      "mirroredDisplay": {
+        "title": "Schermspiegeling gedetecteerd",
+        "description": "Je scherm wordt gedupliceerd naar een ander beeldscherm. Stop nu met spiegelen en koppel het extra beeldscherm los."
+      },
+      "remoteSession": {
+        "title": "Extern bureaublad gedetecteerd",
+        "description": "Deze computer werd gebruikt via een sessie met een extern bureaublad."
+      },
+      "virtualMachine": {
+        "title": "Virtuele machine gedetecteerd",
+        "description": "Het interview draaide in een virtuele machine, wat niet is toegestaan."
       }
     },
     "objects": {

@@ -5,6 +5,15 @@ import { getTerminationCopy, TERMINATION_REASONS } from "@/lib/terminationReason
 import { violationTitle } from "@/lib/violationCopy";
 import { MAX_INTERNET_DISCONNECTS, MAX_VIOLATIONS } from "@/config/interview";
 
+// App names come from the desktop app as proper names, so only the list is localised.
+function listOf(names, language) {
+  try {
+    return new Intl.ListFormat(language, { type: "conjunction" }).format(names);
+  } catch {
+    return names.join(", ");
+  }
+}
+
 // These titles are generic, so the list names what was actually seen.
 export default function TerminationNotice({
   reason,
@@ -22,6 +31,7 @@ export default function TerminationNotice({
     securityBlock.type !== "ELECTRON_GENERIC"
       ? securityBlock
       : null;
+  const detectedApps = detected?.apps?.length ? listOf(detected.apps, i18n.language) : "";
   const summary = reason === TERMINATION_REASONS.VIOLATION_LIMIT ? strikes : [];
   const final = summary.at(-1);
   const strikeTitle = (strike) => violationTitle(t, strike, i18n.language);
@@ -102,6 +112,7 @@ export default function TerminationNotice({
                 {t("termination.electronSecurity.detected")}
               </p>
               <p className="mt-0.5 text-sm font-semibold text-slate-800">{t(detected.titleKey)}</p>
+              {detectedApps && <p className="mt-0.5 text-sm text-slate-600">{detectedApps}</p>}
             </div>
           )}
 

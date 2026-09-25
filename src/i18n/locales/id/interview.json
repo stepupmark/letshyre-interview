@@ -179,6 +179,30 @@
       "generic": {
         "title": "Pelanggaran Keamanan Terdeteksi",
         "description": "Pelanggaran kebijakan keamanan terdeteksi. Harap segera atasi."
+      },
+      "blockedApp": {
+        "title": "Aplikasi Terlarang Terdeteksi",
+        "description": "Aplikasi yang tidak diizinkan selama wawancara telah dibuka."
+      },
+      "aiTool": {
+        "title": "Asisten AI Terdeteksi",
+        "description": "Aplikasi asisten AI berjalan selama wawancara."
+      },
+      "renamedApp": {
+        "title": "Aplikasi Samaran Terdeteksi",
+        "description": "Aplikasi terlarang berjalan dengan nama yang berbeda."
+      },
+      "mirroredDisplay": {
+        "title": "Pencerminan Layar Terdeteksi",
+        "description": "Layar Anda sedang diduplikasi ke layar lain. Hentikan pencerminan dan cabut layar tambahan sekarang."
+      },
+      "remoteSession": {
+        "title": "Desktop Jarak Jauh Terdeteksi",
+        "description": "Komputer ini digunakan melalui sesi desktop jarak jauh."
+      },
+      "virtualMachine": {
+        "title": "Mesin Virtual Terdeteksi",
+        "description": "Wawancara berjalan di dalam mesin virtual, yang tidak diizinkan."
       }
     },
     "objects": {

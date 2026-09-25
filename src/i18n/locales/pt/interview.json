@@ -179,6 +179,30 @@
       "generic": {
         "title": "Violação de segurança detectada",
         "description": "Foi detectada uma violação da política de segurança. Resolva-a imediatamente."
+      },
+      "blockedApp": {
+        "title": "Aplicativo bloqueado detectado",
+        "description": "Um aplicativo que não é permitido durante a entrevista foi aberto."
+      },
+      "aiTool": {
+        "title": "Assistente de IA detectado",
+        "description": "Um aplicativo de assistente de IA estava em execução durante a entrevista."
+      },
+      "renamedApp": {
+        "title": "Aplicativo disfarçado detectado",
+        "description": "Um aplicativo bloqueado estava sendo executado com outro nome."
+      },
+      "mirroredDisplay": {
+        "title": "Espelhamento de tela detectado",
+        "description": "Sua tela está sendo duplicada em outro monitor. Pare o espelhamento e desconecte o monitor extra agora."
+      },
+      "remoteSession": {
+        "title": "Área de trabalho remota detectada",
+        "description": "Este computador estava sendo usado por meio de uma sessão de área de trabalho remota."
+      },
+      "virtualMachine": {
+        "title": "Máquina virtual detectada",
+        "description": "A entrevista estava sendo executada dentro de uma máquina virtual, o que não é permitido."
       }
     },
     "objects": {

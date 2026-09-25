@@ -475,9 +475,24 @@ never strike.
 from strikes, since a dropped connection isn't misconduct; `VITE_AI_MAX_INTERNET_DISCONNECTS`
 ends the interview.
 
-**Electron** — events from the desktop shell (external display, screen sharing, overlay,
-tamper, window actions) strike through the same path. A hard block ends the interview at
-once. Events before the session is ready are buffered and replayed.
+**Electron** — violations from the desktop app are handled by their `code`
+([`electronViolations`](src/lib/electronViolations.js)); builds that send no code fall back
+to matching the text.
+
+- **An extra display** (`external_display`, `mirrored_display`: HDMI, DisplayPort,
+  USB‑C, wireless or a mirrored screen) is a strike with a warning and the HDMI picture. One
+  connected display is one incident however often it is reported (the app re-sends it every
+  15s). Left connected, it strikes again every `VITE_AI_HELD_RESTRIKE_SECONDS` (30s), so
+  the violation limit ends the interview after about a minute. Unplugged for 25s, the next
+  report is a new incident.
+- **Everything else the app marks a hard block** (blocked apps, AI tools, disguised apps,
+  remote desktop, virtual machines, tamper, minimize, close) ends the interview at once, and
+  the termination notice names the apps found.
+- **Soft violations** (an overlay or a fullscreen exit the first time) strike through the
+  same path as everything else.
+- Each violation is acknowledged by its `id` and handled once: a re-send with the same id
+  is only logged (`duplicate`). Everything that arrives before the session is ready is kept
+  in order and replayed; a hard block among it wins.
 
 ### Strikes and warnings
 
@@ -507,7 +522,7 @@ triggers submit once:
 | --------------------- | ---------------------------------------------------- | -------------- |
 | `violation_limit`     | Strikes reach `VITE_AI_MAX_VIOLATIONS_ALLOWED`       | terminated     |
 | `face_mismatch`       | An identity rule is reached                          | terminated     |
-| `electron_security`   | Desktop app hard block                               | terminated     |
+| `electron_security`   | Desktop app hard block (not an extra display)        | terminated     |
 | `network_disconnects` | Disconnects reach `VITE_AI_MAX_INTERNET_DISCONNECTS` | auto-submitted |
 | `time_expired`        | Timer reaches 0                                      | expired        |
 
@@ -530,6 +545,11 @@ Every frame, every decision and why (`raised`, `queued`, `cooldown`, `held`, `sh
 `FACE_MISMATCH`), on-device watch changes, camera and window events are collected in one
 batch. Matches are logged once a minute; mismatches always.
 
+- Desktop-app violations are `violation_decision` records with `source: "electron"`:
+  `type`, `outcome` (`raised`, `queued`, `cooldown`, `buffered`, `at_limit`,
+  `terminated`, `duplicate`), `code`, `electron_category`, `apps`, `electron_id`,
+  `severity`, `electron_count`, `redelivered`, `strike_key` / `strike_count` when it
+  struck, and `event` with any file path replaced by `[path]`.
 - The batch is sent **once**, after the submission has answered, so it holds how the
   interview ended (or 30s after the interview stopped, if it never does). A failed send
   retries when the connection comes back.
@@ -595,9 +615,10 @@ transparently calls `/user/v1/login_refresh/`, updates tokens, and replays queue
 The SPA detects an Electron host via `window.electronAPI` and **no-ops in the browser**, so
 one build runs in both.
 
-- [`useElectronViolation`](src/hooks/electron/useElectronViolation.js) — OS-level events
-  (external display, screen share, tamper) routed through the same violation modal and
-  counter. Events arriving before the session is ready are buffered and replayed.
+- [`useElectronViolation`](src/hooks/electron/useElectronViolation.js) — violations from
+  the desktop app, acknowledged by id and handled once. Extra displays go to the violation
+  modal and counter; other hard blocks end the interview (see
+  [Leaving the interview](#leaving-the-interview)).
 - [`useInterviewComplete`](src/hooks/electron/useInterviewComplete.js) — signals the shell
   exactly once when the session ends, so it can lift kiosk mode.
 - [`useElectronScreenRecording`](src/hooks/electron/useElectronScreenRecording.js) — screen
