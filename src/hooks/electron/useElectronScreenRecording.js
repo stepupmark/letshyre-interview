@@ -2,7 +2,13 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-import { resetProctoringStop, stopProctoringOnce } from "@/lib/electronRecording";
+import {
+  markRecordingError,
+  markRecordingStarted,
+  resetProctoringStop,
+  stopProctoringOnce,
+} from "@/lib/electronRecording";
+import { recordViolationEvent } from "@/lib/violationLog";
 
 /**
  * Starts and stops Electron screen + mic recording around an interview session.
@@ -45,11 +51,20 @@ export function useElectronScreenRecording({
     if (!isElectron) return;
 
     window.electronAPI.onProctoringStarted?.(() => {
+      markRecordingStarted();
       logger.log("[useElectronScreenRecording] screen recording live");
+      recordViolationEvent({ source: "electron", type: "SCREEN_RECORDING", outcome: "started" });
     });
 
-    window.electronAPI.onProctoringError?.(({ error }) => {
+    window.electronAPI.onProctoringError?.((data) => {
+      const error = markRecordingError(data?.error);
       logger.error("[useElectronScreenRecording] recording error:", error);
+      recordViolationEvent({
+        source: "electron",
+        type: "SCREEN_RECORDING",
+        outcome: "error",
+        error,
+      });
       toast.error("Screen recording failed. The session will continue without recording.");
     });
 

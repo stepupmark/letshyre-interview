@@ -20,6 +20,7 @@ import { recordViolationEvent } from "@/lib/violationLog";
  * @property {"electron"}      source       - Always "electron"
  * @property {boolean}         [redelivered] - Sent again because it wasn't acknowledged
  * @property {string}          timestamp    - ISO 8601 UTC string
+ * @property {number}          [recordingOffsetMs] - How far into the desktop recording, from newer apps
  */
 
 /**
@@ -74,11 +75,15 @@ export function useElectronViolation({ onHardBlock, onSoftBlock }) {
     function handler(violation) {
       window.electronAPI.acknowledgeViolation?.(violation?.id);
       if (!firstDelivery(violation?.id)) {
+        const { type, detail } = resolveElectronViolation(violation);
         recordViolationEvent({
           source: "electron",
-          type: resolveElectronViolation(violation).type,
+          type,
           outcome: "duplicate",
           electron_id: violation.id,
+          ...(detail.electron_recording_offset_ms === undefined
+            ? {}
+            : { electron_recording_offset_ms: detail.electron_recording_offset_ms }),
         });
         return;
       }

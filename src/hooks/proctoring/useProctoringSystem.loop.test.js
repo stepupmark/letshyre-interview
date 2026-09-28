@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
 import { checkSummary, resetViolationSummary, subscribeToViolationLog } from "@/lib/violationLog";
+import { RUN_ID } from "@/lib/correlation";
 import { LOG_SEND_FALLBACK_MS, useProctoringSystem } from "./useProctoringSystem";
 
 vi.mock("@/services/proctoring.api", () => ({
@@ -753,6 +754,7 @@ describe("sending the log", () => {
 
     expect(submitProctoringLogs).toHaveBeenCalledTimes(1);
     expect(submitProctoringLogs.mock.calls[0][0].payload.records.length).toBeGreaterThan(0);
+    expect(submitProctoringLogs.mock.calls[0][0].run_id).toBe(RUN_ID);
   });
 
   it("sends anyway if the submission never answers", async () => {

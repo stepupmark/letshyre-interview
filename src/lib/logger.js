@@ -6,7 +6,11 @@
  * 5s detection loop). `error` always logs so real failures stay visible.
  *
  * Enable verbose logs in a production build by setting VITE_DEBUG_LOGS=true.
+ * Errors are tagged with the run and session id so they can be matched to the
+ * proctoring log.
  */
+import { correlationTag } from "@/lib/correlation";
+
 const enabled = import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === "true";
 
 export const logger = {
@@ -19,5 +23,5 @@ export const logger = {
   debug: (...args) => {
     if (enabled) console.debug(...args);
   },
-  error: (...args) => console.error(...args),
+  error: (...args) => console.error(correlationTag(), ...args),
 };

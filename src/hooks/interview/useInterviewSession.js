@@ -12,6 +12,7 @@ import {
   START_RETRY_DELAY_MS,
 } from "@/config/interview";
 import { logger } from "@/lib/logger";
+import { setCorrelationSession } from "@/lib/correlation";
 import { recordInterviewEnded, recordViolationEvent } from "@/lib/violationLog";
 import { readStrikes } from "@hooks/proctoring/useViolationMonitor";
 import { clearDrafts, draftKeyFor, writeDraft } from "@/lib/answerDraft";
@@ -312,6 +313,10 @@ export function useInterviewSession() {
   const internetDisconnectCount = session?.internet_disconnect_count || 0;
   const sessionInterviewId = session?.interview_id;
   const sessionId = session?.session_id;
+
+  useEffect(() => {
+    if (sessionId !== undefined && sessionId !== null) setCorrelationSession(sessionId);
+  }, [sessionId]);
 
   /**
    * Tracks the disconnect count and toasts it. Auto-submit is triggered

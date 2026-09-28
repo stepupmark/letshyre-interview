@@ -7,6 +7,12 @@ import {
   resetViolationSummary,
   subscribeToViolationLog,
 } from "./violationLog";
+import {
+  markRecordingError,
+  markRecordingStarted,
+  resetProctoringStop,
+  stopProctoringOnce,
+} from "./electronRecording";
 
 function capture() {
   const seen = [];
@@ -25,6 +31,26 @@ describe("violationLog", () => {
       { source: "ai", outcome: "raised", category: "detection", counts_as_strike: false },
     ]);
     stop();
+  });
+
+  it("times each record against the desktop recording while it runs", () => {
+    window.electronAPI = { stopProctoring: vi.fn() };
+    resetProctoringStop();
+    const { seen, stop } = capture();
+
+    recordViolationEvent({ source: "ai" });
+    markRecordingStarted(Date.now() - 4_000);
+    recordViolationEvent({ source: "ai" });
+    stopProctoringOnce();
+    recordViolationEvent({ source: "ai" });
+    stop();
+
+    expect(seen[0]).not.toHaveProperty("recording_offset_ms");
+    expect(seen[1].recording_offset_ms).toBeGreaterThanOrEqual(4_000);
+    expect(seen[1].recording_offset_ms).toBeLessThan(5_000);
+    expect(seen[2]).not.toHaveProperty("recording_offset_ms");
+    delete window.electronAPI;
+    resetProctoringStop();
   });
 
   it("delivers to every subscriber", () => {
@@ -165,6 +191,35 @@ describe("recordInterviewEnded", () => {
       verify_ms: { p50: 1_000, p95: 1_600 },
       unobserved_ms: 15_000,
     });
+  });
+
+  it("reports the desktop recording's health inside the desktop app", () => {
+    window.electronAPI = { startProctoring: vi.fn(), stopProctoring: vi.fn() };
+    resetProctoringStop();
+    markRecordingStarted(Date.parse("2026-09-28T10:00:00Z"));
+    markRecordingError("disk full", Date.parse("2026-09-28T10:05:00Z"));
+
+    const { seen, stop } = capture();
+    recordInterviewEnded({ outcome: "completed" });
+    stop();
+
+    expect(seen[0].recording).toEqual({
+      started: true,
+      startedAt: "2026-09-28T10:00:00.000Z",
+      errors: [{ at: "2026-09-28T10:05:00.000Z", error: "disk full" }],
+      stoppedAt: null,
+    });
+    delete window.electronAPI;
+    resetProctoringStop();
+  });
+
+  it("leaves the recording out in a plain browser", () => {
+    resetProctoringStop();
+    const { seen, stop } = capture();
+    recordInterviewEnded({ outcome: "completed" });
+    stop();
+
+    expect(seen[0]).not.toHaveProperty("recording");
   });
 
   it("starts the check summary again on reset", () => {

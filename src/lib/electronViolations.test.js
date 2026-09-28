@@ -79,6 +79,18 @@ describe("resolveElectronViolation", () => {
       electron_count: 1,
     });
   });
+
+  it("keeps where a newer desktop app says it happened in the recording", () => {
+    expect(
+      resolveElectronViolation({ code: "overlay", recordingOffsetMs: 81_250 }).detail,
+    ).toMatchObject({ electron_recording_offset_ms: 81_250 });
+    expect(
+      resolveElectronViolation({ code: "overlay", recordingOffsetMs: "81250" }).detail,
+    ).not.toHaveProperty("electron_recording_offset_ms");
+    expect(resolveElectronViolation({ code: "overlay" }).detail).not.toHaveProperty(
+      "electron_recording_offset_ms",
+    );
+  });
 });
 
 describe("getElectronViolationKey (desktop builds without codes)", () => {
