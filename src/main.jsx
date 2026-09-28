@@ -21,12 +21,26 @@ const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <Suspense fallback={null}>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </Suspense>
-  </StrictMode>,
-);
+function mount(DevPage) {
+  createRoot(document.getElementById("root")).render(
+    <StrictMode>
+      <Suspense fallback={null}>
+        <QueryClientProvider client={queryClient}>
+          {DevPage ? <DevPage /> : <App />}
+        </QueryClientProvider>
+      </Suspense>
+    </StrictMode>,
+  );
+}
+
+// Dev tools (fake desktop, mock backend, log timeline) never reach a production build.
+if (import.meta.env.DEV) {
+  import("./dev/setup.js")
+    .then(({ setupDevTools }) => setupDevTools())
+    .then(mount, (error) => {
+      console.error("[dev tools] setup failed:", error);
+      mount();
+    });
+} else {
+  mount();
+}
