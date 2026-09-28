@@ -2,6 +2,7 @@ import { ArrowLeft, Home, RotateCcw, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BackToDashboardButton } from "@/components/interview/BackToDashboardButton";
 import { useNavigate } from "react-router";
 
 export default function NotFoundPage() {
@@ -49,6 +50,8 @@ export default function NotFoundPage() {
                 <Home className="me-2 h-4 w-4" />
                 {t("notFoundPage.returnHome")}
               </Button>
+
+              <BackToDashboardButton reason="not-found" />
             </div>
 
             {/* Reload */}

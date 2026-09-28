@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "Dashboard anzeigen"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "Keine Interviewversuche mehr übrig",
+      "description": "Du hast alle Interviewversuche aufgebraucht, daher kann kein neues Interview starten. Wende dich an den Support, wenn du das für einen Fehler hältst."
+    },
+    "rejected": {
+      "title": "Dein Interview konnte nicht starten",
+      "description": "Die Interviewanfrage wurde nicht angenommen. Kehre zum Dashboard zurück und versuche es erneut oder wende dich an den Support."
+    },
+    "network": {
+      "title": "Der Interviewserver ist nicht erreichbar",
+      "description": "Prüfe deine Internetverbindung und versuche es erneut."
+    },
+    "server": {
+      "title": "Bei uns ist etwas schiefgelaufen",
+      "description": "Das liegt nicht an dir. Bitte versuche es gleich noch einmal."
+    },
+    "retry": "Erneut versuchen"
+  },
+  "desktopExit": {
+    "backToDashboard": "Zurück zum Dashboard"
   }
 }

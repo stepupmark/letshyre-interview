@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "Voir le tableau de bord"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "Plus aucune tentative d'entretien",
+      "description": "Vous avez utilisé toutes vos tentatives d'entretien, un nouvel entretien ne peut donc pas démarrer. Contactez le support si vous pensez qu'il s'agit d'une erreur."
+    },
+    "rejected": {
+      "title": "Votre entretien n'a pas pu démarrer",
+      "description": "La demande d'entretien n'a pas été acceptée. Revenez au tableau de bord et réessayez, ou contactez le support."
+    },
+    "network": {
+      "title": "Impossible de joindre le serveur d'entretien",
+      "description": "Vérifiez votre connexion internet et réessayez."
+    },
+    "server": {
+      "title": "Un problème est survenu de notre côté",
+      "description": "Ce n'est pas de votre faute. Réessayez dans un instant."
+    },
+    "retry": "Réessayer"
+  },
+  "desktopExit": {
+    "backToDashboard": "Retour au tableau de bord"
   }
 }

@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "Ver painel"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "Você não tem mais tentativas de entrevista",
+      "description": "Você usou todas as suas tentativas de entrevista, então uma nova não pode ser iniciada. Fale com o suporte se achar que isso é um erro."
+    },
+    "rejected": {
+      "title": "Não foi possível iniciar sua entrevista",
+      "description": "A solicitação de entrevista não foi aceita. Volte ao painel e tente novamente, ou fale com o suporte."
+    },
+    "network": {
+      "title": "Não foi possível conectar ao servidor da entrevista",
+      "description": "Verifique sua conexão com a internet e tente novamente."
+    },
+    "server": {
+      "title": "Algo deu errado do nosso lado",
+      "description": "Não é culpa sua. Tente novamente em instantes."
+    },
+    "retry": "Tentar novamente"
+  },
+  "desktopExit": {
+    "backToDashboard": "Voltar ao painel"
   }
 }

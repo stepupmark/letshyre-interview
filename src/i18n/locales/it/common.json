@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "Visualizza dashboard"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "Non hai più tentativi di colloquio",
+      "description": "Hai usato tutti i tentativi di colloquio, quindi non è possibile avviarne uno nuovo. Contatta l'assistenza se pensi che sia un errore."
+    },
+    "rejected": {
+      "title": "Non è stato possibile avviare il colloquio",
+      "description": "La richiesta di colloquio non è stata accettata. Torna alla dashboard e riprova, oppure contatta l'assistenza."
+    },
+    "network": {
+      "title": "Impossibile raggiungere il server del colloquio",
+      "description": "Controlla la connessione a internet e riprova."
+    },
+    "server": {
+      "title": "Qualcosa è andato storto da parte nostra",
+      "description": "Non è colpa tua. Riprova tra un momento."
+    },
+    "retry": "Riprova"
+  },
+  "desktopExit": {
+    "backToDashboard": "Torna alla dashboard"
   }
 }

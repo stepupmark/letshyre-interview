@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "대시보드 보기"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "남은 면접 기회가 없습니다",
+      "description": "면접 기회를 모두 사용하여 새 면접을 시작할 수 없습니다. 오류라고 생각되면 지원팀에 문의하세요."
+    },
+    "rejected": {
+      "title": "면접을 시작할 수 없습니다",
+      "description": "면접 요청이 승인되지 않았습니다. 대시보드로 돌아가 다시 시도하거나 지원팀에 문의하세요."
+    },
+    "network": {
+      "title": "면접 서버에 연결할 수 없습니다",
+      "description": "인터넷 연결을 확인한 후 다시 시도하세요."
+    },
+    "server": {
+      "title": "저희 쪽에서 문제가 발생했습니다",
+      "description": "사용자의 잘못이 아닙니다. 잠시 후 다시 시도하세요."
+    },
+    "retry": "다시 시도"
+  },
+  "desktopExit": {
+    "backToDashboard": "대시보드로 돌아가기"
   }
 }

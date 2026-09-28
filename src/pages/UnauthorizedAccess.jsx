@@ -1,8 +1,16 @@
+import { useEffect } from "react";
 import { ShieldX } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { BackToDashboardButton } from "@/components/interview/BackToDashboardButton";
+import { releaseDesktop } from "@/lib/desktopExit";
 
 export function UnauthorizedAccess() {
   const { t } = useTranslation("errors");
+
+  // Signed out, so no interview can go on from here.
+  useEffect(() => {
+    releaseDesktop("unauthorized");
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(180deg,#7fb0ff_0%,#cfe1ff_38%,#eef5ff_72%,#ffffff_100%)]">
@@ -14,10 +22,9 @@ export function UnauthorizedAccess() {
           <h1 className="text-2xl font-black text-[#2D4A77] tracking-tight">
             {t("unauthorizedAccess.heading")}
           </h1>
-          <p className="mt-2 text-slate-500 font-medium">
-            {t("unauthorizedAccess.description")}
-          </p>
+          <p className="mt-2 text-slate-500 font-medium">{t("unauthorizedAccess.description")}</p>
         </div>
+        <BackToDashboardButton reason="unauthorized" endSession />
       </div>
     </div>
   );

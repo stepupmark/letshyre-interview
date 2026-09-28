@@ -9,6 +9,11 @@ const startMutateAsync = vi.fn();
 const submitMutateAsync = vi.fn();
 const autoSubmitMutateAsync = vi.fn();
 
+vi.mock("@/config/interview", async (importOriginal) => ({
+  ...(await importOriginal()),
+  START_RETRY_DELAY_MS: 0,
+}));
+
 vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
@@ -281,5 +286,59 @@ describe("useInterviewSession log", () => {
     expect(events.filter((event) => event.type === "INTERVIEW_ENDED")).toEqual([
       expect.objectContaining({ outcome: "completed", reason: "completed", strike_count: 0 }),
     ]);
+  });
+});
+
+describe("useInterviewSession start failure", () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    startMutateAsync.mockReset();
+  });
+
+  const httpError = (status, message) =>
+    Object.assign(new Error(message), {
+      response: { status, data: { success: false, status, message, data: null } },
+    });
+
+  it("stops loading and says why when no attempts are left", async () => {
+    startMutateAsync.mockRejectedValue(
+      httpError(400, "Maximum 3 attempts completed. You cannot take more interviews."),
+    );
+    const { result } = renderHook(() => useInterviewSession());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.session).toBeNull();
+    expect(result.current.startFailure.kind).toBe("exhausted");
+    expect(startMutateAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a dropped connection once before giving up", async () => {
+    startMutateAsync.mockRejectedValue(new Error("Network Error"));
+    const { result } = renderHook(() => useInterviewSession());
+
+    await waitFor(() => expect(result.current.startFailure?.kind).toBe("network"));
+    expect(startMutateAsync).toHaveBeenCalledTimes(2);
+  });
+
+  it("recovers when the quiet retry works", async () => {
+    startMutateAsync
+      .mockRejectedValueOnce(httpError(503, "Unavailable"))
+      .mockResolvedValue(FAKE_START_RESPONSE);
+    const { result } = renderHook(() => useInterviewSession());
+
+    await waitFor(() => expect(result.current.isActive).toBe(true));
+    expect(result.current.startFailure).toBeNull();
+  });
+
+  it("treats a success:false body as a failure, and can try again", async () => {
+    startMutateAsync.mockResolvedValueOnce({ success: false, status: 400, message: "Bad role" });
+    const { result } = renderHook(() => useInterviewSession());
+
+    await waitFor(() => expect(result.current.startFailure?.kind).toBe("rejected"));
+
+    startMutateAsync.mockResolvedValue(FAKE_START_RESPONSE);
+    await act(() => result.current.retryStart());
+    expect(result.current.isActive).toBe(true);
+    expect(result.current.startFailure).toBeNull();
   });
 });

@@ -71,6 +71,10 @@ export const TERMINATION_NOTICE_SECONDS = num(
 // costs one more strike.
 export const HELD_RESTRIKE_SECONDS = num(import.meta.env.VITE_AI_HELD_RESTRIKE_SECONDS, 30);
 
+// Generating the questions is slow, so the start request gets longer than usual.
+export const START_TIMEOUT_MS = 60_000;
+export const START_RETRY_DELAY_MS = 3_000;
+
 // Interview length in minutes.
 export const INTERVIEW_DURATION_MINUTES = num(
   import.meta.env.VITE_AI_INTERVIEW_DURATION_MINUTES,

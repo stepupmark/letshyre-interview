@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "View Dashboard"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "No interview attempts left",
+      "description": "You've used all your interview attempts, so a new interview can't start. Contact support if you think this is a mistake."
+    },
+    "rejected": {
+      "title": "Your interview couldn't start",
+      "description": "The interview request wasn't accepted. Go back to the dashboard and try again, or contact support."
+    },
+    "network": {
+      "title": "Can't reach the interview server",
+      "description": "Check your internet connection and try again."
+    },
+    "server": {
+      "title": "Something went wrong on our side",
+      "description": "This isn't your fault. Please try again in a moment."
+    },
+    "retry": "Try again"
+  },
+  "desktopExit": {
+    "backToDashboard": "Back to dashboard"
   }
 }

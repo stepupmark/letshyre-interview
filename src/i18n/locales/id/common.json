@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "Lihat Dasbor"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "Tidak ada lagi kesempatan wawancara",
+      "description": "Anda sudah menggunakan semua kesempatan wawancara, jadi wawancara baru tidak dapat dimulai. Hubungi dukungan jika menurut Anda ini keliru."
+    },
+    "rejected": {
+      "title": "Wawancara Anda tidak dapat dimulai",
+      "description": "Permintaan wawancara tidak diterima. Kembali ke dasbor dan coba lagi, atau hubungi dukungan."
+    },
+    "network": {
+      "title": "Tidak dapat menjangkau server wawancara",
+      "description": "Periksa koneksi internet Anda lalu coba lagi."
+    },
+    "server": {
+      "title": "Terjadi masalah di pihak kami",
+      "description": "Ini bukan kesalahan Anda. Silakan coba lagi sebentar lagi."
+    },
+    "retry": "Coba lagi"
+  },
+  "desktopExit": {
+    "backToDashboard": "Kembali ke dasbor"
   }
 }

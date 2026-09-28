@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { BackToDashboardButton } from "@/components/interview/BackToDashboardButton";
 
 export function RouteErrorBoundary() {
   const error = useRouteError();
@@ -89,6 +90,8 @@ export function RouteErrorBoundary() {
                 {t("errorPage.returnHome")}
                 <ChevronRight className="ms-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
+
+              <BackToDashboardButton reason="route-error" className="h-14 px-6" />
             </div>
 
             {/* Reload */}

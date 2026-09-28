@@ -16,6 +16,7 @@ const ScoreCard = lazy(() => import("@components/interview/ScoreCard"));
 import AutoSubmitLoader from "@components/interview/AutoSubmitLoader";
 import TerminationNotice from "@components/interview/TerminationNotice";
 import { InitialLoadingUi } from "@/components/interview/InitialLoadingUi";
+import { InterviewStartFailed } from "@/components/interview/InterviewStartFailed";
 import { TerminatedUi } from "@/components/interview/TerminatedUi";
 
 import { useInterviewSession } from "@hooks/interview/useInterviewSession";
@@ -45,6 +46,8 @@ export function Interview() {
   const { t } = useTranslation("questions");
   const {
     session,
+    startFailure,
+    retryStart,
     submitting,
     submit,
     incrementViolation,
@@ -330,6 +333,10 @@ export function Interview() {
         onRetry={() => autoSubmit(autoSubmitReason)}
       />
     );
+  }
+
+  if (!session && startFailure) {
+    return <InterviewStartFailed failure={startFailure} onRetry={retryStart} />;
   }
 
   if (!session) {

@@ -9,5 +9,27 @@
   },
   "postInterviewHeader": {
     "viewDashboard": "Dashboard bekijken"
+  },
+  "startFailed": {
+    "exhausted": {
+      "title": "Geen interviewpogingen meer over",
+      "description": "Je hebt al je interviewpogingen gebruikt, dus er kan geen nieuw interview starten. Neem contact op met support als je denkt dat dit niet klopt."
+    },
+    "rejected": {
+      "title": "Je interview kon niet starten",
+      "description": "Het interviewverzoek is niet geaccepteerd. Ga terug naar het dashboard en probeer het opnieuw, of neem contact op met support."
+    },
+    "network": {
+      "title": "De interviewserver is niet bereikbaar",
+      "description": "Controleer je internetverbinding en probeer het opnieuw."
+    },
+    "server": {
+      "title": "Er ging iets mis aan onze kant",
+      "description": "Dit ligt niet aan jou. Probeer het zo meteen opnieuw."
+    },
+    "retry": "Opnieuw proberen"
+  },
+  "desktopExit": {
+    "backToDashboard": "Terug naar dashboard"
   }
 }

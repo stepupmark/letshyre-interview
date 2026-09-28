@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { BackToDashboardButton } from "@/components/interview/BackToDashboardButton";
 
 export function DesktopUpdateRequired() {
   const { t } = useTranslation("interview");
@@ -21,6 +22,7 @@ export function DesktopUpdateRequired() {
       <p className="max-w-lg text-[18px] font-medium leading-relaxed text-slate-600">
         {t("desktopUpdate.description")}
       </p>
+      <BackToDashboardButton reason="update-required" endSession className="mt-8" />
     </div>
   );
 }

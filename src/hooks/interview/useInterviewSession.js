@@ -9,12 +9,14 @@ import {
   INTERVIEW_DURATION_MINUTES,
   INTERVIEW_SESSION_STORAGE_KEY,
   SESSION_STATUS,
+  START_RETRY_DELAY_MS,
 } from "@/config/interview";
 import { logger } from "@/lib/logger";
 import { recordInterviewEnded, recordViolationEvent } from "@/lib/violationLog";
 import { readStrikes } from "@hooks/proctoring/useViolationMonitor";
 import { clearDrafts, draftKeyFor, writeDraft } from "@/lib/answerDraft";
 import { END_REASONS } from "@/lib/terminationReasons";
+import { classifyStartFailure, isRetryableStartFailure } from "@/lib/startFailure";
 
 const STORAGE_KEY = INTERVIEW_SESSION_STORAGE_KEY;
 
@@ -75,6 +77,8 @@ export function useInterviewSession() {
 
   const [loading, setLoading] = useState(true);
 
+  const [startFailure, setStartFailure] = useState(null);
+
   // Only used to rerender timer every second
   const [now, setNow] = useState(() => Date.now());
 
@@ -108,12 +112,25 @@ export function useInterviewSession() {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
   }, [session, loading]);
 
+  // A dropped connection or a server hiccup gets one quiet retry.
+  const requestStart = async (payload) => {
+    try {
+      return await startMutation.mutateAsync(payload);
+    } catch (error) {
+      if (!isRetryableStartFailure(classifyStartFailure(error).kind)) throw error;
+      logger.warn("Interview start failed, retrying once:", error);
+      await new Promise((resolve) => setTimeout(resolve, START_RETRY_DELAY_MS));
+      return startMutation.mutateAsync(payload);
+    }
+  };
+
   /**
    * Start interview session
    */
   const startNewSession = async () => {
     try {
       setLoading(true);
+      setStartFailure(null);
 
       // Build the start payload from the role decision.
       //   is_custom_role:false → send only the flag; backend uses the assigned role.
@@ -129,10 +146,12 @@ export function useInterviewSession() {
         if (Array.isArray(skills) && skills.length > 0) payload.manual_skills = skills;
       }
 
-      const response = await startMutation.mutateAsync(payload);
+      const response = await requestStart(payload);
 
       if (!response?.success || !response?.data) {
-        throw new Error("Invalid start session response");
+        throw Object.assign(new Error("Invalid start session response"), {
+          startResponse: response ?? {},
+        });
       }
 
       const initialSession = response.data;
@@ -155,6 +174,7 @@ export function useInterviewSession() {
       return nextSession;
     } catch (error) {
       logger.error("Failed to start interview session:", error);
+      setStartFailure(classifyStartFailure(error));
 
       return null;
     } finally {
@@ -495,8 +515,12 @@ export function useInterviewSession() {
     return `${minutes}:${seconds}`;
   }, [timeLeft]);
 
+  const retryStart = useCallback(() => startNewSessionRef.current(), []);
+
   return {
     session,
+    startFailure,
+    retryStart,
     loading: loading || startMutation.isPending,
     submitting: submitMutation.isPending || autoSubmitting,
     submit,

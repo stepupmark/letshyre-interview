@@ -1,8 +1,10 @@
 import { api } from "./clients/backend";
+import { START_TIMEOUT_MS } from "@/config/interview";
 
 export async function fetchQuestion(payload) {
   const response = await api.post(`/user/v1/candidate/interview/ai/start/`, payload || {}, {
     headers: { "Content-Type": "application/json" },
+    timeout: START_TIMEOUT_MS,
   });
   return response.data;
 }
