@@ -649,6 +649,41 @@ describe("useViolationMonitor modal lifecycle", () => {
     expect(result.current.heldViolations).toHaveLength(1);
   });
 
+  it("tells the banner when a held object strikes again, until it can't", () => {
+    const { result } = setup();
+    const start = Date.now();
+
+    act(() => result.current.handleAiViolation(objectsInView));
+    expect(result.current.heldViolations[0].nextStrikeAt).toBe(start + 30_000);
+
+    for (let ms = 5_000; ms <= 35_000; ms += 5_000) {
+      act(() => vi.advanceTimersByTime(5_000));
+      act(() => result.current.handleAiViolation({ ...objectsInView, ongoing: true }));
+      act(() => result.current.dismissWarning());
+    }
+
+    expect(result.current.heldViolations[0].nextStrikeAt).toBeNull();
+  });
+
+  it("keeps a connected display in the banner with its next strike", () => {
+    const { result } = setup();
+    const start = Date.now();
+
+    act(() => result.current.handleElectronViolation({ code: "external_display" }));
+    act(() => result.current.dismissWarning());
+    act(() => vi.advanceTimersByTime(15_000));
+    act(() => result.current.handleElectronViolation({ code: "external_display" }));
+
+    expect(result.current.heldViolations).toEqual([
+      expect.objectContaining({
+        key: "ELECTRON_DISPLAY",
+        titleKey: "violations.electron.externalDisplay.title",
+        fixKey: "inInterview.fix.electron.externalDisplay",
+        nextStrikeAt: start + 30_000,
+      }),
+    ]);
+  });
+
   it("lands the second strike right after an unanswered warning closes itself", () => {
     const { result, incrementViolation } = setup();
     const raisedAt = [];

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,12 @@ export default function TerminationNotice({
   securityBlock,
 }) {
   const { t, i18n } = useTranslation("interview");
+  const acknowledgeRef = useRef(null);
+
+  // The notice replaces the page, so focus has to be put somewhere inside it.
+  useEffect(() => {
+    acknowledgeRef.current?.focus();
+  }, []);
   const { titleKey, descriptionKey, pillKey, imagePath, punitive } = getTerminationCopy(reason);
 
   const detected =
@@ -89,6 +96,7 @@ export default function TerminationNotice({
                 }
               >
                 <ShieldAlert
+                  aria-hidden="true"
                   className={punitive ? "h-6 w-6 text-red-500" : "h-6 w-6 text-blue-500"}
                 />
               </span>
@@ -150,9 +158,10 @@ export default function TerminationNotice({
 
           <div className="mt-5 flex flex-col items-center gap-2">
             <Button
+              ref={acknowledgeRef}
               type="button"
               onClick={onAcknowledge}
-              className="h-12 rounded-xl bg-[#111827] px-8 text-sm font-semibold text-white hover:bg-black"
+              className="h-12 rounded-xl bg-[#111827] px-8 text-sm font-semibold text-white hover:bg-black focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               {t("termination.acknowledge")}
             </Button>

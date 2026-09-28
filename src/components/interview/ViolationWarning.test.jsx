@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import ViolationWarning from "./ViolationWarning";
@@ -85,10 +85,51 @@ describe("ViolationWarning", () => {
     const onClose = vi.fn();
     renderWarning({ titleKey: "violations.cellPhone.title", onClose });
 
-    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    fireEvent.keyDown(screen.getByRole("alertdialog"), { key: "Escape" });
     expect(onClose).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button"));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("says what to do now under the description", () => {
+    renderWarning({
+      titleKey: "violations.prohibitedObject.title",
+      descriptionKey: "violations.prohibitedObject.description",
+      fixKey: "inInterview.fix.prohibitedObject",
+      label: "laptop",
+    });
+
+    expect(
+      screen.getByText("Move the laptop out of the room or well out of the camera's view."),
+    ).toBeInTheDocument();
+  });
+
+  it("is announced as an alert named by its title and described by its text", () => {
+    renderWarning({
+      titleKey: "violations.tabSwitch.title",
+      descriptionKey: "violations.tabSwitch.description",
+    });
+
+    const dialog = screen.getByRole("alertdialog", { name: "Tab Switch Detected" });
+    expect(dialog).toHaveAccessibleDescription(/Navigating away from the interview screen/);
+  });
+
+  it("takes focus while open and gives it back to the answer when closed", async () => {
+    const page = (open) => (
+      <>
+        <textarea aria-label="Answer" />
+        <ViolationWarning isOpen={open} onClose={() => {}} titleKey="violations.tabSwitch.title" />
+      </>
+    );
+    const view = render(page(false));
+    const answer = screen.getByRole("textbox", { name: "Answer" });
+    answer.focus();
+
+    view.rerender(page(true));
+    expect(screen.getByRole("alertdialog")).toContainElement(document.activeElement);
+
+    view.rerender(page(false));
+    await waitFor(() => expect(answer).toHaveFocus());
   });
 });

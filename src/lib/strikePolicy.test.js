@@ -180,6 +180,33 @@ describe("createStrikePolicy", () => {
     expect(policy.admit("PROHIBITED_OBJECT", { ...held, now: 600_000 })).toBe("held");
   });
 
+  it("says when a held incident strikes next, matching what admit does", () => {
+    const policy = createStrikePolicy();
+    const rules = { startedAt: 0, restrikeAfterMs: 60_000, maxRestrikes: 1 };
+    const held = { ...rules, incident: true, ongoing: true };
+
+    expect(policy.restrikeAt("PROHIBITED_OBJECT", rules)).toBeNull();
+    policy.admit("PROHIBITED_OBJECT", { ...rules, incident: true, now: 0 });
+    expect(policy.restrikeAt("PROHIBITED_OBJECT", rules)).toBe(60_000);
+    expect(policy.admit("PROHIBITED_OBJECT", { ...held, now: 59_999 })).toBe("cooldown");
+    expect(policy.admit("PROHIBITED_OBJECT", { ...held, now: 60_000 })).toBe("raised");
+    expect(policy.restrikeAt("PROHIBITED_OBJECT", rules)).toBeNull();
+  });
+
+  it("pushes the next restrike past another strike's reaction window", () => {
+    const policy = createStrikePolicy();
+    const rules = { startedAt: 0, restrikeAfterMs: 30_000 };
+    policy.admit("PROHIBITED_OBJECT", { ...rules, incident: true, now: 0 });
+    policy.admit("TAB_SWITCH", { now: 25_000 });
+    expect(policy.restrikeAt("PROHIBITED_OBJECT", rules)).toBe(35_000);
+  });
+
+  it("has no restrike time for an incident whose first strike is still to land", () => {
+    const policy = createStrikePolicy();
+    policy.admit("PROHIBITED_OBJECT", { incident: true, startedAt: 0, now: 0 });
+    expect(policy.restrikeAt("PROHIBITED_OBJECT", { startedAt: 90_000 })).toBeNull();
+  });
+
   it("starts the allowance over when the object is brought back", () => {
     const policy = createStrikePolicy();
     const rules = { incident: true, restrikeAfterMs: 60_000, maxRestrikes: 1 };

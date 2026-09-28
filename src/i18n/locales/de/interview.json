@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "Desktop-App aktualisieren",
     "description": "Diese Version der LetsHyre-Desktop-App ist veraltet. Schließen Sie sie, installieren Sie die neueste Version und starten Sie Ihr Interview dann erneut."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "Verbleibende Zeit",
+      "warning": "Noch {{minutes}} Min. in Ihrem Interview.",
+      "warningHint": "Beginnen Sie, Ihre aktuelle Antwort abzuschließen."
+    },
+    "offline": {
+      "message": "Sie sind offline. Ihre Antwort ist auf diesem Gerät gespeichert. Verbindungsabbruch {{disconnects}} von {{max}}."
+    },
+    "held": {
+      "restrikeIn": "Zählt in {{time}} als weiterer Verstoß",
+      "restrikeNow": "Zählt bei der nächsten Prüfung als weiterer Verstoß",
+      "restrikePending": "Wenn es so bleibt, zählt es als weiterer Verstoß."
+    },
+    "fix": {
+      "tabSwitch": "Bleiben Sie auf diesem Tab, bis Sie Ihre letzte Antwort abgeschickt haben.",
+      "fullscreenExit": "Klicken Sie unten auf die Schaltfläche, um zum Vollbild zurückzukehren, und bleiben Sie dort.",
+      "windowResize": "Lassen Sie das Fenster bis zum Ende des Interviews maximiert.",
+      "windowFocus": "Schließen Sie andere Fenster und klicken Sie nur innerhalb des Interviews.",
+      "noFace": "Setzen Sie sich vor die Kamera, sodass Ihr ganzes Gesicht im Bild ist.",
+      "multipleFaces": "Bitten Sie alle anderen, den Raum zu verlassen, und machen Sie dann weiter.",
+      "prohibitedObject": "Bringen Sie das Gerät ({{object}}) aus dem Raum oder weit aus dem Kamerabild.",
+      "multipleDevices": "Bringen Sie Ihre Geräte ({{object}}) aus dem Raum oder weit aus dem Kamerabild.",
+      "cellPhone": "Schalten Sie Ihr Handy aus und legen Sie es außer Reichweite und außer Sicht.",
+      "lookingAway": "Schauen Sie beim Antworten auf den Bildschirm.",
+      "cameraOff": "Schalten Sie Ihre Kamera wieder ein und prüfen Sie, dass nichts sie verdeckt.",
+      "faceMismatch": "Schauen Sie bei guter Beleuchtung in die Kamera, ohne andere Personen im Bild.",
+      "electron": {
+        "externalDisplay": "Trennen Sie jetzt alle zusätzlichen Monitore, Fernseher oder Projektoren.",
+        "mirroredDisplay": "Schalten Sie die Bildschirmspiegelung aus und trennen Sie den zusätzlichen Bildschirm.",
+        "screenSharing": "Beenden Sie die Bildschirmfreigabe und schließen Sie die Freigabe-App.",
+        "blockedApp": "Schließen Sie die App und lassen Sie sie bis zum Ende des Interviews geschlossen.",
+        "aiTool": "Beenden Sie den KI-Assistenten und lassen Sie ihn geschlossen.",
+        "overlay": "Schließen Sie die App, die über dem Interview angezeigt wird.",
+        "renamedApp": "Beenden Sie die App und öffnen Sie sie während des Interviews nicht erneut.",
+        "remoteSession": "Beenden Sie die Remotesitzung und nutzen Sie diesen Computer direkt.",
+        "virtualMachine": "Führen Sie das Interview auf einem normalen Computer durch, nicht in einer virtuellen Maschine.",
+        "securityMonitor": "Schließen oder verändern Sie die Sicherheitsfunktionen der Desktop-App nicht.",
+        "windowAction": "Lassen Sie das Interviewfenster geöffnet und auf dem Bildschirm.",
+        "generic": "Schließen Sie alles, was Sie außer dem Interview geöffnet haben."
+      }
+    }
   }
 }

@@ -25,9 +25,7 @@ export default function QuestionShell({
           <div className="flex flex-col items-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
             <p className="font-semibold text-blue-800">
-              {isLastQuestion
-                ? t("shell.submittingFinal")
-                : t("shell.generatingNext")}
+              {isLastQuestion ? t("shell.submittingFinal") : t("shell.generatingNext")}
             </p>
           </div>
         </div>
@@ -36,18 +34,19 @@ export default function QuestionShell({
       <CardContent className="p-5 md:p-6">
         {/* Top Row */}
         <div className="mb-6 flex items-center justify-between gap-4">
-          {/* Timer */}
-          <div className="rounded-xl bg-black px-5 py-2 text-2xl font-mono text-white shadow-lg">
-            <CountdownTimer endTime={endTime} />
-          </div>
+          <CountdownTimer endTime={endTime} />
 
           <div className="flex flex-col items-end gap-1.5">
             <Button
               onClick={onNext}
               disabled={submitting}
-              className="h-12 rounded-xl font-bold bg-[#a9c8ff] px-7 text-slate-900 shadow-md hover:bg-[#97bcff] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-12 rounded-xl font-bold bg-[#a9c8ff] px-7 text-slate-900 shadow-md hover:bg-[#97bcff] focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? t("shell.submitting") : isLastQuestion ? t("shell.submitInterview") : t("shell.nextQuestion")}
+              {submitting
+                ? t("shell.submitting")
+                : isLastQuestion
+                  ? t("shell.submitInterview")
+                  : t("shell.nextQuestion")}
               <ArrowRight className=" h-4 w-4" />
             </Button>
             <p className="text-xs text-slate-500">{t("shell.answersFinal")}</p>

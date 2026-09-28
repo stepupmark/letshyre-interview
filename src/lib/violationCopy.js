@@ -4,6 +4,7 @@ const COPY = {
   NO_FACE: {
     titleKey: "violations.noFace.title",
     descriptionKey: "violations.noFace.description",
+    fixKey: "inInterview.fix.noFace",
     imagePath: "/empty-seat.svg",
   },
   NO_FACE_GUIDANCE: {
@@ -14,6 +15,7 @@ const COPY = {
   FACE_MISMATCH: {
     titleKey: "violations.faceMismatch.title",
     descriptionKey: "violations.faceMismatch.description",
+    fixKey: "inInterview.fix.faceMismatch",
     imagePath: "/termination-face-mismatch.svg",
   },
   FACE_UNCLEAR: {
@@ -24,21 +26,25 @@ const COPY = {
   MULTIPLE_FACES: {
     titleKey: "violations.multipleFaces.title",
     descriptionKey: "violations.multipleFaces.description",
+    fixKey: "inInterview.fix.multipleFaces",
     imagePath: "/multi-people.svg",
   },
   PROHIBITED_OBJECT: {
     titleKey: "violations.prohibitedObject.title",
     descriptionKey: "violations.prohibitedObject.description",
+    fixKey: "inInterview.fix.prohibitedObject",
     imagePath: "/laptop.svg",
   },
   MULTIPLE_OBJECTS: {
     titleKey: "violations.multipleDevices.title",
     descriptionKey: "violations.multipleDevices.description",
+    fixKey: "inInterview.fix.multipleDevices",
     imagePath: "/laptop.svg",
   },
   "PROHIBITED_OBJECT:cell phone": {
     titleKey: "violations.cellPhone.title",
     descriptionKey: "violations.cellPhone.description",
+    fixKey: "inInterview.fix.cellPhone",
     imagePath: "/cell-phone.svg",
   },
   NOT_LOOKING: {
@@ -54,11 +60,13 @@ const COPY = {
   LOOKING_AWAY: {
     titleKey: "violations.lookingAway.title",
     descriptionKey: "violations.lookingAway.description",
+    fixKey: "inInterview.fix.lookingAway",
     imagePath: "/looking-away.svg",
   },
   CAMERA_OFF: {
     titleKey: "violations.cameraOff.title",
     descriptionKey: "violations.cameraOff.description",
+    fixKey: "inInterview.fix.cameraOff",
     imagePath: "/camera-off.svg",
   },
   CAMERA_OFF_HINT: {

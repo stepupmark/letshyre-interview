@@ -94,7 +94,7 @@ function preloadWarningImages() {
 }
 
 function electronViolation(payload) {
-  const { type, detail, titleKey, descriptionKey, imagePath, apps, strike, logOnly } =
+  const { type, detail, titleKey, descriptionKey, fixKey, imagePath, apps, strike, logOnly } =
     resolveElectronViolation(payload);
   return {
     type,
@@ -102,6 +102,7 @@ function electronViolation(payload) {
     detail,
     titleKey,
     descriptionKey,
+    fixKey,
     imagePath,
     apps,
     strike,
@@ -148,6 +149,7 @@ export function useViolationMonitor({
   const shownAtRef = useRef(0);
   const checkPresenceRef = useRef(null);
   const heldRef = useRef(new Map());
+  const heldSignatureRef = useRef("[]");
 
   // Electron violations that arrived before isActive was true, in order.
   // Flushed by the effect below once the session loads.
@@ -189,13 +191,35 @@ export function useViolationMonitor({
     );
   }, []);
 
+  // Each entry carries nextStrikeAt, when it can next cost a strike, so the
+  // banner can count down to it. Only a real change re-renders.
   const publishHeld = useCallback(() => {
-    setHeldViolations([...heldRef.current.values()].map(({ entry }) => entry));
+    const next = [...heldRef.current].map(([key, { entry, restrike }]) => ({
+      ...entry,
+      nextStrikeAt: policyRef.current.restrikeAt(key, restrike),
+    }));
+    const signature = JSON.stringify(next);
+    if (signature === heldSignatureRef.current) return;
+    heldSignatureRef.current = signature;
+    setHeldViolations(next);
     refreshAlsoDetected();
   }, [refreshAlsoDetected]);
 
   const trackHeld = useCallback(
-    (key, { titleKey, descriptionKey, label, labels }) => {
+    (
+      key,
+      {
+        titleKey,
+        descriptionKey,
+        fixKey,
+        label,
+        labels,
+        incidentStartedAt,
+        restrikeAfterMs,
+        maxRestrikes,
+        heldTtlMs = HELD_TTL_MS,
+      },
+    ) => {
       const held = heldRef.current;
       const known = held.get(key);
       clearTimeout(known?.timer);
@@ -204,12 +228,15 @@ export function useViolationMonitor({
         known.entry.titleKey !== titleKey ||
         known.entry.label !== label ||
         String(known.entry.labels) !== String(labels);
-      const entry = changed ? { key, titleKey, descriptionKey, label, labels } : known.entry;
+      const entry = changed
+        ? { key, titleKey, descriptionKey, fixKey, label, labels }
+        : known.entry;
       const timer = setTimeout(() => {
         held.delete(key);
         publishHeld();
-      }, HELD_TTL_MS);
-      held.set(key, { entry, timer });
+      }, heldTtlMs);
+      const restrike = { startedAt: incidentStartedAt, restrikeAfterMs, maxRestrikes };
+      held.set(key, { entry, timer, restrike });
       if (changed) publishHeld();
     },
     [publishHeld],
@@ -218,6 +245,7 @@ export function useViolationMonitor({
   const clearHeld = useCallback(() => {
     for (const { timer } of heldRef.current.values()) clearTimeout(timer);
     heldRef.current.clear();
+    heldSignatureRef.current = "[]";
     setHeldViolations([]);
   }, []);
 
@@ -255,6 +283,7 @@ export function useViolationMonitor({
         detail,
         titleKey,
         descriptionKey,
+        fixKey,
         imagePath,
         countsAsViolation = true,
         ongoing = false,
@@ -291,6 +320,7 @@ export function useViolationMonitor({
         setViolationInfo({
           titleKey,
           descriptionKey,
+          fixKey,
           imagePath,
           label,
           labels,
@@ -335,6 +365,7 @@ export function useViolationMonitor({
         maxRestrikes,
         defer: !replay && queueRef.current.pending.size > 0,
       });
+      if (heldRef.current.has(key)) publishHeld();
 
       if (outcome === "reaction_window" && queue()) {
         return report("queued", undefined, { held_back: outcome });
@@ -382,7 +413,7 @@ export function useViolationMonitor({
       scheduleNext();
       return report("raised", violationCount);
     },
-    [refreshAlsoDetected, scheduleNext, trackHeld],
+    [publishHeld, refreshAlsoDetected, scheduleNext, trackHeld],
   );
 
   useEffect(() => {
@@ -520,6 +551,7 @@ export function useViolationMonitor({
         remindWhileHeld: violation.remindWhileHeld,
         titleKey: violation.titleKey,
         descriptionKey: violation.descriptionKey,
+        fixKey: violation.fixKey,
         imagePath: violation.imagePath,
         countsAsViolation: violation.countsAsViolation !== false,
         finalWarning: violation.finalWarning,
@@ -567,6 +599,8 @@ export function useViolationMonitor({
         ongoing: true,
         incidentStartedAt: display.startedAt,
         restrikeAfterMs: DISPLAY_RESTRIKE_MS,
+        remindWhileHeld: true,
+        heldTtlMs: DISPLAY_GONE_MS,
       });
     },
     [raiseViolation],
@@ -720,6 +754,7 @@ export function useViolationMonitor({
         source: "tab_switch",
         titleKey: "violations.tabSwitch.title",
         descriptionKey: "violations.tabSwitch.description",
+        fixKey: "inInterview.fix.tabSwitch",
         imagePath: WINDOW_SWITCH_IMAGE,
       });
     };
@@ -740,6 +775,7 @@ export function useViolationMonitor({
             source: "window_focus",
             titleKey: "violations.windowFocus.title",
             descriptionKey: "violations.windowFocus.description",
+            fixKey: "inInterview.fix.windowFocus",
             imagePath: WINDOW_SWITCH_IMAGE,
           },
           leftAt,
@@ -765,6 +801,7 @@ export function useViolationMonitor({
             source: "window_focus",
             titleKey: "violations.windowFocus.title",
             descriptionKey: "violations.windowFocus.description",
+            fixKey: "inInterview.fix.windowFocus",
             imagePath: WINDOW_SWITCH_IMAGE,
             strikeKey: LEFT_WINDOW,
             incident: true,
@@ -797,6 +834,7 @@ export function useViolationMonitor({
         source: "fullscreen_exit",
         titleKey: "violations.fullscreenExit.title",
         descriptionKey: "violations.fullscreenExit.description",
+        fixKey: "inInterview.fix.fullscreenExit",
         imagePath: WINDOW_SWITCH_IMAGE,
       });
     };
@@ -835,6 +873,7 @@ export function useViolationMonitor({
             source: "window_resize",
             titleKey: "violations.windowResize.title",
             descriptionKey: "violations.windowResize.description",
+            fixKey: "inInterview.fix.windowResize",
             imagePath: WINDOW_SWITCH_IMAGE,
           });
         }, RESIZE_CONFIRM_MS);

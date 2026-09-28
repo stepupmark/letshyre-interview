@@ -95,6 +95,16 @@ export function createStrikePolicy(options = {}) {
       return lastStrikeAt === null ? 0 : lastStrikeAt + reactionWindowMs;
     },
 
+    // The earliest a held incident can strike again, or null when its first
+    // strike hasn't landed or it has had all it gets. Reads the rules admit uses.
+    restrikeAt(type, { startedAt, restrikeAfterMs = restrikeMs, maxRestrikes = Infinity } = {}) {
+      const struck = struckAt.get(type);
+      if (struck === undefined || (startedAt !== undefined && struck < startedAt)) return null;
+      if ((restrikes.get(type) ?? 0) >= maxRestrikes) return null;
+      const held = lastStrikeAt === null ? 0 : lastStrikeAt + reactionWindowMs;
+      return Math.max(struck + restrikeAfterMs, held);
+    },
+
     struckSince(type, startedAt) {
       const at = struckAt.get(type);
       return at !== undefined && (startedAt === undefined || at >= startedAt);

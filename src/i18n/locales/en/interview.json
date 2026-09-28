@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "Update the desktop app",
     "description": "This version of the LetsHyre desktop app is out of date. Close it, install the latest version, then start your interview again."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "Time remaining",
+      "warning": "{{minutes}} min left in your interview.",
+      "warningHint": "Start wrapping up your current answer."
+    },
+    "offline": {
+      "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
+    },
+    "held": {
+      "restrikeIn": "Counts as another violation in {{time}}",
+      "restrikeNow": "Counts as another violation at the next check",
+      "restrikePending": "This will count as another violation if it stays."
+    },
+    "fix": {
+      "tabSwitch": "Stay on this tab until you submit your last answer.",
+      "fullscreenExit": "Press the button below to go back to fullscreen, and stay there.",
+      "windowResize": "Keep the window maximized until the interview ends.",
+      "windowFocus": "Close other windows and click only inside the interview.",
+      "noFace": "Sit facing the camera with your whole face in the frame.",
+      "multipleFaces": "Ask anyone else to leave the room, then carry on.",
+      "prohibitedObject": "Move the {{object}} out of the room or well out of the camera's view.",
+      "multipleDevices": "Move your {{object}} out of the room or well out of the camera's view.",
+      "cellPhone": "Switch your phone off and put it out of reach and out of view.",
+      "lookingAway": "Look at the screen while you answer.",
+      "cameraOff": "Turn your camera back on and make sure nothing is covering it.",
+      "faceMismatch": "Face the camera in good light, with nobody else in view.",
+      "electron": {
+        "externalDisplay": "Unplug every extra monitor, TV or projector now.",
+        "mirroredDisplay": "Turn off screen mirroring and unplug the extra display.",
+        "screenSharing": "Stop sharing your screen and close the sharing app.",
+        "blockedApp": "Close the app and keep it closed until the interview ends.",
+        "aiTool": "Quit the AI assistant and keep it closed.",
+        "overlay": "Close the app that is drawing over the interview.",
+        "renamedApp": "Quit the app and don't open it again during the interview.",
+        "remoteSession": "End the remote session and use this computer directly.",
+        "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "securityMonitor": "Don't close or change the desktop app's security tools.",
+        "windowAction": "Keep the interview window open and on screen.",
+        "generic": "Close anything you opened besides the interview."
+      }
+    }
   }
 }

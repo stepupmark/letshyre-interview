@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "Werk de desktop-app bij",
     "description": "Deze versie van de LetsHyre-desktop-app is verouderd. Sluit de app, installeer de nieuwste versie en start je interview daarna opnieuw."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "Resterende tijd",
+      "warning": "Nog {{minutes}} min in je interview.",
+      "warningHint": "Begin je huidige antwoord af te ronden."
+    },
+    "offline": {
+      "message": "Je bent offline. Je antwoord is op dit apparaat opgeslagen. Verbroken verbinding {{disconnects}} van {{max}}."
+    },
+    "held": {
+      "restrikeIn": "Telt over {{time}} als nog een overtreding",
+      "restrikeNow": "Telt bij de volgende controle als nog een overtreding",
+      "restrikePending": "Als het zo blijft, telt het als nog een overtreding."
+    },
+    "fix": {
+      "tabSwitch": "Blijf op dit tabblad tot je je laatste antwoord hebt verstuurd.",
+      "fullscreenExit": "Klik op de knop hieronder om terug te gaan naar volledig scherm, en blijf daar.",
+      "windowResize": "Houd het venster gemaximaliseerd tot het interview voorbij is.",
+      "windowFocus": "Sluit andere vensters en klik alleen binnen het interview.",
+      "noFace": "Ga recht voor de camera zitten met je hele gezicht in beeld.",
+      "multipleFaces": "Vraag iedereen anders de kamer te verlaten en ga dan verder.",
+      "prohibitedObject": "Haal het apparaat ({{object}}) de kamer uit of ruim buiten beeld van de camera.",
+      "multipleDevices": "Haal je apparaten ({{object}}) de kamer uit of ruim buiten beeld van de camera.",
+      "cellPhone": "Zet je telefoon uit en leg hem buiten bereik en uit het zicht.",
+      "lookingAway": "Kijk naar het scherm terwijl je antwoordt.",
+      "cameraOff": "Zet je camera weer aan en zorg dat niets hem bedekt.",
+      "faceMismatch": "Kijk in de camera met goed licht en zonder iemand anders in beeld.",
+      "electron": {
+        "externalDisplay": "Koppel nu elke extra monitor, tv of projector los.",
+        "mirroredDisplay": "Zet schermspiegeling uit en koppel het extra scherm los.",
+        "screenSharing": "Stop met je scherm delen en sluit de deel-app.",
+        "blockedApp": "Sluit de app en houd hem gesloten tot het interview voorbij is.",
+        "aiTool": "Sluit de AI-assistent af en houd hem gesloten.",
+        "overlay": "Sluit de app die over het interview heen wordt getoond.",
+        "renamedApp": "Sluit de app af en open hem niet opnieuw tijdens het interview.",
+        "remoteSession": "Beëindig de externe sessie en gebruik deze computer rechtstreeks.",
+        "virtualMachine": "Doe het interview op een gewone computer, niet in een virtuele machine.",
+        "securityMonitor": "Sluit of wijzig de beveiligingsonderdelen van de desktop-app niet.",
+        "windowAction": "Houd het interviewvenster open en op het scherm.",
+        "generic": "Sluit alles wat je naast het interview hebt geopend."
+      }
+    }
   }
 }

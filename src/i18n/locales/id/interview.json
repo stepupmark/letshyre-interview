@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "Perbarui Aplikasi Desktop",
     "description": "Versi aplikasi desktop LetsHyre ini sudah usang. Tutup aplikasi, instal versi terbaru, lalu mulai wawancara Anda lagi."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "Sisa waktu",
+      "warning": "Sisa {{minutes}} menit dalam wawancara Anda.",
+      "warningHint": "Mulailah menyelesaikan jawaban Anda saat ini."
+    },
+    "offline": {
+      "message": "Anda sedang offline. Jawaban Anda tersimpan di perangkat ini. Terputus {{disconnects}} dari {{max}}."
+    },
+    "held": {
+      "restrikeIn": "Dihitung sebagai pelanggaran lagi dalam {{time}}",
+      "restrikeNow": "Dihitung sebagai pelanggaran lagi pada pemeriksaan berikutnya",
+      "restrikePending": "Jika tetap begini, ini akan dihitung sebagai pelanggaran lagi."
+    },
+    "fix": {
+      "tabSwitch": "Tetap di tab ini sampai Anda mengirim jawaban terakhir.",
+      "fullscreenExit": "Tekan tombol di bawah untuk kembali ke layar penuh, dan tetap di sana.",
+      "windowResize": "Biarkan jendela tetap dimaksimalkan sampai wawancara selesai.",
+      "windowFocus": "Tutup jendela lain dan klik hanya di dalam wawancara.",
+      "noFace": "Duduklah menghadap kamera dengan seluruh wajah terlihat di bingkai.",
+      "multipleFaces": "Minta orang lain meninggalkan ruangan, lalu lanjutkan.",
+      "prohibitedObject": "Pindahkan perangkat ({{object}}) keluar ruangan atau jauh dari pandangan kamera.",
+      "multipleDevices": "Pindahkan perangkat Anda ({{object}}) keluar ruangan atau jauh dari pandangan kamera.",
+      "cellPhone": "Matikan ponsel Anda dan letakkan di luar jangkauan serta di luar pandangan.",
+      "lookingAway": "Lihat ke layar saat Anda menjawab.",
+      "cameraOff": "Nyalakan kembali kamera Anda dan pastikan tidak ada yang menutupinya.",
+      "faceMismatch": "Hadap ke kamera dengan pencahayaan yang baik, tanpa orang lain terlihat.",
+      "electron": {
+        "externalDisplay": "Cabut semua monitor, TV, atau proyektor tambahan sekarang.",
+        "mirroredDisplay": "Matikan pencerminan layar dan cabut layar tambahan.",
+        "screenSharing": "Hentikan berbagi layar dan tutup aplikasi berbagi.",
+        "blockedApp": "Tutup aplikasi dan biarkan tertutup sampai wawancara selesai.",
+        "aiTool": "Tutup asisten AI dan biarkan tetap tertutup.",
+        "overlay": "Tutup aplikasi yang tampil di atas wawancara.",
+        "renamedApp": "Tutup aplikasi dan jangan membukanya lagi selama wawancara.",
+        "remoteSession": "Akhiri sesi jarak jauh dan gunakan komputer ini secara langsung.",
+        "virtualMachine": "Ikuti wawancara di komputer biasa, bukan di mesin virtual.",
+        "securityMonitor": "Jangan menutup atau mengubah alat keamanan aplikasi desktop.",
+        "windowAction": "Biarkan jendela wawancara tetap terbuka dan tampil di layar.",
+        "generic": "Tutup semua yang Anda buka selain wawancara."
+      }
+    }
   }
 }

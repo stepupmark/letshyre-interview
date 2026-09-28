@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "Aggiorna l'app desktop",
     "description": "Questa versione dell'app desktop LetsHyre non è aggiornata. Chiudila, installa la versione più recente e poi riavvia il colloquio."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "Tempo rimanente",
+      "warning": "Mancano {{minutes}} min al termine del colloquio.",
+      "warningHint": "Inizia a concludere la risposta attuale."
+    },
+    "offline": {
+      "message": "Sei offline. La tua risposta è salvata su questo dispositivo. Disconnessione {{disconnects}} di {{max}}."
+    },
+    "held": {
+      "restrikeIn": "Conterà come un'altra violazione tra {{time}}",
+      "restrikeNow": "Conterà come un'altra violazione al prossimo controllo",
+      "restrikePending": "Se resta così, conterà come un'altra violazione."
+    },
+    "fix": {
+      "tabSwitch": "Resta su questa scheda finché non invii l'ultima risposta.",
+      "fullscreenExit": "Premi il pulsante qui sotto per tornare a schermo intero e restaci.",
+      "windowResize": "Tieni la finestra ingrandita fino alla fine del colloquio.",
+      "windowFocus": "Chiudi le altre finestre e fai clic solo all'interno del colloquio.",
+      "noFace": "Siediti di fronte alla fotocamera con tutto il viso nell'inquadratura.",
+      "multipleFaces": "Chiedi a chiunque altro di lasciare la stanza, poi continua.",
+      "prohibitedObject": "Porta il dispositivo ({{object}}) fuori dalla stanza o ben lontano dall'inquadratura.",
+      "multipleDevices": "Porta i tuoi dispositivi ({{object}}) fuori dalla stanza o ben lontano dall'inquadratura.",
+      "cellPhone": "Spegni il telefono e mettilo fuori portata e fuori vista.",
+      "lookingAway": "Guarda lo schermo mentre rispondi.",
+      "cameraOff": "Riaccendi la fotocamera e assicurati che nulla la copra.",
+      "faceMismatch": "Guarda la fotocamera con una buona luce e senza nessun altro inquadrato.",
+      "electron": {
+        "externalDisplay": "Scollega subito ogni monitor, TV o proiettore aggiuntivo.",
+        "mirroredDisplay": "Disattiva la duplicazione dello schermo e scollega lo schermo aggiuntivo.",
+        "screenSharing": "Interrompi la condivisione dello schermo e chiudi l'app di condivisione.",
+        "blockedApp": "Chiudi l'app e tienila chiusa fino alla fine del colloquio.",
+        "aiTool": "Chiudi l'assistente IA e tienilo chiuso.",
+        "overlay": "Chiudi l'app che compare sopra il colloquio.",
+        "renamedApp": "Chiudi l'app e non riaprirla durante il colloquio.",
+        "remoteSession": "Termina la sessione remota e usa direttamente questo computer.",
+        "virtualMachine": "Svolgi il colloquio su un computer normale, non su una macchina virtuale.",
+        "securityMonitor": "Non chiudere né modificare gli strumenti di sicurezza dell'app desktop.",
+        "windowAction": "Tieni la finestra del colloquio aperta e sullo schermo.",
+        "generic": "Chiudi tutto ciò che hai aperto oltre al colloquio."
+      }
+    }
   }
 }

@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "Mettez à jour l'application de bureau",
     "description": "Cette version de l'application de bureau LetsHyre est obsolète. Fermez-la, installez la dernière version, puis relancez votre entretien."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "Temps restant",
+      "warning": "Il reste {{minutes}} min à votre entretien.",
+      "warningHint": "Commencez à conclure votre réponse en cours."
+    },
+    "offline": {
+      "message": "Vous êtes hors ligne. Votre réponse est enregistrée sur cet appareil. Déconnexion {{disconnects}} sur {{max}}."
+    },
+    "held": {
+      "restrikeIn": "Comptera comme une nouvelle infraction dans {{time}}",
+      "restrikeNow": "Comptera comme une nouvelle infraction au prochain contrôle",
+      "restrikePending": "Si cela persiste, cela comptera comme une nouvelle infraction."
+    },
+    "fix": {
+      "tabSwitch": "Restez sur cet onglet jusqu'à l'envoi de votre dernière réponse.",
+      "fullscreenExit": "Appuyez sur le bouton ci-dessous pour revenir en plein écran, et restez-y.",
+      "windowResize": "Gardez la fenêtre agrandie jusqu'à la fin de l'entretien.",
+      "windowFocus": "Fermez les autres fenêtres et cliquez uniquement dans l'entretien.",
+      "noFace": "Placez-vous face à la caméra, le visage entièrement dans le cadre.",
+      "multipleFaces": "Demandez à toute autre personne de quitter la pièce, puis continuez.",
+      "prohibitedObject": "Sortez l'appareil ({{object}}) de la pièce ou éloignez-le bien du champ de la caméra.",
+      "multipleDevices": "Sortez vos appareils ({{object}}) de la pièce ou éloignez-les bien du champ de la caméra.",
+      "cellPhone": "Éteignez votre téléphone et rangez-le hors de portée et hors de vue.",
+      "lookingAway": "Regardez l'écran pendant que vous répondez.",
+      "cameraOff": "Rallumez votre caméra et vérifiez que rien ne la couvre.",
+      "faceMismatch": "Faites face à la caméra dans un endroit bien éclairé, sans personne d'autre dans le champ.",
+      "electron": {
+        "externalDisplay": "Débranchez dès maintenant tout moniteur, téléviseur ou projecteur supplémentaire.",
+        "mirroredDisplay": "Désactivez la recopie d'écran et débranchez l'écran supplémentaire.",
+        "screenSharing": "Arrêtez le partage d'écran et fermez l'application de partage.",
+        "blockedApp": "Fermez l'application et laissez-la fermée jusqu'à la fin de l'entretien.",
+        "aiTool": "Quittez l'assistant IA et laissez-le fermé.",
+        "overlay": "Fermez l'application qui s'affiche par-dessus l'entretien.",
+        "renamedApp": "Quittez l'application et ne la rouvrez pas pendant l'entretien.",
+        "remoteSession": "Mettez fin à la session à distance et utilisez directement cet ordinateur.",
+        "virtualMachine": "Passez l'entretien sur un ordinateur classique, pas dans une machine virtuelle.",
+        "securityMonitor": "Ne fermez pas et ne modifiez pas les outils de sécurité de l'application de bureau.",
+        "windowAction": "Gardez la fenêtre de l'entretien ouverte et à l'écran.",
+        "generic": "Fermez tout ce que vous avez ouvert en dehors de l'entretien."
+      }
+    }
   }
 }
