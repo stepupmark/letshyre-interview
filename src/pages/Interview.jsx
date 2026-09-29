@@ -8,6 +8,7 @@ import LeftPanel from "@components/interview/LeftPanel";
 import QuestionRenderer from "@components/interview/QuestionRenderer";
 import ViolationWarning from "@components/interview/ViolationWarning";
 import HeldViolationBanner from "@components/interview/HeldViolationBanner";
+import OfflineBanner from "@components/interview/OfflineBanner";
 import FullscreenPrompt from "@components/interview/FullscreenPrompt";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -415,6 +416,7 @@ export function Interview() {
             {/* RIGHT PANEL */}
             <section className="min-w-0 overflow-y-auto">
               <div className="min-h-full rounded-[28px] bg-[#f5f7fc] p-6 shadow-sm">
+                <OfflineBanner disconnects={session.internet_disconnect_count ?? 0} />
                 {!showTabWarning && <HeldViolationBanner items={heldViolations} />}
                 <ErrorBoundary>
                   <QuestionRenderer
@@ -440,6 +442,7 @@ export function Interview() {
         counts={violationInfo.counts}
         titleKey={violationInfo.titleKey}
         descriptionKey={violationInfo.descriptionKey}
+        fixKey={violationInfo.fixKey}
         imagePath={violationInfo.imagePath}
         label={violationInfo.label}
         labels={violationInfo.labels}

@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
 import { objectName, violationTitle } from "@/lib/violationCopy";
+import { useFocusReturn } from "@hooks/useFocusReturn";
 
 export default function ViolationWarning({
   isOpen = false,
@@ -12,6 +13,7 @@ export default function ViolationWarning({
   titleKey,
   imagePath = "/multi-people.svg",
   descriptionKey,
+  fixKey,
   label,
   labels,
   buttonText,
@@ -20,6 +22,7 @@ export default function ViolationWarning({
   alsoDetected = [],
 }) {
   const { t, i18n } = useTranslation("interview");
+  const focusReturn = useFocusReturn();
   const resolvedTitle = titleKey ? t(titleKey) : t("violationWarning.defaultTitle");
   // Naming the thing beats "prohibited device" — the candidate can only act on
   // the warning if they know what was seen.
@@ -37,13 +40,14 @@ export default function ViolationWarning({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
+        role="alertdialog"
         showCloseButton={false}
         className="w-[420px] rounded-lg border-0 bg-[#f8f8f8] p-0 shadow-2xl overflow-hidden"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
+        {...focusReturn}
       >
         <div className="relative p-5">
-          {/* Top Row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span>{t("violationWarning.rec")}</span>
@@ -72,13 +76,21 @@ export default function ViolationWarning({
             </div>
           </div>
 
-          {/* Content */}
-          <div className="text-center" aria-live="polite">
-            <h2 className="text-lg font-semibold">{resolvedTitle}</h2>
+          {/* A new strike replaces the text while the dialog stays open. */}
+          <div className="text-center" aria-live="assertive" aria-atomic="true">
+            <DialogTitle className="text-lg leading-normal font-semibold">
+              {resolvedTitle}
+            </DialogTitle>
 
-            <p className="mx-auto mt-1.5 text-md leading-6 text-slate-500 font-medium">
+            <DialogDescription className="mx-auto mt-1.5 text-md leading-6 text-slate-500 font-medium">
               {resolvedDescription}
-            </p>
+            </DialogDescription>
+
+            {fixKey && (
+              <p className="mx-auto mt-2 text-sm font-semibold leading-5 text-slate-700">
+                {t(fixKey, { object })}
+              </p>
+            )}
 
             {alsoDetected.length > 0 && (
               <div className="mx-auto mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left">
@@ -102,12 +114,11 @@ export default function ViolationWarning({
             )}
           </div>
 
-          {/* Button */}
           <div className="mt-4 flex justify-center">
             <Button
               type="button"
               onClick={onClose}
-              className="h-12 rounded-xl bg-[#111827] px-8 text-sm font-semibold text-white hover:bg-black"
+              className="h-12 rounded-xl bg-[#111827] px-8 text-sm font-semibold text-white hover:bg-black focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               {resolvedButtonText}
             </Button>

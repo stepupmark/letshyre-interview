@@ -81,6 +81,9 @@ export const INTERVIEW_DURATION_MINUTES = num(
   15,
 );
 
+// Minutes left at which the candidate is told time is running out, once each.
+export const TIME_WARNING_MINUTES = [5, 1];
+
 // Confidence an object detection must carry before it can become a violation.
 // The detector's own list is trusted above this; below it the box is logged and
 // dropped. Raise it if cluttered rooms start producing false warnings.

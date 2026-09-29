@@ -26,11 +26,12 @@ export default function Header({ attempted, total, violations = 0 }) {
         <div className="flex gap-4">
           <LanguageSelector />
 
-          {/* Violations / Compliance Badge */}
           <div
+            role="status"
             className={`flex items-center gap-2 rounded-xl border px-5 py-2.5 text-[15px] font-bold shadow-sm transition-all duration-300 ${badgeStyle}`}
           >
             <BadgeIcon
+              aria-hidden="true"
               className={`h-[18px] w-[18px] ${violations > 0 ? "text-amber-500" : "text-emerald-500"}`}
             />
             <span>

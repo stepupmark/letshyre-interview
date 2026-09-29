@@ -174,4 +174,10 @@ describe("TerminationNotice desktop-app block", () => {
     expect(screen.getByText("Blocked App Detected")).toBeInTheDocument();
     expect(screen.getByText("Google Chrome and Zoom")).toBeInTheDocument();
   });
+
+  it("moves focus to the acknowledge button so the notice is read out", () => {
+    renderNotice(TERMINATION_REASONS.VIOLATION_LIMIT);
+    expect(screen.getByRole("alertdialog")).toHaveAccessibleName();
+    expect(screen.getByRole("button")).toHaveFocus();
+  });
 });

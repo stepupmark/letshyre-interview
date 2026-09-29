@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "데스크톱 앱을 업데이트하세요",
     "description": "이 버전의 LetsHyre 데스크톱 앱은 오래되었습니다. 앱을 닫고 최신 버전을 설치한 다음 면접을 다시 시작하세요."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "남은 시간",
+      "warning": "면접 시간이 {{minutes}}분 남았습니다.",
+      "warningHint": "현재 답변을 마무리하기 시작하세요."
+    },
+    "offline": {
+      "message": "오프라인 상태입니다. 답변은 이 기기에 저장되어 있습니다. 연결 끊김 {{disconnects}}/{{max}}회."
+    },
+    "held": {
+      "restrikeIn": "{{time}} 후 추가 위반으로 처리됩니다",
+      "restrikeNow": "다음 확인 시 추가 위반으로 처리됩니다",
+      "restrikePending": "이 상태가 계속되면 추가 위반으로 처리됩니다."
+    },
+    "fix": {
+      "tabSwitch": "마지막 답변을 제출할 때까지 이 탭에 머물러 주세요.",
+      "fullscreenExit": "아래 버튼을 눌러 전체 화면으로 돌아가 그대로 유지하세요.",
+      "windowResize": "면접이 끝날 때까지 창을 최대화된 상태로 유지하세요.",
+      "windowFocus": "다른 창을 닫고 면접 화면 안에서만 클릭하세요.",
+      "noFace": "얼굴 전체가 화면에 나오도록 카메라를 향해 앉으세요.",
+      "multipleFaces": "다른 사람에게 방에서 나가 달라고 요청한 후 계속하세요.",
+      "prohibitedObject": "{{object}}을(를) 방 밖이나 카메라에 보이지 않는 곳으로 옮기세요.",
+      "multipleDevices": "{{object}}을(를) 방 밖이나 카메라에 보이지 않는 곳으로 옮기세요.",
+      "cellPhone": "휴대폰 전원을 끄고 손이 닿지 않고 보이지 않는 곳에 두세요.",
+      "lookingAway": "답변하는 동안 화면을 보세요.",
+      "cameraOff": "카메라를 다시 켜고 카메라를 가리는 것이 없는지 확인하세요.",
+      "faceMismatch": "밝은 곳에서 카메라를 바라보고 다른 사람이 화면에 나오지 않게 하세요.",
+      "electron": {
+        "externalDisplay": "추가 모니터, TV, 프로젝터를 지금 모두 분리하세요.",
+        "mirroredDisplay": "화면 미러링을 끄고 추가 디스플레이를 분리하세요.",
+        "screenSharing": "화면 공유를 중지하고 공유 앱을 닫으세요.",
+        "blockedApp": "앱을 닫고 면접이 끝날 때까지 닫아 두세요.",
+        "aiTool": "AI 어시스턴트를 종료하고 닫아 두세요.",
+        "overlay": "면접 화면 위에 표시되는 앱을 닫으세요.",
+        "renamedApp": "앱을 종료하고 면접 중에는 다시 열지 마세요.",
+        "remoteSession": "원격 세션을 종료하고 이 컴퓨터를 직접 사용하세요.",
+        "virtualMachine": "가상 머신이 아닌 일반 컴퓨터에서 면접을 진행하세요.",
+        "securityMonitor": "데스크톱 앱의 보안 도구를 닫거나 변경하지 마세요.",
+        "windowAction": "면접 창을 열어 두고 화면에 표시되게 하세요.",
+        "generic": "면접 외에 연 것은 모두 닫으세요."
+      }
+    }
   }
 }

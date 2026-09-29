@@ -1,4 +1,7 @@
 import { objectNameKey, violationCopy, violationTitle, WARNING_IMAGES } from "./violationCopy";
+import interviewEn from "@/i18n/locales/en/interview.json";
+
+const valueAt = (path) => path.split(".").reduce((node, key) => node?.[key], interviewEn);
 
 describe("objectNameKey", () => {
   it("maps detector labels to camelCase copy keys", () => {
@@ -18,6 +21,7 @@ describe("violationCopy", () => {
     expect(byKey).toEqual({
       titleKey: "violations.cellPhone.title",
       descriptionKey: "violations.cellPhone.description",
+      fixKey: "inInterview.fix.cellPhone",
       imagePath: "/cell-phone.svg",
     });
 
@@ -51,11 +55,13 @@ describe("violationCopy", () => {
     expect(violationCopy("CAMERA_OFF")).toEqual({
       titleKey: "violations.cameraOff.title",
       descriptionKey: "violations.cameraOff.description",
+      fixKey: "inInterview.fix.cameraOff",
       imagePath: "/camera-off.svg",
     });
     expect(violationCopy("LOOKING_AWAY")).toEqual({
       titleKey: "violations.lookingAway.title",
       descriptionKey: "violations.lookingAway.description",
+      fixKey: "inInterview.fix.lookingAway",
       imagePath: "/looking-away.svg",
     });
   });
@@ -98,5 +104,21 @@ describe("violationTitle", () => {
 
   it("falls back to the default title", () => {
     expect(violationTitle(t, {}, "en")).toBe("violationWarning.defaultTitle");
+  });
+});
+
+describe("fix lines", () => {
+  it.each([
+    "NO_FACE",
+    "FACE_MISMATCH",
+    "MULTIPLE_FACES",
+    "PROHIBITED_OBJECT",
+    "MULTIPLE_OBJECTS",
+    "PROHIBITED_OBJECT:cell phone",
+    "LOOKING_AWAY",
+    "CAMERA_OFF",
+  ])("tells the candidate what to do about %s", (type) => {
+    const { fixKey } = violationCopy(type);
+    expect(typeof valueAt(fixKey)).toBe("string");
   });
 });

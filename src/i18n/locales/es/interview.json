@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "Actualiza la aplicación de escritorio",
     "description": "Esta versión de la aplicación de escritorio de LetsHyre está desactualizada. Ciérrala, instala la versión más reciente y vuelve a iniciar tu entrevista."
+  },
+  "inInterview": {
+    "timer": {
+      "label": "Tiempo restante",
+      "warning": "Quedan {{minutes}} min de tu entrevista.",
+      "warningHint": "Empieza a cerrar tu respuesta actual."
+    },
+    "offline": {
+      "message": "No tienes conexión. Tu respuesta está guardada en este dispositivo. Desconexión {{disconnects}} de {{max}}."
+    },
+    "held": {
+      "restrikeIn": "Contará como otra infracción en {{time}}",
+      "restrikeNow": "Contará como otra infracción en la próxima comprobación",
+      "restrikePending": "Si sigue así, contará como otra infracción."
+    },
+    "fix": {
+      "tabSwitch": "Quédate en esta pestaña hasta enviar tu última respuesta.",
+      "fullscreenExit": "Pulsa el botón de abajo para volver a pantalla completa y quédate en ella.",
+      "windowResize": "Mantén la ventana maximizada hasta que termine la entrevista.",
+      "windowFocus": "Cierra las demás ventanas y haz clic solo dentro de la entrevista.",
+      "noFace": "Siéntate frente a la cámara con toda la cara dentro del encuadre.",
+      "multipleFaces": "Pide a cualquier otra persona que salga de la sala y continúa.",
+      "prohibitedObject": "Saca el dispositivo ({{object}}) de la sala o déjalo bien fuera de la vista de la cámara.",
+      "multipleDevices": "Saca tus dispositivos ({{object}}) de la sala o déjalos bien fuera de la vista de la cámara.",
+      "cellPhone": "Apaga tu teléfono y déjalo fuera de tu alcance y de la vista.",
+      "lookingAway": "Mira la pantalla mientras respondes.",
+      "cameraOff": "Vuelve a encender la cámara y asegúrate de que nada la tape.",
+      "faceMismatch": "Mira a la cámara con buena luz y sin nadie más a la vista.",
+      "electron": {
+        "externalDisplay": "Desconecta ahora cualquier monitor, televisor o proyector adicional.",
+        "mirroredDisplay": "Desactiva la duplicación de pantalla y desconecta la pantalla adicional.",
+        "screenSharing": "Deja de compartir la pantalla y cierra la aplicación para compartir.",
+        "blockedApp": "Cierra la aplicación y mantenla cerrada hasta que termine la entrevista.",
+        "aiTool": "Cierra el asistente de IA y mantenlo cerrado.",
+        "overlay": "Cierra la aplicación que se muestra encima de la entrevista.",
+        "renamedApp": "Cierra la aplicación y no la vuelvas a abrir durante la entrevista.",
+        "remoteSession": "Termina la sesión remota y usa este ordenador directamente.",
+        "virtualMachine": "Haz la entrevista en un ordenador normal, no en una máquina virtual.",
+        "securityMonitor": "No cierres ni modifiques las herramientas de seguridad de la aplicación de escritorio.",
+        "windowAction": "Mantén la ventana de la entrevista abierta y en pantalla.",
+        "generic": "Cierra todo lo que hayas abierto además de la entrevista."
+      }
+    }
   }
 }

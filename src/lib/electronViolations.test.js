@@ -162,3 +162,28 @@ describe("firstDelivery", () => {
     expect(firstDelivery(undefined)).toBe(true);
   });
 });
+
+describe("fix lines", () => {
+  it.each([
+    "blocked_app",
+    "ai_tool",
+    "overlay",
+    "renamed_app",
+    "external_display",
+    "mirrored_display",
+    "remote_session",
+    "virtual_machine",
+    "suspicious_activity",
+    "agent_unreachable",
+    "window_minimize",
+    "fullscreen_exit",
+  ])("tells the candidate what to do about %s", (code) => {
+    const { fixKey } = resolveElectronViolation({ code });
+    expect(typeof valueAt(fixKey)).toBe("string");
+  });
+
+  it("has one for screen sharing reported by an older build", () => {
+    const { fixKey } = resolveElectronViolation({ event: "Screen sharing detected" });
+    expect(typeof valueAt(fixKey)).toBe("string");
+  });
+});

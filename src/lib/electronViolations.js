@@ -9,6 +9,7 @@ const electronCopy = (key) => ({
   key,
   titleKey: `violations.electron.${key}.title`,
   descriptionKey: `violations.electron.${key}.description`,
+  fixKey: `inInterview.fix.electron.${key}`,
 });
 
 const BY_KEY = {
@@ -27,6 +28,7 @@ const BY_KEY = {
     key: "fullscreenExit",
     titleKey: "violations.fullscreenExit.title",
     descriptionKey: "violations.fullscreenExit.description",
+    fixKey: "inInterview.fix.fullscreenExit",
   },
   generic: electronCopy("generic"),
   // The site's own focus tracking already strikes leaving the window, so these are only logged.
@@ -34,12 +36,14 @@ const BY_KEY = {
     key: "focusLost",
     titleKey: "violations.windowFocus.title",
     descriptionKey: "violations.windowFocus.description",
+    fixKey: "inInterview.fix.windowFocus",
     logOnly: true,
   },
   virtualDesktop: {
     key: "virtualDesktop",
     titleKey: "violations.windowFocus.title",
     descriptionKey: "violations.windowFocus.description",
+    fixKey: "inInterview.fix.windowFocus",
     logOnly: true,
   },
 };
@@ -106,6 +110,7 @@ export function resolveElectronViolation(payload = {}) {
     type: `ELECTRON_${copy.key.toUpperCase()}`,
     titleKey: copy.titleKey,
     descriptionKey: copy.descriptionKey,
+    fixKey: copy.fixKey,
     imagePath: copy.imagePath ?? WINDOW_IMAGE,
     strike: copy.strike === true,
     logOnly: copy.logOnly === true,
