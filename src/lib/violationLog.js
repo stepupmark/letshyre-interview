@@ -8,8 +8,12 @@
  * interview can always be reconstructed.
  *
  * Every record gets a `category` and `counts_as_strike` here, so a reviewer
- * can filter the log without knowing which hook wrote what.
+ * can filter the log without knowing which hook wrote what, and
+ * `recording_offset_ms` while the desktop app is recording, to find the moment
+ * in the video.
  */
+
+import { hasRecordingState, recordingOffsetMs, recordingSummary } from "@/lib/electronRecording";
 
 const listeners = new Set();
 
@@ -67,10 +71,12 @@ export function subscribeToViolationLog(listener) {
 }
 
 export function recordViolationEvent(event) {
+  const offset = recordingOffsetMs();
   const record = {
     ...event,
     category: event.category ?? categoryOf(event),
     counts_as_strike: event.counts_as_strike ?? false,
+    ...(offset === null ? {} : { recording_offset_ms: offset }),
   };
   track(record);
   for (const listener of listeners) listener(record);
@@ -150,6 +156,7 @@ export function recordInterviewEnded({ outcome, reason, strikes, ...rest }) {
       : {}),
     face_mismatches: faceMismatchSummary(),
     checks: checkSummary(),
+    ...(hasRecordingState() ? { recording: recordingSummary() } : {}),
     ...rest,
   });
 }

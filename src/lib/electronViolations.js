@@ -116,6 +116,9 @@ export function resolveElectronViolation(payload = {}) {
       ...(appNames(payload.apps).length ? { apps: appNames(payload.apps) } : {}),
       ...(typeof payload.id === "string" ? { electron_id: payload.id } : {}),
       ...(payload.redelivered ? { redelivered: true } : {}),
+      ...(Number.isFinite(payload.recordingOffsetMs)
+        ? { electron_recording_offset_ms: payload.recordingOffsetMs }
+        : {}),
       event: redactEvent(payload.event),
       severity: payload.severity,
       electron_count: payload.count,

@@ -18,6 +18,7 @@ import {
   subscribeToViolationLog,
 } from "@/lib/violationLog";
 import { logger } from "@/lib/logger";
+import { RUN_ID } from "@/lib/correlation";
 
 const DETECT_INTERVAL_MS = 5_000;
 const IMAGE_QUALITY = 0.7;
@@ -326,13 +327,16 @@ export function hasMultipleSignificantPeople(result) {
   const faceList = result.faces ?? result.faces_detected ?? result.face_details;
   let evaluatedFaceSpatial = false;
   if (Array.isArray(faceList) && faceList.length > 1) {
-    const areas = faceList.map(getDetectionArea).filter((a) => a > 0).sort((a, b) => b - a);
+    const areas = faceList
+      .map(getDetectionArea)
+      .filter((a) => a > 0)
+      .sort((a, b) => b - a);
     if (areas.length > 1) {
       evaluatedFaceSpatial = true;
       const primaryArea = areas[0];
-      const hasSignificantSecondary = areas.slice(1).some(
-        (area) => area / primaryArea >= MULTIPLE_FACES_SCALE_THRESHOLD,
-      );
+      const hasSignificantSecondary = areas
+        .slice(1)
+        .some((area) => area / primaryArea >= MULTIPLE_FACES_SCALE_THRESHOLD);
       if (hasSignificantSecondary) return true;
     }
   }
@@ -344,13 +348,16 @@ export function hasMultipleSignificantPeople(result) {
   const personList = Array.isArray(result.persons) ? result.persons : personObjects;
   let evaluatedPersonSpatial = false;
   if (personList.length > 1) {
-    const areas = personList.map(getDetectionArea).filter((a) => a > 0).sort((a, b) => b - a);
+    const areas = personList
+      .map(getDetectionArea)
+      .filter((a) => a > 0)
+      .sort((a, b) => b - a);
     if (areas.length > 1) {
       evaluatedPersonSpatial = true;
       const primaryArea = areas[0];
-      const hasSignificantSecondary = areas.slice(1).some(
-        (area) => area / primaryArea >= MULTIPLE_FACES_SCALE_THRESHOLD,
-      );
+      const hasSignificantSecondary = areas
+        .slice(1)
+        .some((area) => area / primaryArea >= MULTIPLE_FACES_SCALE_THRESHOLD);
       if (hasSignificantSecondary) return true;
     }
   }
@@ -412,9 +419,7 @@ export function detectViolations(result, classified) {
   // Detection misses a face half hidden behind a phone. Verification finding
   // one on the same frame means someone is there, so the phone still counts.
   const noneByDetect =
-    !result.verify_only &&
-    (!result.face_detected || result.face_count === 0) &&
-    verified !== "one";
+    !result.verify_only && (!result.face_detected || result.face_count === 0) && verified !== "one";
   const noneByVerify = verified === "none" && !verifyOutvoted(result);
   if (noneByDetect || noneByVerify) {
     return [faceViolation("NO_FACE", noneByDetect, noneByVerify)];
@@ -1258,6 +1263,7 @@ export function useProctoringSystem(
     return {
       interview_id: iid,
       session_id: sid,
+      run_id: RUN_ID,
       proctoring_token: token,
       source: "cv_detect",
       event_type: "batch_proctoring_logs",
@@ -1269,14 +1275,13 @@ export function useProctoringSystem(
   }
 
   async function flushQueue() {
-    const { interviewId: iid, sessionId: sid, proctoringToken: token } = sessionRef.current;
-
     if (hasFlushedRef.current || flushInFlightRef.current) return;
     if (queueRef.current.length === 0) {
       logger.log("[Proctoring] 📭 No detection results to flush.");
       return;
     }
-    if (!iid || !sid) {
+    const payload = buildFlushPayload();
+    if (!payload) {
       logger.warn("[Proctoring] ⚠️ Missing interview/session ID, cannot flush.");
       return;
     }
@@ -1285,18 +1290,6 @@ export function useProctoringSystem(
     // CONFIRMED delivery, so an exhausted retry budget still leaves the unload
     // path free to make a final attempt.
     flushInFlightRef.current = true;
-
-    const payload = {
-      interview_id: iid,
-      session_id: sid,
-      proctoring_token: token,
-      source: "cv_detect",
-      event_type: "batch_proctoring_logs",
-      payload: {
-        total_records: queueRef.current.length,
-        records: [...queueRef.current],
-      },
-    };
 
     try {
       logger.log(`[Proctoring] 🚀 Flushing ${queueRef.current.length} detection results…`);

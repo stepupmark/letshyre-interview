@@ -697,4 +697,27 @@ describe("sendUnloadFlush", () => {
     const lastKept = body.payload.records.at(-1).payload.i;
     expect(lastKept).toBe(1999);
   });
+
+  it("keeps the session and run ids when it trims", () => {
+    const stamped = (n) => ({
+      ...payloadWith(n),
+      run_id: "0123456789ab",
+      payload: {
+        total_records: n,
+        records: payloadWith(n).payload.records.map((record, i) => ({
+          ...record,
+          payload: { ...record.payload, recording_offset_ms: i * 5_000 },
+        })),
+      },
+    });
+    sendUnloadFlush(url, stamped(2000));
+
+    const sent = fetch.mock.calls[0][1].body;
+    const body = JSON.parse(sent);
+    expect(body.payload.truncated).toBe(true);
+    expect(body.session_id).toBe("s1");
+    expect(body.run_id).toBe("0123456789ab");
+    expect(sent.length).toBeLessThanOrEqual(60_000);
+    expect(body.payload.records.at(-1).payload.recording_offset_ms).toBe(1999 * 5_000);
+  });
 });

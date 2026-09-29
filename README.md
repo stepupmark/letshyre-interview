@@ -555,7 +555,17 @@ batch. Matches are logged once a minute; mismatches always.
   `type`, `outcome` (`raised`, `queued`, `cooldown`, `buffered`, `at_limit`,
   `terminated`, `duplicate`), `code`, `electron_category`, `apps`, `electron_id`,
   `severity`, `electron_count`, `redelivered`, `strike_key` / `strike_count` when it
-  struck, and `event` with any file path replaced by `[path]`.
+  struck, and `event` with any file path replaced by `[path]`. Newer desktop apps also
+  send `electron_recording_offset_ms`, where the app itself places it in the recording.
+- While the desktop app is recording, every `violation_decision` record has
+  `recording_offset_ms`: milliseconds since the app reported the recording live. It is
+  absent in a browser and after the recording stops.
+- Recording starts and errors are `SCREEN_RECORDING` records (`started`, `error`).
+  Inside the desktop app the `INTERVIEW_ENDED` record also carries
+  `recording: { started, startedAt, errors: [{ at, error }], stoppedAt }`.
+- The batch carries `session_id` and a per-page-load `run_id`, so records from before and
+  after a reload can be told apart. `logger.error` output starts with the same
+  `[run … session …]` tag.
 - The batch is sent **once**, after the submission has answered, so it holds how the
   interview ended (or 30s after the interview stopped, if it never does). A failed send
   retries when the connection comes back.
