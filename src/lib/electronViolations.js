@@ -48,7 +48,7 @@ const BY_KEY = {
   },
 };
 
-const KEY_BY_CODE = {
+export const KEY_BY_CODE = {
   blocked_app: "blockedApp",
   ai_tool: "aiTool",
   overlay: "overlay",
