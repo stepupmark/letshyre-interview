@@ -341,4 +341,40 @@ describe("useInterviewSession start failure", () => {
     expect(result.current.isActive).toBe(true);
     expect(result.current.startFailure).toBeNull();
   });
+
+  describe("holdStart", () => {
+    beforeEach(() => startMutateAsync.mockResolvedValue(FAKE_START_RESPONSE));
+
+    it("waits for beginStart before starting, so the clock can't run early", async () => {
+      const { result } = renderHook(() => useInterviewSession({ holdStart: true }));
+
+      await waitFor(() => expect(result.current.awaitingStart).toBe(true));
+      expect(startMutateAsync).not.toHaveBeenCalled();
+      expect(result.current.session).toBeNull();
+
+      const before = Date.now();
+      await act(() => result.current.beginStart());
+      expect(result.current.awaitingStart).toBe(false);
+      expect(result.current.isActive).toBe(true);
+      expect(result.current.session.end_time).toBeGreaterThanOrEqual(before);
+      expect(startMutateAsync).toHaveBeenCalledTimes(1);
+    });
+
+    it("restores a session in progress without waiting", async () => {
+      sessionStorage.setItem(
+        "interview_session",
+        JSON.stringify({
+          interview_id: "i-1",
+          session_id: "s-1",
+          end_time: Date.now() + 60_000,
+          status: SESSION_STATUS.ACTIVE,
+        }),
+      );
+      const { result } = renderHook(() => useInterviewSession({ holdStart: true }));
+
+      await waitFor(() => expect(result.current.isActive).toBe(true));
+      expect(result.current.awaitingStart).toBe(false);
+      expect(startMutateAsync).not.toHaveBeenCalled();
+    });
+  });
 });

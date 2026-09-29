@@ -2,8 +2,9 @@ import { Circle, Video, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
 import LanguageSelector from "@/components/LanguageSelector";
+import { GetHelp } from "./GetHelp";
 
-export default function Header({ attempted, total, violations = 0 }) {
+export default function Header({ attempted, total, violations = 0, sessionId }) {
   const { t } = useTranslation("interview");
 
   // Determine badge styling based on violations count
@@ -25,6 +26,7 @@ export default function Header({ attempted, total, violations = 0 }) {
         </p>
         <div className="flex gap-4">
           <LanguageSelector />
+          <GetHelp sessionId={sessionId} />
 
           <div
             role="status"

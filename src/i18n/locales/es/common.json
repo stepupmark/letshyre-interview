@@ -31,5 +31,45 @@
   },
   "desktopExit": {
     "backToDashboard": "Volver al panel"
+  },
+  "support": {
+    "referenceCode": {
+      "label": "Reference code",
+      "hint": "Quote this code if you contact support."
+    },
+    "help": {
+      "button": "Get help",
+      "title": "Need help?",
+      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "camera": {
+        "title": "Camera problems",
+        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+      },
+      "network": {
+        "title": "Connection problems",
+        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+      },
+      "display": {
+        "title": "Display problems",
+        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+      },
+      "contactTitle": "Contact support",
+      "email": "Email",
+      "website": "Website",
+      "close": "Close"
+    },
+    "whatNext": {
+      "title": "What happens next",
+      "completed": {
+        "review": "Your answers and the proctoring record go to the hiring team.",
+        "contact": "The hiring team reviews your interview and will contact you about next steps.",
+        "code": "Keep your reference code in case you need to contact support."
+      },
+      "ended": {
+        "submitted": "The answers you gave so far have been submitted.",
+        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps.",
+        "code": "If you think this was a mistake, contact support with your reference code."
+      }
+    }
   }
 }

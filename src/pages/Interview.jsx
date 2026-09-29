@@ -19,6 +19,7 @@ import TerminationNotice from "@components/interview/TerminationNotice";
 import { InitialLoadingUi } from "@/components/interview/InitialLoadingUi";
 import { InterviewStartFailed } from "@/components/interview/InterviewStartFailed";
 import { TerminatedUi } from "@/components/interview/TerminatedUi";
+import { PreStart } from "@/components/interview/PreStart";
 
 import { useInterviewSession } from "@hooks/interview/useInterviewSession";
 import { useTerminationNotice } from "@hooks/interview/useTerminationNotice";
@@ -49,6 +50,8 @@ export function Interview() {
     session,
     startFailure,
     retryStart,
+    awaitingStart,
+    beginStart,
     submitting,
     submit,
     incrementViolation,
@@ -61,7 +64,7 @@ export function Interview() {
     autoSubmitSuccess,
     autoSubmitError,
     autoSubmit,
-  } = useInterviewSession();
+  } = useInterviewSession({ holdStart: true });
 
   // Signal Electron when session ends — lifts kiosk mode, restores close/minimize.
   // No-op when running in a regular browser (window.electronAPI absent).
@@ -321,6 +324,7 @@ export function Interview() {
         onAcknowledge={acknowledgeTermination}
         strikes={strikes}
         securityBlock={securityBlock}
+        sessionId={session?.session_id}
       />
     );
   }
@@ -334,6 +338,10 @@ export function Interview() {
         onRetry={() => autoSubmit(autoSubmitReason)}
       />
     );
+  }
+
+  if (awaitingStart) {
+    return <PreStart onReady={beginStart} />;
   }
 
   if (!session && startFailure) {
@@ -359,6 +367,7 @@ export function Interview() {
           attempted={session.current_index}
           total={session.total_questions}
           violations={session?.violations || 0}
+          sessionId={session.session_id}
         />
       )}
 
@@ -367,7 +376,11 @@ export function Interview() {
           {session?.scorecard ? (
             <ErrorBoundary>
               <Suspense fallback={null}>
-                <ScoreCard scorecard={session.scorecard} endReason={session.end_reason} />
+                <ScoreCard
+                  scorecard={session.scorecard}
+                  endReason={session.end_reason}
+                  sessionId={session.session_id}
+                />
               </Suspense>
             </ErrorBoundary>
           ) : (

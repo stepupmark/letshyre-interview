@@ -1,15 +1,16 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import TerminationNotice from "./TerminationNotice";
 import { TERMINATION_REASONS } from "@/lib/terminationReasons";
 import interviewEn from "@/i18n/locales/en/interview.json";
+import commonEn from "@/i18n/locales/en/common.json";
 
 beforeAll(async () => {
   await i18next.use(initReactI18next).init({
     lng: "en",
-    resources: { en: { interview: interviewEn } },
-    ns: ["interview"],
+    resources: { en: { interview: interviewEn, common: commonEn } },
+    ns: ["interview", "common"],
     defaultNS: "interview",
     interpolation: { escapeValue: false },
   });
@@ -74,6 +75,8 @@ describe("TerminationNotice violation summary", () => {
       <TerminationNotice reason={reason} secondsLeft={5} onAcknowledge={() => {}} strikes={list} />,
     );
 
+  const strikeList = () => document.querySelector("ol");
+
   it("says outright which violation ended the interview", () => {
     renderSummary();
 
@@ -85,7 +88,7 @@ describe("TerminationNotice violation summary", () => {
   it("lists every strike without timestamps and highlights the last", () => {
     renderSummary();
 
-    const items = screen.getAllByRole("listitem");
+    const items = within(strikeList()).getAllByRole("listitem");
     expect(items.map((item) => item.textContent)).toEqual([
       "1. Tab Switch Detected",
       "2. Prohibited Device Detected (laptop)",
@@ -106,7 +109,7 @@ describe("TerminationNotice violation summary", () => {
     ]);
 
     expect(screen.getByText("Prohibited Devices Detected (phone and laptop)")).toBeInTheDocument();
-    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+    expect(strikeList()).toBeNull();
   });
 
   it("falls back to the general message when nothing was recorded", () => {
@@ -179,5 +182,34 @@ describe("TerminationNotice desktop-app block", () => {
     renderNotice(TERMINATION_REASONS.VIOLATION_LIMIT);
     expect(screen.getByRole("alertdialog")).toHaveAccessibleName();
     expect(screen.getByRole("button")).toHaveFocus();
+  });
+});
+
+describe("TerminationNotice support details", () => {
+  it("shows the reference code and what happens next", () => {
+    render(
+      <TerminationNotice
+        reason={TERMINATION_REASONS.VIOLATION_LIMIT}
+        secondsLeft={5}
+        onAcknowledge={() => {}}
+        sessionId="session-456"
+      />,
+    );
+    expect(screen.getByText("LH-3KHH-QEY5")).toBeInTheDocument();
+    expect(screen.getByText("What happens next")).toBeInTheDocument();
+    expect(screen.getByText(/answers you gave so far/)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/support\.(referenceCode|whatNext)/);
+  });
+
+  it("describes a timed-out interview as finished", () => {
+    render(
+      <TerminationNotice
+        reason={TERMINATION_REASONS.TIME_EXPIRED}
+        secondsLeft={5}
+        onAcknowledge={() => {}}
+        sessionId="s"
+      />,
+    );
+    expect(screen.getByText(/go to the hiring team/)).toBeInTheDocument();
   });
 });

@@ -20,6 +20,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import QuestionContent from "./QuestionContent";
 import CodeBlock from "./CodeBlock";
+import { ReferenceCode } from "./ReferenceCode";
+import { WhatHappensNext } from "./WhatHappensNext";
 import { END_REASONS } from "@/lib/terminationReasons";
 
 const CODE_TYPES = new Set(["CODE", "CODING", "PSEUDO_CODE", "SUDO_CODE"]);
@@ -30,10 +32,10 @@ const isAnswered = (q) =>
   q.type === "AUDIO" ? Boolean(q.audio_file_provided) : Boolean(q.answer_provided?.trim());
 
 const ENDINGS = {
-  [END_REASONS.COMPLETED]: { key: "completed", Icon: CheckCircle2 },
-  [END_REASONS.EXPIRED]: { key: "expired", Icon: Clock },
-  [END_REASONS.TERMINATED]: { key: "terminated", Icon: AlertTriangle },
-  [END_REASONS.AUTO_SUBMITTED]: { key: "autoSubmitted", Icon: Send },
+  [END_REASONS.COMPLETED]: { key: "completed", Icon: CheckCircle2, next: "completed" },
+  [END_REASONS.EXPIRED]: { key: "expired", Icon: Clock, next: "completed" },
+  [END_REASONS.TERMINATED]: { key: "terminated", Icon: AlertTriangle, next: "ended" },
+  [END_REASONS.AUTO_SUBMITTED]: { key: "autoSubmitted", Icon: Send, next: "ended" },
 };
 
 function ResultBadge({ q }) {
@@ -190,7 +192,7 @@ function CircularProgress({ value }) {
   );
 }
 
-export default function ScoreCard({ scorecard, endReason }) {
+export default function ScoreCard({ scorecard, endReason, sessionId }) {
   const { t } = useTranslation("interview");
   // ScoreCard mounting = the result screen is visible, so the score is on the
   // recording before it ends.
@@ -232,6 +234,11 @@ export default function ScoreCard({ scorecard, endReason }) {
             {t(`scoreCard.ending.${ending.key}.subtitle`)}
           </p>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <WhatHappensNext variant={ending.next} />
+        <ReferenceCode sessionId={sessionId} className="shrink-0 sm:text-end" />
       </div>
 
       <div className="space-y-8">
