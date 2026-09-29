@@ -272,6 +272,7 @@
       "warning": "आपके इंटरव्यू में {{minutes}} मिनट बचे हैं।",
       "warningHint": "अपना मौजूदा जवाब पूरा करना शुरू करें।"
     },
+    "virtualCamera": "आपके कैमरे में वेबकैम की जगह एक वर्चुअल कैमरा दिख रहा है। अपना असली वेबकैम जोड़ें।",
     "offline": {
       "message": "आप ऑफ़लाइन हैं। आपका जवाब इस डिवाइस पर सहेजा गया है। डिस्कनेक्ट {{disconnects}} / {{max}}।"
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "सिर्फ़ एक वर्चुअल कैमरा मिला",
+      "virtualBody": "इंटरव्यू के लिए आपका असली वेबकैम चाहिए, OBS जैसा वर्चुअल कैमरा नहीं। अपना बिल्ट-इन या USB वेबकैम जोड़ें या चालू करें, फिर दोबारा कोशिश करें।",
+      "tryAgain": "फिर से कोशिश करें",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

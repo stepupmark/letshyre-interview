@@ -248,6 +248,11 @@ so it can be cached for good; the CSP allows `'wasm-unsafe-eval'` for it. Models
   back is logged with how long it was off.
 - **Camera integrity (log only)** — a virtual camera (OBS, ManyCam…) or a picture that
   doesn't change for 10s is logged as `CAMERA_INTEGRITY`, never shown or counted.
+- **Which camera** — [`openRealCamera`](../src/lib/cameraSource.js) never opens a virtual
+  camera: if the default is one, it opens the first real webcam instead. With no real one the
+  pre-start camera check is blocked (no skipping, only Try again), and during the interview it
+  is logged as `VIRTUAL_CAMERA`. The name list is `virtualCameras` in the desktop contract,
+  the same one the desktop agent uses; an installed but unused virtual camera is fine.
 
 ## Leaving the interview
 

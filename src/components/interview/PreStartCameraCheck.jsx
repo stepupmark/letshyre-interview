@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, VideoOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCameraCheck } from "@hooks/interview/useCameraCheck";
 import CandidateCameraCard from "./CandidateCameraCard";
@@ -20,7 +20,11 @@ export function PreStartCameraCheck({ onFinish }) {
       <p className="mt-2 text-slate-600">{t("preStart.camera.description")}</p>
 
       <div className="mt-6 grid items-start gap-6 sm:grid-cols-[3fr_2fr]">
-        <CandidateCameraCard videoRef={videoRef} onStatusChange={check.onCameraStatus} />
+        <CandidateCameraCard
+          key={check.cameraKey}
+          videoRef={videoRef}
+          onStatusChange={check.onCameraStatus}
+        />
 
         <div aria-live="polite">
           {check.status === "starting" && (
@@ -30,7 +34,24 @@ export function PreStartCameraCheck({ onFinish }) {
             </p>
           )}
 
-          {check.status !== "unavailable" && check.status !== "starting" && (
+          {check.status === "blocked" && (
+            <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                <VideoOff className="h-4 w-4 shrink-0" />
+                {t("preStart.camera.virtualTitle")}
+              </p>
+              <p className="mt-1 text-sm text-red-700">{t("preStart.camera.virtualBody")}</p>
+              <Button
+                variant="outline"
+                onClick={check.retry}
+                className="mt-3 h-9 rounded-lg text-sm font-semibold"
+              >
+                {t("preStart.camera.tryAgain")}
+              </Button>
+            </div>
+          )}
+
+          {!["unavailable", "starting", "blocked"].includes(check.status) && (
             <ul className="space-y-2">
               {CHECKS.map((name) => {
                 const ok = check.status === "passed" || check.checks?.[name];

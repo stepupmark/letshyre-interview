@@ -272,6 +272,7 @@
       "warning": "Nog {{minutes}} min in je interview.",
       "warningHint": "Begin je huidige antwoord af te ronden."
     },
+    "virtualCamera": "Je camera toont een virtuele camera in plaats van je webcam. Sluit je echte webcam aan.",
     "offline": {
       "message": "Je bent offline. Je antwoord is op dit apparaat opgeslagen. Verbroken verbinding {{disconnects}} van {{max}}."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "Alleen een virtuele camera gevonden",
+      "virtualBody": "Voor het gesprek is je echte webcam nodig, geen virtuele camera zoals OBS. Sluit je ingebouwde of USB-webcam aan of zet hem aan en probeer het opnieuw.",
+      "tryAgain": "Opnieuw proberen",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

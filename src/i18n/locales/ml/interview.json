@@ -272,6 +272,7 @@
       "warning": "{{minutes}} min left in your interview.",
       "warningHint": "Start wrapping up your current answer."
     },
+    "virtualCamera": "നിങ്ങളുടെ ക്യാമറ വെബ്‌ക്യാമിന് പകരം ഒരു വെർച്വൽ ക്യാമറയാണ് കാണിക്കുന്നത്. നിങ്ങളുടെ യഥാർത്ഥ വെബ്‌ക്യാം കണക്റ്റ് ചെയ്യുക.",
     "offline": {
       "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "ഒരു വെർച്വൽ ക്യാമറ മാത്രമേ കണ്ടെത്തിയുള്ളൂ",
+      "virtualBody": "അഭിമുഖത്തിന് OBS പോലുള്ള വെർച്വൽ ക്യാമറയല്ല, നിങ്ങളുടെ യഥാർത്ഥ വെബ്‌ക്യാം വേണം. ബിൽറ്റ്-ഇൻ അല്ലെങ്കിൽ USB വെബ്‌ക്യാം കണക്റ്റ് ചെയ്യുകയോ ഓണാക്കുകയോ ചെയ്ത ശേഷം വീണ്ടും ശ്രമിക്കുക.",
+      "tryAgain": "വീണ്ടും ശ്രമിക്കുക",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

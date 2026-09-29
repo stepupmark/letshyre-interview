@@ -272,6 +272,7 @@
       "warning": "面接の残り時間は{{minutes}}分です。",
       "warningHint": "現在の回答をまとめ始めてください。"
     },
+    "virtualCamera": "カメラにウェブカメラではなく仮想カメラが映っています。実際のウェブカメラを接続してください。",
     "offline": {
       "message": "オフラインです。回答はこのデバイスに保存されています。接続切断 {{disconnects}} / {{max}} 回。"
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "仮想カメラしか見つかりません",
+      "virtualBody": "面接には OBS などの仮想カメラではなく、実際のウェブカメラが必要です。内蔵または USB のウェブカメラを接続するかオンにしてから、もう一度お試しください。",
+      "tryAgain": "もう一度試す",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

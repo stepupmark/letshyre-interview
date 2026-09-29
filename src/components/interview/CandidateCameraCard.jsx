@@ -1,19 +1,16 @@
 import { useEffect, useRef } from "react";
 import { logger } from "@/lib/logger";
+import { openRealCamera, VIRTUAL_ONLY } from "@/lib/cameraSource";
 
 export default function CandidateCameraCard({ videoRef, onStatusChange }) {
   const streamRef = useRef(null);
 
-  // Boot webcam on mount
   useEffect(() => {
     let cancelled = false;
 
     async function startCamera() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user", width: 1280, height: 720 },
-          audio: false,
-        });
+        const stream = await openRealCamera();
 
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
@@ -37,6 +34,12 @@ export default function CandidateCameraCard({ videoRef, onStatusChange }) {
           };
         }
       } catch (err) {
+        if (cancelled) return;
+        if (err?.code === VIRTUAL_ONLY) {
+          logger.warn("[Camera] Only a virtual camera is available");
+          onStatusChange?.("virtual-camera");
+          return;
+        }
         logger.error("[Camera] Boot failed:", err);
         onStatusChange?.("engine-error");
       }

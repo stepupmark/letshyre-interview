@@ -272,6 +272,7 @@
       "warning": "{{minutes}} min left in your interview.",
       "warningHint": "Start wrapping up your current answer."
     },
+    "virtualCamera": "మీ కెమెరా వెబ్‌క్యామ్‌కు బదులుగా వర్చువల్ కెమెరాను చూపిస్తోంది. మీ అసలు వెబ్‌క్యామ్‌ను కనెక్ట్ చేయండి.",
     "offline": {
       "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "వర్చువల్ కెమెరా మాత్రమే కనిపించింది",
+      "virtualBody": "ఇంటర్వ్యూకి OBS లాంటి వర్చువల్ కెమెరా కాదు, మీ అసలు వెబ్‌క్యామ్ కావాలి. మీ బిల్ట్-ఇన్ లేదా USB వెబ్‌క్యామ్‌ను కనెక్ట్ చేయండి లేదా ఆన్ చేయండి, తర్వాత మళ్లీ ప్రయత్నించండి.",
+      "tryAgain": "మళ్లీ ప్రయత్నించండి",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

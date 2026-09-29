@@ -96,6 +96,38 @@ describe("useCameraCheck", () => {
     expect(result.current.outcome.reason).toBe("camera_error");
   });
 
+  it("blocks, with no skipping, when only a virtual camera is available", () => {
+    const { result } = setup();
+    act(() => result.current.onCameraStatus("virtual-camera"));
+    expect(result.current.status).toBe("blocked");
+    expect(result.current.canSkip).toBe(false);
+    expect(result.current.canContinue).toBe(false);
+    expect(result.current.outcome.reason).toBe("virtual_camera");
+
+    act(() => vi.advanceTimersByTime(CAMERA_CHECK_START_TIMEOUT_MS));
+    act(() => result.current.onCameraStatus("engine-error"));
+    expect(result.current.status).toBe("blocked");
+  });
+
+  it("stays blocked even after the attempts are used up", () => {
+    const { result } = setup();
+    for (let i = 0; i <= CAMERA_CHECK_MAX_ATTEMPTS; i++) {
+      feed(dark, i * CAMERA_CHECK_ATTEMPT_MS);
+    }
+    act(() => result.current.onCameraStatus("virtual-camera"));
+    expect(result.current.canSkip).toBe(false);
+  });
+
+  it("retry remounts the camera and starts over", () => {
+    const { result } = setup();
+    act(() => result.current.onCameraStatus("virtual-camera"));
+    const key = result.current.cameraKey;
+    act(() => result.current.retry());
+    expect(result.current.status).toBe("starting");
+    expect(result.current.cameraKey).toBe(key + 1);
+    expect(startLocalWatch).toHaveBeenCalledTimes(2);
+  });
+
   it("gives up waiting for a first frame", () => {
     const { result } = setup();
     act(() => vi.advanceTimersByTime(CAMERA_CHECK_START_TIMEOUT_MS));

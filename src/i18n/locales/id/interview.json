@@ -272,6 +272,7 @@
       "warning": "Sisa {{minutes}} menit dalam wawancara Anda.",
       "warningHint": "Mulailah menyelesaikan jawaban Anda saat ini."
     },
+    "virtualCamera": "Kamera Anda menampilkan kamera virtual, bukan webcam Anda. Hubungkan webcam asli Anda.",
     "offline": {
       "message": "Anda sedang offline. Jawaban Anda tersimpan di perangkat ini. Terputus {{disconnects}} dari {{max}}."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "Hanya kamera virtual yang ditemukan",
+      "virtualBody": "Wawancara memerlukan webcam asli Anda, bukan kamera virtual seperti OBS. Hubungkan atau nyalakan webcam bawaan atau USB Anda, lalu coba lagi.",
+      "tryAgain": "Coba lagi",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

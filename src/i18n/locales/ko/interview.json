@@ -272,6 +272,7 @@
       "warning": "면접 시간이 {{minutes}}분 남았습니다.",
       "warningHint": "현재 답변을 마무리하기 시작하세요."
     },
+    "virtualCamera": "카메라에 웹캠이 아닌 가상 카메라가 표시되고 있습니다. 실제 웹캠을 연결하세요.",
     "offline": {
       "message": "오프라인 상태입니다. 답변은 이 기기에 저장되어 있습니다. 연결 끊김 {{disconnects}}/{{max}}회."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "가상 카메라만 찾았습니다",
+      "virtualBody": "면접에는 OBS 같은 가상 카메라가 아니라 실제 웹캠이 필요합니다. 내장 또는 USB 웹캠을 연결하거나 켠 다음 다시 시도하세요.",
+      "tryAgain": "다시 시도",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

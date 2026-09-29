@@ -272,6 +272,7 @@
       "warning": "Mancano {{minutes}} min al termine del colloquio.",
       "warningHint": "Inizia a concludere la risposta attuale."
     },
+    "virtualCamera": "La tua videocamera mostra una videocamera virtuale, non la tua webcam. Collega la tua webcam reale.",
     "offline": {
       "message": "Sei offline. La tua risposta è salvata su questo dispositivo. Disconnessione {{disconnects}} di {{max}}."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "È stata trovata solo una videocamera virtuale",
+      "virtualBody": "Il colloquio richiede la tua webcam reale, non una videocamera virtuale come OBS. Collega o accendi la webcam integrata o USB, poi riprova.",
+      "tryAgain": "Riprova",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

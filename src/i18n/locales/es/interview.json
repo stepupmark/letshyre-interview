@@ -272,6 +272,7 @@
       "warning": "Quedan {{minutes}} min de tu entrevista.",
       "warningHint": "Empieza a cerrar tu respuesta actual."
     },
+    "virtualCamera": "Tu cámara muestra una cámara virtual, no tu cámara web. Conecta tu cámara web real.",
     "offline": {
       "message": "No tienes conexión. Tu respuesta está guardada en este dispositivo. Desconexión {{disconnects}} de {{max}}."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "Solo se encontró una cámara virtual",
+      "virtualBody": "La entrevista necesita tu cámara web real, no una cámara virtual como OBS. Conecta o enciende tu cámara integrada o USB y vuelve a intentarlo.",
+      "tryAgain": "Intentar de nuevo",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

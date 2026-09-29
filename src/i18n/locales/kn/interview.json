@@ -272,6 +272,7 @@
       "warning": "{{minutes}} min left in your interview.",
       "warningHint": "Start wrapping up your current answer."
     },
+    "virtualCamera": "ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ವೆಬ್‌ಕ್ಯಾಮ್ ಬದಲು ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾವನ್ನು ತೋರಿಸುತ್ತಿದೆ. ನಿಮ್ಮ ನಿಜವಾದ ವೆಬ್‌ಕ್ಯಾಮ್ ಅನ್ನು ಸಂಪರ್ಕಿಸಿ.",
     "offline": {
       "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
     },
@@ -348,6 +349,9 @@
       "attempt": "Attempt {{attempt}} of {{max}}",
       "passed": "All set. You can start the interview.",
       "unavailable": "The camera check can't run on this device. You can still continue.",
+      "virtualTitle": "ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಮಾತ್ರ ಕಂಡುಬಂದಿದೆ",
+      "virtualBody": "ಸಂದರ್ಶನಕ್ಕೆ OBS ನಂತಹ ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಅಲ್ಲ, ನಿಮ್ಮ ನಿಜವಾದ ವೆಬ್‌ಕ್ಯಾಮ್ ಬೇಕು. ನಿಮ್ಮ ಅಂತರ್ನಿರ್ಮಿತ ಅಥವಾ USB ವೆಬ್‌ಕ್ಯಾಮ್ ಅನ್ನು ಸಂಪರ್ಕಿಸಿ ಅಥವಾ ಆನ್ ಮಾಡಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      "tryAgain": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
       "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
       "start": "Start interview",
       "continueAnyway": "Continue anyway"

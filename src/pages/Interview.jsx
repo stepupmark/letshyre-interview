@@ -187,14 +187,20 @@ export function Interview() {
     return () => clearTimeout(id);
   }, [isActive, isFaceRegistered]);
 
-  // Surface camera boot/playback failures to the candidate (previously a no-op
-  // because the status callback was never wired through LeftPanel).
-  const handleCameraStatus = useCallback((status) => {
-    if (status === "engine-error") {
-      recordViolationEvent({ source: "camera", type: "CAMERA_ERROR", outcome: "failed" });
-      toast.error("Camera unavailable. Check permissions/hardware — proctoring needs your camera.");
-    }
-  }, []);
+  const handleCameraStatus = useCallback(
+    (status) => {
+      if (status === "virtual-camera") {
+        recordViolationEvent({ source: "camera", type: "VIRTUAL_CAMERA", outcome: "blocked" });
+        toast.error(t("inInterview.virtualCamera", { ns: "interview" }), { duration: Infinity });
+      } else if (status === "engine-error") {
+        recordViolationEvent({ source: "camera", type: "CAMERA_ERROR", outcome: "failed" });
+        toast.error(
+          "Camera unavailable. Check permissions/hardware — proctoring needs your camera.",
+        );
+      }
+    },
+    [t],
+  );
 
   // The log is sent once, so it waits until the submission has answered.
   const logReady =

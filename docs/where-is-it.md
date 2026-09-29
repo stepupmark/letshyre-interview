@@ -16,14 +16,15 @@ To change X, open Y. Paths are under `src/` unless they start with a dot or a re
 
 ## Detection
 
-| To change                                 | Open                                                                                                                        |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| The camera loop, triggers, backoff        | `hooks/proctoring/useProctoringSystem.js`                                                                                   |
-| Identity checks and their limits          | `hooks/proctoring/useFaceMatchMonitoring.js`                                                                                |
-| Tab, focus, fullscreen and resize strikes | `hooks/proctoring/useViolationMonitor.js`                                                                                   |
-| On-device face and phone watches          | `hooks/proctoring/useLocalFaceWatch.js`, `useLocalObjectWatch.js`, `lib/localFaceDetector.js`, `lib/localObjectDetector.js` |
-| Camera off / virtual camera logging       | `useProctoringSystem.js` (`checkCamera`), `hooks/proctoring/useCameraIntegrity.js`                                          |
-| AI service calls                          | `services/proctoring.api.js`, `services/face.api.js`, `services/clients/aiDetection.js`                                     |
+| To change                                    | Open                                                                                                                        |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| The camera loop, triggers, backoff           | `hooks/proctoring/useProctoringSystem.js`                                                                                   |
+| Identity checks and their limits             | `hooks/proctoring/useFaceMatchMonitoring.js`                                                                                |
+| Tab, focus, fullscreen and resize strikes    | `hooks/proctoring/useViolationMonitor.js`                                                                                   |
+| On-device face and phone watches             | `hooks/proctoring/useLocalFaceWatch.js`, `useLocalObjectWatch.js`, `lib/localFaceDetector.js`, `lib/localObjectDetector.js` |
+| Camera off / virtual camera logging          | `useProctoringSystem.js` (`checkCamera`), `hooks/proctoring/useCameraIntegrity.js`                                          |
+| Which camera is opened (never a virtual one) | `lib/cameraSource.js`, `components/interview/CandidateCameraCard.jsx`                                                       |
+| AI service calls                             | `services/proctoring.api.js`, `services/face.api.js`, `services/clients/aiDetection.js`                                     |
 
 ## Desktop app
 
