@@ -3,6 +3,7 @@ import { Ban, RefreshCcw, ServerCrash, AlertTriangle, WifiOff } from "lucide-rea
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { BackToDashboardButton } from "@/components/interview/BackToDashboardButton";
+import { ReferenceCode } from "@/components/interview/ReferenceCode";
 import { releaseDesktop } from "@/lib/desktopExit";
 import { START_FAILURE, isRetryableStartFailure, startFailureReason } from "@/lib/startFailure";
 
@@ -55,6 +56,8 @@ export function InterviewStartFailed({ failure, onRetry }) {
         )}
         <BackToDashboardButton reason={reason} />
       </div>
+
+      <ReferenceCode className="mt-8" />
     </div>
   );
 }

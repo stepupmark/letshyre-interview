@@ -71,6 +71,19 @@ export const TERMINATION_NOTICE_SECONDS = num(
 // costs one more strike.
 export const HELD_RESTRIKE_SECONDS = num(import.meta.env.VITE_AI_HELD_RESTRIKE_SECONDS, 30);
 
+// The camera check before the interview. Every check has to hold for
+// CAMERA_CHECK_HOLD_MS; each attempt gets CAMERA_CHECK_ATTEMPT_MS, and after
+// CAMERA_CHECK_MAX_ATTEMPTS failed ones the candidate may continue anyway.
+export const CAMERA_CHECK_HOLD_MS = 1_500;
+export const CAMERA_CHECK_ATTEMPT_MS = 10_000;
+export const CAMERA_CHECK_MAX_ATTEMPTS = 3;
+// A camera or detector that hasn't produced a frame by then is treated as unavailable.
+export const CAMERA_CHECK_START_TIMEOUT_MS = 20_000;
+// Mean luminance (0-255) a frame needs to count as lit well enough.
+export const CAMERA_CHECK_MIN_LUMINANCE = num(import.meta.env.VITE_CAMERA_CHECK_MIN_LUMINANCE, 60);
+// How far the face centre may sit from the frame centre, as a share of the frame.
+export const CAMERA_CHECK_CENTRE_TOLERANCE = 0.2;
+
 // Generating the questions is slow, so the start request gets longer than usual.
 export const START_TIMEOUT_MS = 60_000;
 export const START_RETRY_DELAY_MS = 3_000;

@@ -65,4 +65,17 @@ describe("InterviewStartFailed", () => {
     render(<InterviewStartFailed failure={{ kind: "network", message: "" }} onRetry={() => {}} />);
     expect(screen.queryByText("Back to dashboard")).not.toBeInTheDocument();
   });
+
+  it("shows the desktop app's reference code, since there is no session yet", async () => {
+    window.electronAPI = {
+      getSupportContact: vi.fn().mockResolvedValue({ referenceCode: "LH-ABCD-EFGH" }),
+    };
+    render(<InterviewStartFailed failure={{ kind: "server", message: "" }} onRetry={() => {}} />);
+    expect(await screen.findByText("LH-ABCD-EFGH")).toBeInTheDocument();
+  });
+
+  it("shows no reference code in a plain browser", () => {
+    render(<InterviewStartFailed failure={{ kind: "server", message: "" }} onRetry={() => {}} />);
+    expect(screen.queryByText("Reference code")).not.toBeInTheDocument();
+  });
 });

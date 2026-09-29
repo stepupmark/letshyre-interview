@@ -72,8 +72,16 @@ function resolveRoleSelection() {
   };
 }
 
-export function useInterviewSession() {
+/**
+ * `holdStart` leaves a fresh interview unstarted, with `awaitingStart` set,
+ * until `beginStart()` is called, so nothing runs its clock before the
+ * candidate is ready. A restored session carries on straight away.
+ */
+export function useInterviewSession({ holdStart = false } = {}) {
   const [session, setSession] = useState(null);
+
+  const [awaitingStart, setAwaitingStart] = useState(false);
+  const holdStartRef = useRef(holdStart);
 
   const [loading, setLoading] = useState(true);
 
@@ -252,10 +260,10 @@ export function useInterviewSession() {
           }
         }
 
-        /**
-         * No valid session found
-         * start fresh session
-         */
+        if (holdStartRef.current) {
+          setAwaitingStart(true);
+          return;
+        }
         await startNewSessionRef.current();
       } finally {
         setLoading(false);
@@ -517,10 +525,17 @@ export function useInterviewSession() {
 
   const retryStart = useCallback(() => startNewSessionRef.current(), []);
 
+  const beginStart = useCallback(() => {
+    setAwaitingStart(false);
+    return startNewSessionRef.current();
+  }, []);
+
   return {
     session,
     startFailure,
     retryStart,
+    awaitingStart,
+    beginStart,
     loading: loading || startMutation.isPending,
     submitting: submitMutation.isPending || autoSubmitting,
     submit,

@@ -261,5 +261,48 @@
   "desktopUpdate": {
     "heading": "ഡെസ്‌ക്‌ടോപ്പ് ആപ്പ് അപ്‌ഡേറ്റ് ചെയ്യുക",
     "description": "LetsHyre ഡെസ്‌ക്‌ടോപ്പ് ആപ്പിന്റെ ഈ പതിപ്പ് പഴയതാണ്. അത് അടച്ച്, ഏറ്റവും പുതിയ പതിപ്പ് ഇൻസ്റ്റാൾ ചെയ്ത്, തുടർന്ന് നിങ്ങളുടെ അഭിമുഖം വീണ്ടും ആരംഭിക്കുക."
+  },
+  "preStart": {
+    "rules": {
+      "title": "Before you begin",
+      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
+      "strikesTitle": "These count as a strike",
+      "strikes": {
+        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
+        "people": "Someone else in view, or nobody in view",
+        "devices": "A phone or another prohibited device in view",
+        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+      },
+      "warningsTitle": "These only give you a warning",
+      "warnings": {
+        "faceFrame": "Your face briefly leaving the frame",
+        "lighting": "Poor lighting or an unclear view of your face",
+        "cameraPause": "Your camera pausing for a moment"
+      },
+      "limitsTitle": "The limits",
+      "limits": {
+        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
+        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
+        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
+        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+      },
+      "acknowledge": "I understand"
+    },
+    "camera": {
+      "title": "Camera check",
+      "description": "Let's make sure the camera can see you clearly before the interview starts.",
+      "starting": "Starting the camera check…",
+      "checks": {
+        "oneFace": "Only your face is in view",
+        "centred": "Your face is in the middle of the frame",
+        "bright": "Your face is well lit"
+      },
+      "attempt": "Attempt {{attempt}} of {{max}}",
+      "passed": "All set. You can start the interview.",
+      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
+      "start": "Start interview",
+      "continueAnyway": "Continue anyway"
+    }
   }
 }

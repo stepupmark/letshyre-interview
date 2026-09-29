@@ -3,12 +3,13 @@ import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import ScoreCard from "./ScoreCard";
 import interviewEn from "@/i18n/locales/en/interview.json";
+import commonEn from "@/i18n/locales/en/common.json";
 
 beforeAll(async () => {
   await i18next.use(initReactI18next).init({
     lng: "en",
-    resources: { en: { interview: interviewEn } },
-    ns: ["interview"],
+    resources: { en: { interview: interviewEn, common: commonEn } },
+    ns: ["interview", "common"],
     defaultNS: "interview",
     interpolation: { escapeValue: false },
   });
@@ -189,5 +190,24 @@ describe("ScoreCard ending", () => {
     renderCard();
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Interview complete");
+  });
+});
+
+describe("ScoreCard next steps", () => {
+  it("shows the reference code for the session", () => {
+    renderCard({ sessionId: "session-456" });
+
+    expect(screen.getByText("LH-3KHH-QEY5")).toBeInTheDocument();
+    expect(screen.getByText("What happens next")).toBeInTheDocument();
+  });
+
+  it("explains a cut-short interview differently from a finished one", () => {
+    renderCard({ endReason: "terminated" });
+    expect(screen.getByText(/answers you gave so far/)).toBeInTheDocument();
+  });
+
+  it("has no code to show without a session", () => {
+    renderCard();
+    expect(screen.queryByText("Reference code")).not.toBeInTheDocument();
   });
 });
