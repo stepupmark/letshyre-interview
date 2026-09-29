@@ -22,6 +22,7 @@ const BY_KEY = {
   screenSharing: { ...electronCopy("screenSharing"), imagePath: "/laptop.svg" },
   remoteSession: electronCopy("remoteSession"),
   virtualMachine: electronCopy("virtualMachine"),
+  virtualCamera: electronCopy("virtualCamera"),
   securityMonitor: electronCopy("securityMonitor"),
   windowAction: electronCopy("windowAction"),
   fullscreenExit: {
@@ -57,6 +58,7 @@ export const KEY_BY_CODE = {
   mirrored_display: "mirroredDisplay",
   remote_session: "remoteSession",
   virtual_machine: "virtualMachine",
+  virtual_camera: "virtualCamera",
   suspicious_activity: "generic",
   agent_unreachable: "securityMonitor",
   check_unverified: "securityMonitor",
@@ -75,6 +77,7 @@ export const ELECTRON_IMAGES = [
 export function getElectronViolationKey(event = "") {
   const e = String(event).toLowerCase();
   if (e.includes("could not be verified")) return "securityMonitor";
+  if (e.includes("virtual camera")) return "virtualCamera";
   if (e.includes("overlay")) return "overlay";
   if (e.includes("mirrored display")) return "mirroredDisplay";
   if (e.includes("hdmi") || e.includes("display")) return "externalDisplay";

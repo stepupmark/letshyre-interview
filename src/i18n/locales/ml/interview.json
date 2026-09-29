@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "വെർച്വൽ മെഷീൻ കണ്ടെത്തി",
         "description": "അഭിമുഖം ഒരു വെർച്വൽ മെഷീനിനുള്ളിലാണ് പ്രവർത്തിച്ചിരുന്നത്, ഇത് അനുവദനീയമല്ല."
+      },
+      "virtualCamera": {
+        "title": "വെർച്വൽ ക്യാമറ കണ്ടെത്തി",
+        "description": "ഈ കമ്പ്യൂട്ടറിൽ ഒരു വെർച്വൽ ക്യാമറ ആപ്പ് കണ്ടെത്തി. ഇതിന് നിങ്ങൾക്ക് പകരം അഭിമുഖത്തിൽ ഒരു വീഡിയോ കാണിക്കാൻ കഴിയും."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Quit the app and don't open it again during the interview.",
         "remoteSession": "End the remote session and use this computer directly.",
         "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "virtualCamera": "വെർച്വൽ ക്യാമറ ആപ്പ് ഓഫാക്കുകയോ അൺഇൻസ്റ്റാൾ ചെയ്യുകയോ ചെയ്യുക, അങ്ങനെ നിങ്ങളുടെ യഥാർത്ഥ വെബ്‌ക്യാം മാത്രം ഉപയോഗിക്കപ്പെടും.",
         "securityMonitor": "Don't close or change the desktop app's security tools.",
         "windowAction": "Keep the interview window open and on screen.",
         "generic": "Close anything you opened besides the interview."

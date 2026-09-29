@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "వర్చువల్ మెషీన్ గుర్తించబడింది",
         "description": "ఇంటర్వ్యూ వర్చువల్ మెషీన్ లోపల రన్ అవుతోంది, దీనికి అనుమతి లేదు."
+      },
+      "virtualCamera": {
+        "title": "వర్చువల్ కెమెరా కనుగొనబడింది",
+        "description": "ఈ కంప్యూటర్‌లో వర్చువల్ కెమెరా యాప్ కనిపించింది. ఇది మీకు బదులుగా ఇంటర్వ్యూలో ఒక వీడియోను చూపించగలదు."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Quit the app and don't open it again during the interview.",
         "remoteSession": "End the remote session and use this computer directly.",
         "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "virtualCamera": "వర్చువల్ కెమెరా యాప్‌ను ఆపండి లేదా అన్‌ఇన్‌స్టాల్ చేయండి, అప్పుడు మీ అసలు వెబ్‌క్యామ్ మాత్రమే ఉపయోగించబడుతుంది.",
         "securityMonitor": "Don't close or change the desktop app's security tools.",
         "windowAction": "Keep the interview window open and on screen.",
         "generic": "Close anything you opened besides the interview."

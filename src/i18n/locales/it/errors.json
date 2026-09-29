@@ -6,11 +6,26 @@
     "goBack": "Indietro",
     "returnHome": "Torna alla home",
     "reloadPage": "Ricarica la pagina",
-    "default": { "title": "Errore imprevisto dell'applicazione", "description": "Si è verificato un problema imprevisto durante l'elaborazione della richiesta." },
-    "unauthorized": { "title": "Accesso non autorizzato", "description": "La sessione corrente non è autorizzata ad accedere a questa risorsa." },
-    "forbidden": { "title": "Accesso limitato", "description": "Al momento non dispone dell'autorizzazione per continuare." },
-    "notFound": { "title": "Pagina non trovata", "description": "Il percorso richiesto potrebbe essere stato rimosso o non è disponibile." },
-    "serverError": { "title": "Errore interno del server", "description": "Il server ha riscontrato un problema durante la gestione della richiesta." }
+    "default": {
+      "title": "Errore imprevisto dell'applicazione",
+      "description": "Si è verificato un problema imprevisto durante l'elaborazione della richiesta."
+    },
+    "unauthorized": {
+      "title": "Accesso non autorizzato",
+      "description": "La sessione corrente non è autorizzata ad accedere a questa risorsa."
+    },
+    "forbidden": {
+      "title": "Accesso limitato",
+      "description": "Al momento non dispone dell'autorizzazione per continuare."
+    },
+    "notFound": {
+      "title": "Pagina non trovata",
+      "description": "Il percorso richiesto potrebbe essere stato rimosso o non è disponibile."
+    },
+    "serverError": {
+      "title": "Errore interno del server",
+      "description": "Il server ha riscontrato un problema durante la gestione della richiesta."
+    }
   },
   "notFoundPage": {
     "badge": "Errore 404",

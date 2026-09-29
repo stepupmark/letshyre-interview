@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "Macchina virtuale rilevata",
         "description": "Il colloquio era in esecuzione in una macchina virtuale, il che non è consentito."
+      },
+      "virtualCamera": {
+        "title": "Videocamera virtuale rilevata",
+        "description": "Su questo computer è stata trovata un'app di videocamera virtuale. Può mostrare al colloquio un video al posto tuo."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Chiudi l'app e non riaprirla durante il colloquio.",
         "remoteSession": "Termina la sessione remota e usa direttamente questo computer.",
         "virtualMachine": "Svolgi il colloquio su un computer normale, non su una macchina virtuale.",
+        "virtualCamera": "Disattiva o disinstalla l'app di videocamera virtuale, così viene usata solo la tua webcam reale.",
         "securityMonitor": "Non chiudere né modificare gli strumenti di sicurezza dell'app desktop.",
         "windowAction": "Tieni la finestra del colloquio aperta e sullo schermo.",
         "generic": "Chiudi tutto ciò che hai aperto oltre al colloquio."

@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "Virtual Machine Detected",
         "description": "The interview was running inside a virtual machine, which isn't allowed."
+      },
+      "virtualCamera": {
+        "title": "Virtual Camera Detected",
+        "description": "A virtual camera app was found on this computer. It can show the interview a video instead of you."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Quit the app and don't open it again during the interview.",
         "remoteSession": "End the remote session and use this computer directly.",
         "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "virtualCamera": "Turn off or uninstall the virtual camera app so only your real webcam is used.",
         "securityMonitor": "Don't close or change the desktop app's security tools.",
         "windowAction": "Keep the interview window open and on screen.",
         "generic": "Close anything you opened besides the interview."

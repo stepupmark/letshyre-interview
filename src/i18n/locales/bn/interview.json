@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "ভার্চুয়াল মেশিন শনাক্ত হয়েছে",
         "description": "সাক্ষাৎকারটি একটি ভার্চুয়াল মেশিনের ভিতরে চলছিল, যা অনুমোদিত নয়।"
+      },
+      "virtualCamera": {
+        "title": "ভার্চুয়াল ক্যামেরা শনাক্ত হয়েছে",
+        "description": "এই কম্পিউটারে একটি ভার্চুয়াল ক্যামেরা অ্যাপ পাওয়া গেছে। এটি আপনার বদলে ইন্টারভিউতে একটি ভিডিও দেখাতে পারে।"
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Quit the app and don't open it again during the interview.",
         "remoteSession": "End the remote session and use this computer directly.",
         "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "virtualCamera": "ভার্চুয়াল ক্যামেরা অ্যাপটি বন্ধ বা আনইনস্টল করুন, যাতে শুধু আপনার আসল ওয়েবক্যাম ব্যবহার হয়।",
         "securityMonitor": "Don't close or change the desktop app's security tools.",
         "windowAction": "Keep the interview window open and on screen.",
         "generic": "Close anything you opened besides the interview."

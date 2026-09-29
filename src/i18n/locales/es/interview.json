@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "Máquina virtual detectada",
         "description": "La entrevista se estaba ejecutando dentro de una máquina virtual, lo cual no está permitido."
+      },
+      "virtualCamera": {
+        "title": "Cámara virtual detectada",
+        "description": "Se encontró una aplicación de cámara virtual en este ordenador. Puede mostrar a la entrevista un vídeo en lugar de a ti."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Cierra la aplicación y no la vuelvas a abrir durante la entrevista.",
         "remoteSession": "Termina la sesión remota y usa este ordenador directamente.",
         "virtualMachine": "Haz la entrevista en un ordenador normal, no en una máquina virtual.",
+        "virtualCamera": "Desactiva o desinstala la aplicación de cámara virtual para que solo se use tu cámara web real.",
         "securityMonitor": "No cierres ni modifiques las herramientas de seguridad de la aplicación de escritorio.",
         "windowAction": "Mantén la ventana de la entrevista abierta y en pantalla.",
         "generic": "Cierra todo lo que hayas abierto además de la entrevista."

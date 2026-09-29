@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "ವರ್ಚುವಲ್ ಯಂತ್ರ ಪತ್ತೆಯಾಗಿದೆ",
         "description": "ಸಂದರ್ಶನವು ವರ್ಚುವಲ್ ಯಂತ್ರದೊಳಗೆ ಚಾಲನೆಯಲ್ಲಿತ್ತು, ಇದಕ್ಕೆ ಅನುಮತಿಯಿಲ್ಲ."
+      },
+      "virtualCamera": {
+        "title": "ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಪತ್ತೆಯಾಗಿದೆ",
+        "description": "ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಆ್ಯಪ್ ಕಂಡುಬಂದಿದೆ. ಇದು ನಿಮ್ಮ ಬದಲು ಸಂದರ್ಶನಕ್ಕೆ ವೀಡಿಯೊ ತೋರಿಸಬಹುದು."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Quit the app and don't open it again during the interview.",
         "remoteSession": "End the remote session and use this computer directly.",
         "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "virtualCamera": "ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಆ್ಯಪ್ ಅನ್ನು ಆಫ್ ಮಾಡಿ ಅಥವಾ ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ, ಆಗ ನಿಮ್ಮ ನಿಜವಾದ ವೆಬ್‌ಕ್ಯಾಮ್ ಮಾತ್ರ ಬಳಕೆಯಾಗುತ್ತದೆ.",
         "securityMonitor": "Don't close or change the desktop app's security tools.",
         "windowAction": "Keep the interview window open and on screen.",
         "generic": "Close anything you opened besides the interview."

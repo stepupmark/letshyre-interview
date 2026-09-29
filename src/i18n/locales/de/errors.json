@@ -6,11 +6,26 @@
     "goBack": "Zurück",
     "returnHome": "Zur Startseite",
     "reloadPage": "Seite neu laden",
-    "default": { "title": "Unerwarteter Anwendungsfehler", "description": "Bei der Verarbeitung Ihrer Anfrage ist ein unerwarteter Fehler aufgetreten." },
-    "unauthorized": { "title": "Nicht autorisierter Zugriff", "description": "Ihre aktuelle Sitzung ist nicht berechtigt, auf diese Ressource zuzugreifen." },
-    "forbidden": { "title": "Zugriff eingeschränkt", "description": "Sie haben derzeit keine Berechtigung, fortzufahren." },
-    "notFound": { "title": "Seite nicht gefunden", "description": "Die angeforderte Route wurde möglicherweise entfernt oder ist nicht verfügbar." },
-    "serverError": { "title": "Interner Serverfehler", "description": "Beim Server ist bei der Bearbeitung Ihrer Anfrage ein Fehler aufgetreten." }
+    "default": {
+      "title": "Unerwarteter Anwendungsfehler",
+      "description": "Bei der Verarbeitung Ihrer Anfrage ist ein unerwarteter Fehler aufgetreten."
+    },
+    "unauthorized": {
+      "title": "Nicht autorisierter Zugriff",
+      "description": "Ihre aktuelle Sitzung ist nicht berechtigt, auf diese Ressource zuzugreifen."
+    },
+    "forbidden": {
+      "title": "Zugriff eingeschränkt",
+      "description": "Sie haben derzeit keine Berechtigung, fortzufahren."
+    },
+    "notFound": {
+      "title": "Seite nicht gefunden",
+      "description": "Die angeforderte Route wurde möglicherweise entfernt oder ist nicht verfügbar."
+    },
+    "serverError": {
+      "title": "Interner Serverfehler",
+      "description": "Beim Server ist bei der Bearbeitung Ihrer Anfrage ein Fehler aufgetreten."
+    }
   },
   "notFoundPage": {
     "badge": "Fehler 404",

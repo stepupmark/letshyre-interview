@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "மெய்நிகர் இயந்திரம் கண்டறியப்பட்டது",
         "description": "நேர்காணல் ஒரு மெய்நிகர் இயந்திரத்திற்குள் இயங்கியது, இது அனுமதிக்கப்படவில்லை."
+      },
+      "virtualCamera": {
+        "title": "மெய்நிகர் கேமரா கண்டறியப்பட்டது",
+        "description": "இந்தக் கணினியில் ஒரு மெய்நிகர் கேமரா ஆப் கண்டறியப்பட்டது. அது உங்களுக்குப் பதிலாக நேர்காணலில் ஒரு வீடியோவைக் காட்டலாம்."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Quit the app and don't open it again during the interview.",
         "remoteSession": "End the remote session and use this computer directly.",
         "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "virtualCamera": "மெய்நிகர் கேமரா ஆப்பை அணைக்கவும் அல்லது நீக்கவும், அப்போது உங்கள் உண்மையான வெப்கேம் மட்டுமே பயன்படும்.",
         "securityMonitor": "Don't close or change the desktop app's security tools.",
         "windowAction": "Keep the interview window open and on screen.",
         "generic": "Close anything you opened besides the interview."

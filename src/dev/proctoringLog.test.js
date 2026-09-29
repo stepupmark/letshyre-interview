@@ -11,7 +11,7 @@ import {
   shadowRuleOf,
 } from "./proctoringLog";
 
-const appLog = fs.readFileSync(path.resolve("src/dev/__fixtures__/app.log"), "utf8");
+const appLog = fs.readFileSync(path.resolve("src/dev/__fixtures__/app-log.txt"), "utf8");
 
 describe("extractSessions", () => {
   it("reads the batch the site submits", () => {

@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "Virtuelle Maschine erkannt",
         "description": "Das Interview lief in einer virtuellen Maschine, was nicht erlaubt ist."
+      },
+      "virtualCamera": {
+        "title": "Virtuelle Kamera erkannt",
+        "description": "Auf diesem Computer wurde eine App für eine virtuelle Kamera gefunden. Sie kann dem Interview statt dir ein Video zeigen."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Beenden Sie die App und öffnen Sie sie während des Interviews nicht erneut.",
         "remoteSession": "Beenden Sie die Remotesitzung und nutzen Sie diesen Computer direkt.",
         "virtualMachine": "Führen Sie das Interview auf einem normalen Computer durch, nicht in einer virtuellen Maschine.",
+        "virtualCamera": "Schalte die App für die virtuelle Kamera aus oder deinstalliere sie, damit nur deine echte Webcam verwendet wird.",
         "securityMonitor": "Schließen oder verändern Sie die Sicherheitsfunktionen der Desktop-App nicht.",
         "windowAction": "Lassen Sie das Interviewfenster geöffnet und auf dem Bildschirm.",
         "generic": "Schließen Sie alles, was Sie außer dem Interview geöffnet haben."

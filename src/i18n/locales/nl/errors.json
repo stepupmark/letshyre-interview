@@ -6,11 +6,26 @@
     "goBack": "Terug",
     "returnHome": "Terug naar start",
     "reloadPage": "Pagina vernieuwen",
-    "default": { "title": "Onverwachte toepassingsfout", "description": "Er is een onverwacht probleem opgetreden bij het verwerken van uw verzoek." },
-    "unauthorized": { "title": "Onbevoegde toegang", "description": "Uw huidige sessie is niet gemachtigd om deze bron te openen." },
-    "forbidden": { "title": "Toegang beperkt", "description": "U heeft momenteel geen toestemming om verder te gaan." },
-    "notFound": { "title": "Pagina niet gevonden", "description": "De opgevraagde route is mogelijk verwijderd of niet beschikbaar." },
-    "serverError": { "title": "Interne serverfout", "description": "De server is een probleem tegengekomen bij het verwerken van uw verzoek." }
+    "default": {
+      "title": "Onverwachte toepassingsfout",
+      "description": "Er is een onverwacht probleem opgetreden bij het verwerken van uw verzoek."
+    },
+    "unauthorized": {
+      "title": "Onbevoegde toegang",
+      "description": "Uw huidige sessie is niet gemachtigd om deze bron te openen."
+    },
+    "forbidden": {
+      "title": "Toegang beperkt",
+      "description": "U heeft momenteel geen toestemming om verder te gaan."
+    },
+    "notFound": {
+      "title": "Pagina niet gevonden",
+      "description": "De opgevraagde route is mogelijk verwijderd of niet beschikbaar."
+    },
+    "serverError": {
+      "title": "Interne serverfout",
+      "description": "De server is een probleem tegengekomen bij het verwerken van uw verzoek."
+    }
   },
   "notFoundPage": {
     "badge": "Fout 404",

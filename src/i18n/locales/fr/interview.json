@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "Machine virtuelle détectée",
         "description": "L'entretien s'exécutait dans une machine virtuelle, ce qui n'est pas autorisé."
+      },
+      "virtualCamera": {
+        "title": "Caméra virtuelle détectée",
+        "description": "Une application de caméra virtuelle a été trouvée sur cet ordinateur. Elle peut montrer une vidéo à l'entretien à votre place."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Quittez l'application et ne la rouvrez pas pendant l'entretien.",
         "remoteSession": "Mettez fin à la session à distance et utilisez directement cet ordinateur.",
         "virtualMachine": "Passez l'entretien sur un ordinateur classique, pas dans une machine virtuelle.",
+        "virtualCamera": "Désactivez ou désinstallez l'application de caméra virtuelle pour que seule votre vraie webcam soit utilisée.",
         "securityMonitor": "Ne fermez pas et ne modifiez pas les outils de sécurité de l'application de bureau.",
         "windowAction": "Gardez la fenêtre de l'entretien ouverte et à l'écran.",
         "generic": "Fermez tout ce que vous avez ouvert en dehors de l'entretien."

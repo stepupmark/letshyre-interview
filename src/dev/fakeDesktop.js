@@ -20,6 +20,11 @@ const SAMPLES = {
   },
   remote_session: { category: "agent", apps: ["AnyDesk"], event: "Remote desktop session active" },
   virtual_machine: { category: "agent", event: "Virtual machine detected" },
+  virtual_camera: {
+    category: "agent",
+    apps: ["OBS Virtual Camera"],
+    event: "Virtual camera detected",
+  },
   suspicious_activity: { category: null, event: "Suspicious activity detected" },
   agent_unreachable: { category: "agent", event: "Security agent not responding" },
   check_unverified: { category: "agent", event: "Security check could not be verified" },
@@ -121,6 +126,10 @@ export function createFakeDesktop({ abortInterview = true, onLog } = {}) {
     onProctoringError(callback) {
       log("onProctoringError");
       handlers.error = callback;
+    },
+    getSupportContact() {
+      log("getSupportContact");
+      return Promise.resolve({ url: null, email: "support@example.com", referenceCode: null });
     },
   };
   if (abortInterview) {

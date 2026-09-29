@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "Mesin Virtual Terdeteksi",
         "description": "Wawancara berjalan di dalam mesin virtual, yang tidak diizinkan."
+      },
+      "virtualCamera": {
+        "title": "Kamera virtual terdeteksi",
+        "description": "Aplikasi kamera virtual ditemukan di komputer ini. Aplikasi itu bisa menampilkan video ke wawancara, bukan Anda."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Tutup aplikasi dan jangan membukanya lagi selama wawancara.",
         "remoteSession": "Akhiri sesi jarak jauh dan gunakan komputer ini secara langsung.",
         "virtualMachine": "Ikuti wawancara di komputer biasa, bukan di mesin virtual.",
+        "virtualCamera": "Matikan atau hapus aplikasi kamera virtual agar hanya webcam asli Anda yang dipakai.",
         "securityMonitor": "Jangan menutup atau mengubah alat keamanan aplikasi desktop.",
         "windowAction": "Biarkan jendela wawancara tetap terbuka dan tampil di layar.",
         "generic": "Tutup semua yang Anda buka selain wawancara."

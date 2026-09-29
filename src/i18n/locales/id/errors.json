@@ -6,11 +6,26 @@
     "goBack": "Kembali",
     "returnHome": "Kembali ke Beranda",
     "reloadPage": "Muat ulang halaman",
-    "default": { "title": "Kesalahan aplikasi tak terduga", "description": "Terjadi masalah tak terduga saat memproses permintaan Anda." },
-    "unauthorized": { "title": "Akses tidak sah", "description": "Sesi Anda saat ini tidak berwenang untuk mengakses sumber daya ini." },
-    "forbidden": { "title": "Akses dibatasi", "description": "Anda saat ini tidak memiliki izin untuk melanjutkan." },
-    "notFound": { "title": "Halaman tidak ditemukan", "description": "Rute yang diminta mungkin telah dihapus atau tidak tersedia." },
-    "serverError": { "title": "Kesalahan server internal", "description": "Server mengalami masalah saat menangani permintaan Anda." }
+    "default": {
+      "title": "Kesalahan aplikasi tak terduga",
+      "description": "Terjadi masalah tak terduga saat memproses permintaan Anda."
+    },
+    "unauthorized": {
+      "title": "Akses tidak sah",
+      "description": "Sesi Anda saat ini tidak berwenang untuk mengakses sumber daya ini."
+    },
+    "forbidden": {
+      "title": "Akses dibatasi",
+      "description": "Anda saat ini tidak memiliki izin untuk melanjutkan."
+    },
+    "notFound": {
+      "title": "Halaman tidak ditemukan",
+      "description": "Rute yang diminta mungkin telah dihapus atau tidak tersedia."
+    },
+    "serverError": {
+      "title": "Kesalahan server internal",
+      "description": "Server mengalami masalah saat menangani permintaan Anda."
+    }
   },
   "notFoundPage": {
     "badge": "Kesalahan 404",

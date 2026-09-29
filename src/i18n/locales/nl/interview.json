@@ -203,6 +203,10 @@
       "virtualMachine": {
         "title": "Virtuele machine gedetecteerd",
         "description": "Het interview draaide in een virtuele machine, wat niet is toegestaan."
+      },
+      "virtualCamera": {
+        "title": "Virtuele camera gevonden",
+        "description": "Er is een app voor een virtuele camera op deze computer gevonden. Die kan het gesprek een video laten zien in plaats van jou."
       }
     },
     "objects": {
@@ -299,6 +303,7 @@
         "renamedApp": "Sluit de app af en open hem niet opnieuw tijdens het interview.",
         "remoteSession": "Beëindig de externe sessie en gebruik deze computer rechtstreeks.",
         "virtualMachine": "Doe het interview op een gewone computer, niet in een virtuele machine.",
+        "virtualCamera": "Zet de app voor de virtuele camera uit of verwijder hem, zodat alleen je echte webcam wordt gebruikt.",
         "securityMonitor": "Sluit of wijzig de beveiligingsonderdelen van de desktop-app niet.",
         "windowAction": "Houd het interviewvenster open en op het scherm.",
         "generic": "Sluit alles wat je naast het interview hebt geopend."
