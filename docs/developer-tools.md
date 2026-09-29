@@ -45,4 +45,3 @@ pnpm shadow:report logs/*.json            # --max 3 --cooldown 30 --json
 For each rule (`gaze`, `verify_faces`, `label:tv`…) it prints the sessions affected, the
 would-be strikes (one per 30s per rule), how many sessions they would have ended against
 `MAX_VIOLATIONS`, and a few example timestamps.
-

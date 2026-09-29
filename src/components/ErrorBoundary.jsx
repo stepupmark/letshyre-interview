@@ -34,7 +34,9 @@ export class ErrorBoundary extends Component {
         <h2 className="text-lg font-semibold text-slate-800">
           {i18next.t("errors:boundary.heading")}
         </h2>
-        <p className="max-w-sm text-sm text-slate-500">{i18next.t("errors:boundary.description")}</p>
+        <p className="max-w-sm text-sm text-slate-500">
+          {i18next.t("errors:boundary.description")}
+        </p>
         <button
           type="button"
           onClick={this.handleReset}

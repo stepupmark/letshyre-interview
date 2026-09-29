@@ -47,9 +47,7 @@ function renderMultiline(text, keyPrefix) {
   const lines = text.split("\n");
   return lines.flatMap((line, i) => {
     const parsed = parseInline(line, `${keyPrefix}-l${i}`);
-    return i < lines.length - 1
-      ? [...parsed, <br key={`${keyPrefix}-br${i}`} />]
-      : parsed;
+    return i < lines.length - 1 ? [...parsed, <br key={`${keyPrefix}-br${i}`} />] : parsed;
   });
 }
 

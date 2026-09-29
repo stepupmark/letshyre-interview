@@ -230,7 +230,6 @@ export default function AutoSubmitLoader({ reason, isSuccess = false, error = nu
               </button>
             </div>
           )}
-
         </div>
 
         {/* Waiting text below card */}
@@ -247,4 +246,3 @@ export default function AutoSubmitLoader({ reason, isSuccess = false, error = nu
     </div>
   );
 }
-

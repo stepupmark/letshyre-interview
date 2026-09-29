@@ -64,4 +64,4 @@ To change X, open Y. Paths are under `src/` unless they start with a dot or a re
 | Token handling and 401 refresh                      | `services/clients/backend.js`, `router/privateLoader.js`        |
 | Question types                                      | `components/interview/questions/`                               |
 | Deploy and build-time values                        | `.github/workflows/deploy.yml`; see [deployment](deployment.md) |
-| Fake desktop app, mock API, timeline, shadow report | `dev/`, `scripts/`; see [developer tools](developer-tools.md)     |
+| Fake desktop app, mock API, timeline, shadow report | `dev/`, `scripts/`; see [developer tools](developer-tools.md)   |
