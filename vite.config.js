@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import fs from "fs";
+import process from "process";
+import { AI_PREFIX, API_PREFIX, mockApiPlugin } from "./scripts/mockApi.js";
 
 // The on-device watches load MediaPipe's WASM from our own origin: the desktop
 // app and the page's CSP allow no other. Copied from the installed package into
@@ -44,8 +46,16 @@ function copyMediapipeWasm() {
   };
 }
 
-export default defineConfig(({ command }) => ({
-  plugins: [react(), tailwindcss(), copyMediapipeWasm()],
+// `pnpm dev:mock`: the dev server answers for both backends itself.
+function mockBackend(command, mode) {
+  if (command !== "serve" || mode !== "mock") return [];
+  process.env.VITE_API_BASE_URL = API_PREFIX;
+  process.env.VITE_AI_DETECTION_URL = AI_PREFIX;
+  return [mockApiPlugin()];
+}
+
+export default defineConfig(({ command, mode }) => ({
+  plugins: [react(), tailwindcss(), copyMediapipeWasm(), ...mockBackend(command, mode)],
 
   define: {
     "import.meta.env.MEDIAPIPE_VERSION": JSON.stringify(MEDIAPIPE_VERSION),

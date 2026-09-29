@@ -1,0 +1,803 @@
+{
+  "interview_id": "int-demo-1",
+  "session_id": "sess-demo-1",
+  "proctoring_token": "tok-demo",
+  "source": "cv_detect",
+  "event_type": "batch_proctoring_logs",
+  "payload": {
+    "total_records": 32,
+    "records": [
+      {
+        "timestamp": "2026-09-20T10:00:00.000Z",
+        "source": "cv_detect",
+        "event_type": "frame",
+        "payload": {
+          "success": true,
+          "face_detected": true,
+          "face_count": 1,
+          "confidence_score": 0.93,
+          "looking_at_camera": true,
+          "eyes_open": true,
+          "frame_quality": "good",
+          "objects_detected": [
+            {
+              "label": "laptop",
+              "confidence": 0.8911,
+              "area_ratio": 0.013416,
+              "bbox": [119.6, 94, 184.4, 141.7]
+            },
+            {
+              "label": "laptop",
+              "confidence": 0.8784,
+              "area_ratio": 0.013759,
+              "bbox": [220, 97.8, 289.2, 143.6]
+            },
+            {
+              "label": "bottle",
+              "confidence": 0.4883,
+              "area_ratio": 0.002182,
+              "bbox": [104.6, 96, 117.9, 133.8]
+            }
+          ],
+          "verified_faces": "one",
+          "local_faces": "one",
+          "captured_at": "2026-09-20T09:59:59.600Z",
+          "trigger": "scheduled",
+          "detect_ms": 410,
+          "verify_ms": 620
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:00.010Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "OBJECT_CLASSIFICATION",
+          "outcome": "observed",
+          "category": "detection",
+          "frame_quality": "good",
+          "api_violations": [],
+          "objects": [
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8911,
+              "area_ratio": 0.013416
+            },
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8784,
+              "area_ratio": 0.013759
+            },
+            {
+              "label": "bottle",
+              "state": "introduced",
+              "confidence": 0.4883,
+              "area_ratio": 0.002182
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:00.020Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "PROHIBITED_OBJECT",
+          "outcome": "unconfirmed",
+          "category": "detection",
+          "window": {
+            "hits": 1,
+            "size": 3
+          },
+          "state": "introduced",
+          "label": "laptop",
+          "confidence": 0.8911,
+          "area_ratio": 0.013416,
+          "count": 2,
+          "frame_quality": "good"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:05.000Z",
+        "source": "cv_detect",
+        "event_type": "frame",
+        "payload": {
+          "success": true,
+          "face_detected": true,
+          "face_count": 1,
+          "confidence_score": 0.93,
+          "looking_at_camera": true,
+          "eyes_open": true,
+          "frame_quality": "good",
+          "objects_detected": [
+            {
+              "label": "laptop",
+              "confidence": 0.874,
+              "area_ratio": 0.013759,
+              "bbox": [220, 97.7, 289.2, 143.5]
+            },
+            {
+              "label": "laptop",
+              "confidence": 0.8652,
+              "area_ratio": 0.0133,
+              "bbox": [119.8, 94.2, 184.4, 141.7]
+            },
+            {
+              "label": "bottle",
+              "confidence": 0.4456,
+              "area_ratio": 0.00217,
+              "bbox": [104.8, 96.2, 118.1, 133.8]
+            }
+          ],
+          "verified_faces": "one",
+          "local_faces": "one",
+          "captured_at": "2026-09-20T10:00:04.600Z",
+          "trigger": "scheduled",
+          "detect_ms": 417,
+          "verify_ms": 631
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:05.010Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "OBJECT_CLASSIFICATION",
+          "outcome": "observed",
+          "category": "detection",
+          "frame_quality": "good",
+          "api_violations": [],
+          "objects": [
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.874,
+              "area_ratio": 0.013759
+            },
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8652,
+              "area_ratio": 0.0133
+            },
+            {
+              "label": "bottle",
+              "state": "introduced",
+              "confidence": 0.4456,
+              "area_ratio": 0.00217
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:05.020Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": true,
+          "source": "ai",
+          "type": "PROHIBITED_OBJECT",
+          "strike_key": "OBJECTS",
+          "outcome": "raised",
+          "category": "detection",
+          "label": "laptop",
+          "confidence": 0.874,
+          "area_ratio": 0.013759,
+          "count": 2,
+          "frame_quality": "good",
+          "violation_count": 1,
+          "strike_count": 1
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:07.000Z",
+        "source": "cv_detect",
+        "event_type": "suspicion_sampling",
+        "payload": {
+          "reason": "faint_object:cell phone"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:09.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "PROHIBITED_OBJECT",
+          "outcome": "shadow",
+          "category": "detection",
+          "window": {
+            "hits": 2,
+            "size": 3
+          },
+          "state": "introduced",
+          "label": "tv",
+          "confidence": 0.71,
+          "area_ratio": 0.04,
+          "frame_quality": "good"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:10.000Z",
+        "source": "cv_detect",
+        "event_type": "frame",
+        "payload": {
+          "success": true,
+          "face_detected": true,
+          "face_count": 1,
+          "confidence_score": 0.93,
+          "looking_at_camera": true,
+          "eyes_open": true,
+          "frame_quality": "good",
+          "objects_detected": [
+            {
+              "label": "laptop",
+              "confidence": 0.8857,
+              "area_ratio": 0.013373,
+              "bbox": [119.6, 94, 184.2, 141.7]
+            },
+            {
+              "label": "laptop",
+              "confidence": 0.873,
+              "area_ratio": 0.013759,
+              "bbox": [220, 97.8, 289.2, 143.6]
+            }
+          ],
+          "verified_faces": "one",
+          "local_faces": "one",
+          "captured_at": "2026-09-20T10:00:09.600Z",
+          "trigger": "scheduled",
+          "detect_ms": 424,
+          "verify_ms": 642
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:10.010Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "OBJECT_CLASSIFICATION",
+          "outcome": "observed",
+          "category": "detection",
+          "frame_quality": "good",
+          "api_violations": [],
+          "objects": [
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8857,
+              "area_ratio": 0.013373
+            },
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.873,
+              "area_ratio": 0.013759
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:15.000Z",
+        "source": "cv_detect",
+        "event_type": "frame",
+        "payload": {
+          "success": true,
+          "face_detected": true,
+          "face_count": 1,
+          "confidence_score": 0.93,
+          "looking_at_camera": true,
+          "eyes_open": true,
+          "frame_quality": "good",
+          "objects_detected": [
+            {
+              "label": "laptop",
+              "confidence": 0.8901,
+              "area_ratio": 0.013298,
+              "bbox": [119.4, 94.3, 184.4, 141.5]
+            },
+            {
+              "label": "laptop",
+              "confidence": 0.874,
+              "area_ratio": 0.013759,
+              "bbox": [220, 97.8, 289.2, 143.6]
+            },
+            {
+              "label": "cell phone",
+              "confidence": 0.6602,
+              "area_ratio": 0.028689,
+              "bbox": [345.2, 184.9, 404.8, 295.8]
+            },
+            {
+              "label": "bottle",
+              "confidence": 0.4844,
+              "area_ratio": 0.002201,
+              "bbox": [104.7, 96.1, 118.2, 133.5]
+            }
+          ],
+          "verified_faces": "one",
+          "local_faces": "one",
+          "captured_at": "2026-09-20T10:00:14.600Z",
+          "trigger": "scheduled",
+          "detect_ms": 431,
+          "verify_ms": 653
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:15.010Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "OBJECT_CLASSIFICATION",
+          "outcome": "observed",
+          "category": "detection",
+          "frame_quality": "good",
+          "api_violations": [],
+          "objects": [
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8901,
+              "area_ratio": 0.013298
+            },
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.874,
+              "area_ratio": 0.013759
+            },
+            {
+              "label": "cell phone",
+              "state": "introduced",
+              "confidence": 0.6602,
+              "area_ratio": 0.028689
+            },
+            {
+              "label": "bottle",
+              "state": "introduced",
+              "confidence": 0.4844,
+              "area_ratio": 0.002201
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:15.020Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "PROHIBITED_OBJECT",
+          "outcome": "held",
+          "category": "detection",
+          "window": null,
+          "state": "introduced",
+          "label": "cell phone",
+          "confidence": 0.6602,
+          "area_ratio": 0.028689,
+          "frame_quality": "good"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:18.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "LOOKING_AWAY",
+          "outcome": "shadow",
+          "category": "detection",
+          "reason": "sustained",
+          "frame_quality": "good"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:20.000Z",
+        "source": "cv_detect",
+        "event_type": "frame",
+        "payload": {
+          "success": true,
+          "face_detected": true,
+          "face_count": 1,
+          "confidence_score": 0.93,
+          "looking_at_camera": true,
+          "eyes_open": true,
+          "frame_quality": "good",
+          "objects_detected": [
+            {
+              "label": "laptop",
+              "confidence": 0.8916,
+              "area_ratio": 0.013842,
+              "bbox": [219.8, 97.8, 289.4, 143.6]
+            },
+            {
+              "label": "laptop",
+              "confidence": 0.8799,
+              "area_ratio": 0.013431,
+              "bbox": [119.6, 93.8, 184.2, 141.7]
+            },
+            {
+              "label": "bottle",
+              "confidence": 0.4302,
+              "area_ratio": 0.002179,
+              "bbox": [104.7, 96.1, 118.1, 133.6]
+            }
+          ],
+          "verified_faces": "one",
+          "local_faces": "one",
+          "captured_at": "2026-09-20T10:00:19.600Z",
+          "trigger": "burst",
+          "detect_ms": 438,
+          "verify_ms": 664
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:20.010Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "OBJECT_CLASSIFICATION",
+          "outcome": "observed",
+          "category": "detection",
+          "frame_quality": "good",
+          "api_violations": [],
+          "objects": [
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8916,
+              "area_ratio": 0.013842
+            },
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8799,
+              "area_ratio": 0.013431
+            },
+            {
+              "label": "bottle",
+              "state": "introduced",
+              "confidence": 0.4302,
+              "area_ratio": 0.002179
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:21.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "PROHIBITED_OBJECT",
+          "outcome": "shadow",
+          "category": "detection",
+          "window": {
+            "hits": 2,
+            "size": 3
+          },
+          "state": "introduced",
+          "label": "tv",
+          "confidence": 0.69,
+          "area_ratio": 0.041,
+          "frame_quality": "good"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:25.000Z",
+        "source": "cv_detect",
+        "event_type": "frame",
+        "payload": {
+          "success": true,
+          "face_detected": true,
+          "face_count": 1,
+          "confidence_score": 0.93,
+          "looking_at_camera": true,
+          "eyes_open": true,
+          "frame_quality": "good",
+          "objects_detected": [
+            {
+              "label": "laptop",
+              "confidence": 0.8901,
+              "area_ratio": 0.013342,
+              "bbox": [119.4, 94.4, 184.4, 141.7]
+            },
+            {
+              "label": "laptop",
+              "confidence": 0.8706,
+              "area_ratio": 0.014115,
+              "bbox": [220, 97.5, 290, 144]
+            },
+            {
+              "label": "bottle",
+              "confidence": 0.4941,
+              "area_ratio": 0.002179,
+              "bbox": [104.7, 96.1, 118.1, 133.6]
+            }
+          ],
+          "verified_faces": "one",
+          "local_faces": "one",
+          "captured_at": "2026-09-20T10:00:24.600Z",
+          "trigger": "scheduled",
+          "detect_ms": 445,
+          "verify_ms": 675
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:25.010Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "OBJECT_CLASSIFICATION",
+          "outcome": "observed",
+          "category": "detection",
+          "frame_quality": "good",
+          "api_violations": [],
+          "objects": [
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8901,
+              "area_ratio": 0.013342
+            },
+            {
+              "label": "laptop",
+              "state": "introduced",
+              "confidence": 0.8706,
+              "area_ratio": 0.014115
+            },
+            {
+              "label": "bottle",
+              "state": "introduced",
+              "confidence": 0.4941,
+              "area_ratio": 0.002179
+            }
+          ]
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:31.000Z",
+        "source": "cv_detect",
+        "event_type": "detection_failure",
+        "payload": {
+          "reason": "timeout of 4000ms exceeded",
+          "consecutive": 1
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:33.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "network",
+          "type": "NETWORK_DISCONNECT",
+          "outcome": "raised",
+          "category": "network",
+          "disconnect_count": 1,
+          "limit": 3
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:36.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "network",
+          "type": "NETWORK_DISCONNECT",
+          "outcome": "restored",
+          "category": "network",
+          "offline_ms": 2950
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:40.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "tab_switch",
+          "type": "TAB_SWITCH",
+          "strike_key": "LEFT_WINDOW",
+          "outcome": "cooldown",
+          "category": "window"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:41.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "window",
+          "type": "LEFT_WINDOW",
+          "outcome": "returned",
+          "category": "window",
+          "cause": "TAB_SWITCH",
+          "away_ms": 1800
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:44.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "face_match",
+          "type": "FACE_MISMATCH",
+          "outcome": "raised",
+          "category": "identity",
+          "violation_count": 1,
+          "total_count": 1,
+          "similarity": 0.12
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:48.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "NO_FACE",
+          "outcome": "shadow",
+          "category": "detection",
+          "window": {
+            "hits": 2,
+            "size": 3
+          },
+          "seen_by": "verify",
+          "frame_quality": "good"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:52.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": true,
+          "source": "electron",
+          "type": "ELECTRON_EXTERNALDISPLAY",
+          "strike_key": "ELECTRON_EXTERNALDISPLAY",
+          "outcome": "raised",
+          "category": "desktop",
+          "code": "external_display",
+          "electron_category": "hdmi",
+          "electron_id": "7f1c2a9e-0000-4000-8000-000000000001",
+          "event": "External display detected",
+          "severity": "high",
+          "electron_count": 1,
+          "violation_count": 2,
+          "strike_count": 2
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:53.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "electron",
+          "type": "ELECTRON_EXTERNALDISPLAY",
+          "outcome": "duplicate",
+          "category": "desktop",
+          "electron_id": "7f1c2a9e-0000-4000-8000-000000000001"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:55.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "window",
+          "type": "WARNING",
+          "outcome": "closed",
+          "category": "window",
+          "warning": "ELECTRON_EXTERNALDISPLAY",
+          "open_ms": 3100
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:00:58.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "ai",
+          "type": "LOOKING_AWAY",
+          "outcome": "shadow",
+          "category": "detection",
+          "reason": "sustained",
+          "frame_quality": "good"
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:01:00.000Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "electron",
+          "type": "ELECTRON_BLOCKEDAPP",
+          "outcome": "terminated",
+          "hard_block": true,
+          "category": "desktop",
+          "code": "blocked_app",
+          "electron_category": "communication",
+          "apps": ["Discord"],
+          "electron_id": "7f1c2a9e-0000-4000-8000-000000000002",
+          "event": "Blocked application running during interview: Discord",
+          "severity": "high",
+          "electron_count": 1
+        }
+      },
+      {
+        "timestamp": "2026-09-20T10:01:00.500Z",
+        "source": "cv_detect",
+        "event_type": "violation_decision",
+        "payload": {
+          "counts_as_strike": false,
+          "source": "session",
+          "type": "INTERVIEW_ENDED",
+          "outcome": "terminated",
+          "reason": "electron_security",
+          "category": "session",
+          "strikes": [
+            {
+              "count": 1,
+              "type": "PROHIBITED_OBJECT",
+              "label": "laptop",
+              "at": "2026-09-20T10:00:05.020Z"
+            },
+            {
+              "count": 2,
+              "type": "ELECTRON_EXTERNALDISPLAY",
+              "at": "2026-09-20T10:00:52.000Z"
+            }
+          ],
+          "strike_count": 2,
+          "internet_disconnects": 1,
+          "face_mismatches": {
+            "in_a_row": 1,
+            "total": 1
+          },
+          "checks": {
+            "count": 6,
+            "per_minute": 12,
+            "detect_ms": {
+              "p50": 428,
+              "p95": 445
+            },
+            "verify_ms": {
+              "p50": 650,
+              "p95": 675
+            },
+            "unobserved_ms": 0
+          }
+        }
+      }
+    ]
+  }
+}
