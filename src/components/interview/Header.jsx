@@ -1,7 +1,6 @@
 import { Circle, Video, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MAX_VIOLATIONS } from "@/config/interview";
-import LanguageSelector from "@/components/LanguageSelector";
 import { GetHelp } from "./GetHelp";
 
 export default function Header({ attempted, total, violations = 0 }) {
@@ -25,7 +24,6 @@ export default function Header({ attempted, total, violations = 0 }) {
           {t("header.attempted", { attempted, total })}
         </p>
         <div className="flex gap-4">
-          <LanguageSelector />
           <GetHelp />
 
           <div

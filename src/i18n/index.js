@@ -43,13 +43,5 @@ Promise.all(preloadLanguages.map(loadLanguageBundle)).then((bundles) => {
   });
 });
 
-export async function loadLanguage(lang) {
-  if (i18next.hasResourceBundle(lang, "common")) return;
-  const bundle = await loadLanguageBundle(lang);
-  for (const ns of Object.keys(bundle)) {
-    i18next.addResourceBundle(lang, ns, bundle[ns]);
-  }
-}
-
 export { STORAGE_KEY };
 export default i18next;

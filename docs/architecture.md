@@ -83,15 +83,13 @@ src/
 │   │   │                       # held-violation banner, start-failed and update-required screens
 │   │   └── questions/          # Typing · MCQ · Code · Voice
 │   ├── ui/                     # shadcn/Radix primitives
-│   ├── ErrorBoundary.jsx       # Subtree boundary (crash in one panel ≠ dead page)
-│   └── LanguageSelector.jsx
+│   └── ErrorBoundary.jsx       # Subtree boundary (crash in one panel ≠ dead page)
 ├── hooks/
 │   ├── interview/              # useInterviewSession · useAutoSubmitFlow · useTerminationNotice
 │   ├── proctoring/             # useProctoringSystem · useViolationMonitor · useFaceMatchMonitoring ·
 │   │                           # useLocalFaceWatch · useLocalObjectWatch · useCameraIntegrity · localWatch
 │   ├── electron/               # useElectronViolation · useInterviewComplete · useElectronScreenRecording
-│   ├── useAudioRecorder.js     # MediaRecorder wrapper (voice questions)
-│   └── useLocale.js
+│   └── useAudioRecorder.js     # MediaRecorder wrapper (voice questions)
 ├── mutations/                  # react-query useMutation hooks (start, answer, auto-submit, face, voice)
 ├── services/
 │   ├── clients/
@@ -99,6 +97,7 @@ src/
 │   │   └── aiDetection.js      # AI service client — separate origin, no bearer token
 │   └── interview.api.js · face.api.js · proctoring.api.js
 ├── i18n/                       # Config, language registry, resolveInitialLanguage, locales/<lang>/<ns>.json
+│                               # (language is set by the desktop app via ?lang=; no in-page picker)
 ├── lib/
 │   ├── strikePolicy · violationStabilizer · incidentTracker · baselineTracker   # strike decisions
 │   ├── electronViolations · desktopExit · desktopVersion · electronRecording     # desktop app
