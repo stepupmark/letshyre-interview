@@ -42,12 +42,12 @@ export default function ViolationWarning({
       <DialogContent
         role="alertdialog"
         showCloseButton={false}
-        className="w-[420px] rounded-lg border-0 bg-[#f8f8f8] p-0 shadow-2xl overflow-hidden"
+        className="w-full rounded-2xl border-0 bg-[#f8f8f8] p-0 shadow-2xl overflow-hidden sm:max-w-[600px]"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         {...focusReturn}
       >
-        <div className="relative p-5">
+        <div className="relative px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span>{t("violationWarning.rec")}</span>
@@ -82,12 +82,12 @@ export default function ViolationWarning({
               {resolvedTitle}
             </DialogTitle>
 
-            <DialogDescription className="mx-auto mt-1.5 text-md leading-6 text-slate-500 font-medium">
+            <DialogDescription className="mx-auto mt-1.5 max-w-[480px] text-md leading-6 text-slate-500 font-medium">
               {resolvedDescription}
             </DialogDescription>
 
             {fixKey && (
-              <p className="mx-auto mt-2 text-sm font-semibold leading-5 text-slate-700">
+              <p className="mx-auto mt-2 max-w-[480px] text-sm font-semibold leading-5 text-slate-700">
                 {t(fixKey, { object })}
               </p>
             )}
@@ -114,7 +114,7 @@ export default function ViolationWarning({
             )}
           </div>
 
-          <div className="mt-4 flex justify-center">
+          <div className="mt-5 flex justify-center">
             <Button
               type="button"
               onClick={onClose}
