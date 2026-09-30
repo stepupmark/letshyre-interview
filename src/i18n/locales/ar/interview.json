@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "قبل أن تبدأ",
+      "intro": "تتم مراقبة هذه المقابلة عبر الكاميرا والشاشة. إليك ما تبحث عنه المراقبة.",
+      "strikesTitle": "هذه تُحتسب مخالفة",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "مغادرة نافذة المقابلة أو التبديل بين علامات التبويب أو الخروج من وضع ملء الشاشة",
+        "people": "ظهور شخص آخر أمام الكاميرا، أو عدم ظهور أي أحد",
+        "devices": "ظهور هاتف أو جهاز آخر محظور أمام الكاميرا",
+        "apps": "التطبيقات أو مشاركة الشاشة أو الشاشات الإضافية التي يحظرها تطبيق سطح المكتب"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "هذه تمنحك تحذيرًا فقط",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "خروج وجهك من الإطار لفترة قصيرة",
+        "lighting": "إضاءة ضعيفة أو رؤية غير واضحة لوجهك",
+        "cameraPause": "توقف الكاميرا للحظة"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "الحدود",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "بعد {{max}} مخالفات تنتهي المقابلة وتُرسل إجاباتك.",
+        "held": "ترك جهاز أمام الكاميرا أو إبقاء الكاميرا مطفأة يكلّفك مخالفة إضافية كل {{seconds}} ثانية.",
+        "face": "إذا لم يطابق وجهك صورتك {{inARow}} مرات متتالية، أو {{total}} مرات إجمالًا، تنتهي المقابلة.",
+        "network": "إذا انقطع الإنترنت {{max}} مرات، تُرسل المقابلة. الانقطاعات لا تُحتسب مخالفات."
       },
-      "acknowledge": "I understand"
+      "acknowledge": "فهمت"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "فحص الكاميرا",
+      "description": "لنتأكد من أن الكاميرا تراك بوضوح قبل بدء المقابلة.",
+      "starting": "جارٍ بدء فحص الكاميرا…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "وجهك وحده في الإطار",
+        "centred": "وجهك في منتصف الإطار",
+        "bright": "وجهك مضاء جيدًا"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "المحاولة {{attempt}} من {{max}}",
+      "passed": "كل شيء جاهز. يمكنك بدء المقابلة.",
+      "unavailable": "لا يمكن إجراء فحص الكاميرا على هذا الجهاز. لا يزال بإمكانك المتابعة.",
       "virtualTitle": "لم يُعثر إلا على كاميرا افتراضية",
       "virtualBody": "تحتاج المقابلة إلى كاميرا الويب الحقيقية، وليس إلى كاميرا افتراضية مثل OBS. وصّل كاميرا الويب المدمجة أو كاميرا USB أو شغّلها، ثم حاول مرة أخرى.",
       "tryAgain": "حاول مرة أخرى",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "ما زال الفحص لا ينجح؟ يمكنك المتابعة على أي حال. سيُسجَّل ذلك للمراجع.",
+      "start": "ابدأ المقابلة",
+      "continueAnyway": "تابع على أي حال"
     }
   }
 }

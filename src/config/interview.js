@@ -5,21 +5,20 @@
  * Env values arrive as strings — coerce with Number() and fall back to a
  * sensible default when unset or non-numeric.
  */
-const num = (value, fallback) => {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : fallback;
-};
+import { interviewRules, num } from "./interviewRules";
+
+const RULES = interviewRules(import.meta.env);
 
 // Proctoring violations (tab switch, fullscreen exit, multiple faces, phone …)
 // allowed before the interview is auto-submitted.
-export const MAX_VIOLATIONS = num(import.meta.env.VITE_AI_MAX_VIOLATIONS_ALLOWED, 3);
+export const MAX_VIOLATIONS = RULES.strikes;
 
 // Mismatches with no match between them before auto-submit. Only a match
 // resets the run; a no-face frame, an error or a pause does not.
-export const FACE_MISMATCH_LIMIT = num(import.meta.env.VITE_AI_FACE_MISMATCH_LIMIT, 2);
+export const FACE_MISMATCH_LIMIT = RULES.faceInARow;
 
 // Mismatches across the whole interview, matches or not, before auto-submit.
-export const FACE_MISMATCH_TOTAL_LIMIT = num(import.meta.env.VITE_AI_FACE_MISMATCH_TOTAL_LIMIT, 3);
+export const FACE_MISMATCH_TOTAL_LIMIT = RULES.faceTotal;
 
 // A face too unclear to compare for this long gets a hint, and for the longer
 // one counts as a mismatch.
@@ -54,7 +53,7 @@ export const LOCAL_OBJECT_WATCH = import.meta.env.VITE_AI_LOCAL_OBJECT_WATCH !==
 
 // Internet disconnects allowed before auto-submit. Tracked separately from
 // proctoring violations — a dropped connection is not misconduct.
-export const MAX_INTERNET_DISCONNECTS = num(import.meta.env.VITE_AI_MAX_INTERNET_DISCONNECTS, 3);
+export const MAX_INTERNET_DISCONNECTS = RULES.disconnects;
 
 // The oldest desktop app allowed to start an interview, e.g. "1.4.5". Unset lets
 // every build through, so set it only once the new build is out.
@@ -69,7 +68,7 @@ export const TERMINATION_NOTICE_SECONDS = num(
 
 // How long a prohibited object or a switched-off camera can stay before it
 // costs one more strike.
-export const HELD_RESTRIKE_SECONDS = num(import.meta.env.VITE_AI_HELD_RESTRIKE_SECONDS, 30);
+export const HELD_RESTRIKE_SECONDS = RULES.heldSeconds;
 
 // The camera check before the interview. Every check has to hold for
 // CAMERA_CHECK_HOLD_MS; each attempt gets CAMERA_CHECK_ATTEMPT_MS, and after

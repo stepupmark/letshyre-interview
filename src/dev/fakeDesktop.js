@@ -129,7 +129,7 @@ export function createFakeDesktop({ abortInterview = true, onLog } = {}) {
     },
     getSupportContact() {
       log("getSupportContact");
-      return Promise.resolve({ url: null, email: "support@example.com", referenceCode: null });
+      return Promise.resolve({ url: null, email: "support@example.com" });
     },
   };
   if (abortInterview) {

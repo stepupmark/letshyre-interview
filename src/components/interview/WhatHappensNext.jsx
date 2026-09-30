@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
 
 const ITEMS = {
-  completed: ["review", "contact", "code"],
-  ended: ["submitted", "review", "code"],
+  completed: ["review", "contact"],
+  ended: ["submitted", "review"],
 };
 
 /** `variant` is "completed" for an interview that ran its course, "ended" for one cut short. */

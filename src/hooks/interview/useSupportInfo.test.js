@@ -6,9 +6,9 @@ afterEach(() => {
 });
 
 describe("useSupportInfo", () => {
-  it("has no contact in a plain browser but still derives the code", () => {
-    const { result } = renderHook(() => useSupportInfo("session-456"));
-    expect(result.current).toEqual({ contact: null, referenceCode: "LH-3KHH-QEY5" });
+  it("has no contact in a plain browser", () => {
+    const { result } = renderHook(() => useSupportInfo());
+    expect(result.current).toEqual({ contact: null });
   });
 
   it("takes the contact from the desktop app", async () => {
@@ -17,10 +17,9 @@ describe("useSupportInfo", () => {
         Promise.resolve({
           url: "https://help.example",
           email: " help@example.com ",
-          referenceCode: "x",
         }),
     };
-    const { result } = renderHook(() => useSupportInfo("session-456"));
+    const { result } = renderHook(() => useSupportInfo());
 
     await waitFor(() =>
       expect(result.current.contact).toEqual({
@@ -28,22 +27,14 @@ describe("useSupportInfo", () => {
         email: "help@example.com",
       }),
     );
-    expect(result.current.referenceCode).toBe("LH-3KHH-QEY5");
-  });
-
-  it("falls back to the app's code before there is a session", async () => {
-    window.electronAPI = { getSupportContact: () => ({ referenceCode: "LH-AAAA-BBBB" }) };
-    const { result } = renderHook(() => useSupportInfo(undefined));
-
-    await waitFor(() => expect(result.current.referenceCode).toBe("LH-AAAA-BBBB"));
-    expect(result.current.contact).toBeNull();
   });
 
   it("survives an app call that fails", async () => {
-    window.electronAPI = { getSupportContact: () => Promise.reject(new Error("no handler")) };
-    const { result } = renderHook(() => useSupportInfo("session-456"));
+    const getSupportContact = vi.fn(() => Promise.reject(new Error("no handler")));
+    window.electronAPI = { getSupportContact };
+    const { result } = renderHook(() => useSupportInfo());
 
-    await waitFor(() => expect(result.current.referenceCode).toBe("LH-3KHH-QEY5"));
+    await waitFor(() => expect(getSupportContact).toHaveBeenCalled());
     expect(result.current.contact).toBeNull();
   });
 });

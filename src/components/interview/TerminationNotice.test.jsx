@@ -186,19 +186,18 @@ describe("TerminationNotice desktop-app block", () => {
 });
 
 describe("TerminationNotice support details", () => {
-  it("shows the reference code and what happens next", () => {
+  it("shows what happens next, with no reference code", () => {
     render(
       <TerminationNotice
         reason={TERMINATION_REASONS.VIOLATION_LIMIT}
         secondsLeft={5}
         onAcknowledge={() => {}}
-        sessionId="session-456"
       />,
     );
-    expect(screen.getByText("LH-3KHH-QEY5")).toBeInTheDocument();
     expect(screen.getByText("What happens next")).toBeInTheDocument();
     expect(screen.getByText(/answers you gave so far/)).toBeInTheDocument();
-    expect(document.body.textContent).not.toMatch(/support\.(referenceCode|whatNext)/);
+    expect(screen.queryByText(/reference code/i)).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/LH-|support\.whatNext/);
   });
 
   it("describes a timed-out interview as finished", () => {
@@ -207,7 +206,6 @@ describe("TerminationNotice support details", () => {
         reason={TERMINATION_REASONS.TIME_EXPIRED}
         secondsLeft={5}
         onAcknowledge={() => {}}
-        sessionId="s"
       />,
     );
     expect(screen.getByText(/go to the hiring team/)).toBeInTheDocument();

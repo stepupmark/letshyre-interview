@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "ಪ್ರಾರಂಭಿಸುವ ಮೊದಲು",
+      "intro": "ಈ ಸಂದರ್ಶನವನ್ನು ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ಮತ್ತು ಪರದೆಯ ಮೂಲಕ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲಾಗುತ್ತದೆ. ಮೇಲ್ವಿಚಾರಣೆ ಗಮನಿಸುವುದು ಇಲ್ಲಿದೆ.",
+      "strikesTitle": "ಇವು ಸ್ಟ್ರೈಕ್ ಎಂದು ಎಣಿಕೆಯಾಗುತ್ತವೆ",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "ಸಂದರ್ಶನ ವಿಂಡೋ ಬಿಡುವುದು, ಟ್ಯಾಬ್ ಬದಲಿಸುವುದು ಅಥವಾ ಪೂರ್ಣಪರದೆಯಿಂದ ಹೊರಬರುವುದು",
+        "people": "ಬೇರೊಬ್ಬರು ಕಾಣಿಸುವುದು, ಅಥವಾ ಯಾರೂ ಕಾಣಿಸದಿರುವುದು",
+        "devices": "ಫೋನ್ ಅಥವಾ ಬೇರೆ ನಿಷೇಧಿತ ಸಾಧನ ಕಾಣಿಸುವುದು",
+        "apps": "ಡೆಸ್ಕ್‌ಟಾಪ್ ಆ್ಯಪ್ ನಿರ್ಬಂಧಿಸುವ ಆ್ಯಪ್‌ಗಳು, ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ಅಥವಾ ಹೆಚ್ಚುವರಿ ಡಿಸ್‌ಪ್ಲೇಗಳು"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "ಇವುಗಳಿಗೆ ಕೇವಲ ಎಚ್ಚರಿಕೆ ಸಿಗುತ್ತದೆ",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "ನಿಮ್ಮ ಮುಖ ಸ್ವಲ್ಪ ಹೊತ್ತು ಫ್ರೇಮ್‌ನಿಂದ ಹೊರಗೆ ಹೋಗುವುದು",
+        "lighting": "ಕಡಿಮೆ ಬೆಳಕು ಅಥವಾ ನಿಮ್ಮ ಮುಖ ಸ್ಪಷ್ಟವಾಗಿ ಕಾಣದಿರುವುದು",
+        "cameraPause": "ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ಕ್ಷಣಕಾಲ ನಿಲ್ಲುವುದು"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "ಮಿತಿಗಳು",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "{{max}} ಸ್ಟ್ರೈಕ್‌ಗಳ ನಂತರ ಸಂದರ್ಶನ ಮುಗಿಯುತ್ತದೆ ಮತ್ತು ನಿಮ್ಮ ಉತ್ತರಗಳನ್ನು ಸಲ್ಲಿಸಲಾಗುತ್ತದೆ.",
+        "held": "ಸಾಧನವನ್ನು ಕಾಣುವಂತೆ ಬಿಟ್ಟರೆ ಅಥವಾ ಕ್ಯಾಮೆರಾ ಆಫ್ ಆಗಿ ಬಿಟ್ಟರೆ ಪ್ರತಿ {{seconds}} ಸೆಕೆಂಡಿಗೆ ಇನ್ನೊಂದು ಸ್ಟ್ರೈಕ್ ಆಗುತ್ತದೆ.",
+        "face": "ನಿಮ್ಮ ಮುಖ ಸತತವಾಗಿ {{inARow}} ಬಾರಿ, ಅಥವಾ ಒಟ್ಟು {{total}} ಬಾರಿ ನಿಮ್ಮ ಫೋಟೋಗೆ ಹೊಂದದಿದ್ದರೆ ಸಂದರ್ಶನ ಮುಗಿಯುತ್ತದೆ.",
+        "network": "ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ {{max}} ಬಾರಿ ಕಡಿತಗೊಂಡರೆ ಸಂದರ್ಶನವನ್ನು ಸಲ್ಲಿಸಲಾಗುತ್ತದೆ. ಕಡಿತಗಳು ಸ್ಟ್ರೈಕ್‌ಗಳಲ್ಲ."
       },
-      "acknowledge": "I understand"
+      "acknowledge": "ನನಗೆ ಅರ್ಥವಾಯಿತು"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "ಕ್ಯಾಮೆರಾ ಪರಿಶೀಲನೆ",
+      "description": "ಸಂದರ್ಶನ ಪ್ರಾರಂಭವಾಗುವ ಮೊದಲು ಕ್ಯಾಮೆರಾ ನಿಮ್ಮನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ನೋಡುತ್ತಿದೆಯೇ ಎಂದು ಖಚಿತಪಡಿಸೋಣ.",
+      "starting": "ಕ್ಯಾಮೆರಾ ಪರಿಶೀಲನೆ ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "ನಿಮ್ಮ ಮುಖ ಮಾತ್ರ ಕಾಣುತ್ತಿದೆ",
+        "centred": "ನಿಮ್ಮ ಮುಖ ಫ್ರೇಮ್‌ನ ಮಧ್ಯದಲ್ಲಿದೆ",
+        "bright": "ನಿಮ್ಮ ಮುಖಕ್ಕೆ ಸಾಕಷ್ಟು ಬೆಳಕಿದೆ"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "ಪ್ರಯತ್ನ {{attempt}} / {{max}}",
+      "passed": "ಎಲ್ಲವೂ ಸಿದ್ಧ. ನೀವು ಸಂದರ್ಶನ ಪ್ರಾರಂಭಿಸಬಹುದು.",
+      "unavailable": "ಈ ಸಾಧನದಲ್ಲಿ ಕ್ಯಾಮೆರಾ ಪರಿಶೀಲನೆ ನಡೆಸಲು ಆಗುವುದಿಲ್ಲ. ನೀವು ಆದರೂ ಮುಂದುವರಿಯಬಹುದು.",
       "virtualTitle": "ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಮಾತ್ರ ಕಂಡುಬಂದಿದೆ",
       "virtualBody": "ಸಂದರ್ಶನಕ್ಕೆ OBS ನಂತಹ ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಅಲ್ಲ, ನಿಮ್ಮ ನಿಜವಾದ ವೆಬ್‌ಕ್ಯಾಮ್ ಬೇಕು. ನಿಮ್ಮ ಅಂತರ್ನಿರ್ಮಿತ ಅಥವಾ USB ವೆಬ್‌ಕ್ಯಾಮ್ ಅನ್ನು ಸಂಪರ್ಕಿಸಿ ಅಥವಾ ಆನ್ ಮಾಡಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       "tryAgain": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "ಇನ್ನೂ ಪಾಸ್ ಆಗುತ್ತಿಲ್ಲವೇ? ನೀವು ಆದರೂ ಮುಂದುವರಿಯಬಹುದು. ಇದನ್ನು ಪರಿಶೀಲಕರಿಗಾಗಿ ದಾಖಲಿಸಲಾಗುತ್ತದೆ.",
+      "start": "ಸಂದರ್ಶನ ಪ್ರಾರಂಭಿಸಿ",
+      "continueAnyway": "ಆದರೂ ಮುಂದುವರಿಯಿರಿ"
     }
   }
 }

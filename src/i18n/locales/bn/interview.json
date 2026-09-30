@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "শুরু করার আগে",
+      "intro": "এই ইন্টারভিউ আপনার ক্যামেরা ও স্ক্রিনের মাধ্যমে পর্যবেক্ষণ করা হয়। পর্যবেক্ষণে যা দেখা হয় তা এখানে দেওয়া হলো।",
+      "strikesTitle": "এগুলো স্ট্রাইক হিসেবে গণ্য হয়",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "ইন্টারভিউ উইন্ডো ছেড়ে যাওয়া, ট্যাব বদলানো বা ফুলস্ক্রিন থেকে বেরিয়ে যাওয়া",
+        "people": "ক্যামেরায় অন্য কেউ থাকা, বা কেউ না থাকা",
+        "devices": "ক্যামেরায় ফোন বা অন্য কোনো নিষিদ্ধ ডিভাইস দেখা যাওয়া",
+        "apps": "ডেস্কটপ অ্যাপ যে অ্যাপ, স্ক্রিন শেয়ারিং বা অতিরিক্ত ডিসপ্লে ব্লক করে"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "এগুলোতে শুধু সতর্কবার্তা দেওয়া হয়",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "অল্প সময়ের জন্য আপনার মুখ ফ্রেমের বাইরে যাওয়া",
+        "lighting": "কম আলো বা আপনার মুখ অস্পষ্ট দেখা যাওয়া",
+        "cameraPause": "কিছুক্ষণের জন্য ক্যামেরা থেমে যাওয়া"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "সীমা",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "{{max}}টি স্ট্রাইকের পর ইন্টারভিউ শেষ হয় এবং আপনার উত্তর জমা দেওয়া হয়।",
+        "held": "কোনো ডিভাইস ক্যামেরায় রেখে দিলে বা ক্যামেরা বন্ধ রাখলে প্রতি {{seconds}} সেকেন্ডে আরেকটি স্ট্রাইক হয়।",
+        "face": "আপনার মুখ যদি পরপর {{inARow}} বার, বা মোট {{total}} বার আপনার ছবির সঙ্গে না মেলে, ইন্টারভিউ শেষ হয়ে যায়।",
+        "network": "আপনার ইন্টারনেট {{max}} বার বিচ্ছিন্ন হলে ইন্টারভিউ জমা দেওয়া হয়। বিচ্ছিন্ন হওয়া স্ট্রাইক নয়।"
       },
-      "acknowledge": "I understand"
+      "acknowledge": "আমি বুঝেছি"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "ক্যামেরা পরীক্ষা",
+      "description": "ইন্টারভিউ শুরুর আগে দেখে নিই ক্যামেরা আপনাকে স্পষ্ট দেখতে পাচ্ছে কি না।",
+      "starting": "ক্যামেরা পরীক্ষা শুরু হচ্ছে…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "শুধু আপনার মুখ দেখা যাচ্ছে",
+        "centred": "আপনার মুখ ফ্রেমের মাঝখানে আছে",
+        "bright": "আপনার মুখে যথেষ্ট আলো আছে"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "চেষ্টা {{attempt}} / {{max}}",
+      "passed": "সব ঠিক আছে। আপনি ইন্টারভিউ শুরু করতে পারেন।",
+      "unavailable": "এই ডিভাইসে ক্যামেরা পরীক্ষা চালানো যাচ্ছে না। আপনি তবুও এগিয়ে যেতে পারেন।",
       "virtualTitle": "শুধু একটি ভার্চুয়াল ক্যামেরা পাওয়া গেছে",
       "virtualBody": "ইন্টারভিউয়ের জন্য আপনার আসল ওয়েবক্যাম দরকার, OBS-এর মতো ভার্চুয়াল ক্যামেরা নয়। বিল্ট-ইন বা USB ওয়েবক্যাম যুক্ত বা চালু করে আবার চেষ্টা করুন।",
       "tryAgain": "আবার চেষ্টা করুন",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "এখনও পাস হচ্ছে না? আপনি তবুও এগিয়ে যেতে পারেন। পর্যালোচকের জন্য এটি নথিভুক্ত হবে।",
+      "start": "ইন্টারভিউ শুরু করুন",
+      "continueAnyway": "তবুও এগিয়ে যান"
     }
   }
 }

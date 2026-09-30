@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useSupportInfo } from "@hooks/interview/useSupportInfo";
-import { ReferenceCode } from "./ReferenceCode";
 
 const TOPICS = [
   { key: "camera", Icon: Camera },
@@ -19,9 +18,9 @@ const TOPICS = [
 ];
 
 // Contact details are plain text: a link would take the candidate out of the interview.
-export function GetHelp({ sessionId }) {
+export function GetHelp() {
   const { t } = useTranslation("common");
-  const { contact } = useSupportInfo(sessionId);
+  const { contact } = useSupportInfo();
 
   return (
     <Dialog>
@@ -55,8 +54,6 @@ export function GetHelp({ sessionId }) {
             </li>
           ))}
         </ul>
-
-        <ReferenceCode sessionId={sessionId} />
 
         {contact && (
           <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3">

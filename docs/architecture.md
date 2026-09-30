@@ -156,6 +156,7 @@ stateDiagram-v2
     terminated --> [*]
 ```
 
+- **Before the clock starts** ([`usePreStart`](../src/hooks/interview/usePreStart.js)): in a browser, the rules and then the camera check. In the desktop app the candidate already read the rules on its last setup step and passed its identity check, so when `rules_acknowledged` matches [`interviewRules`](../src/config/interviewRules.js) the interview starts straight away; if the app's copy was out of date, only the rules are shown. The limits are published at build time as `/interview-rules.json` for the app to read.
 - **Absolute timer:** `end_time = now + DURATION`, persisted to `sessionStorage`, so a refresh never resets the clock.
 - **Crash/refresh recovery:** the whole session rehydrates from `sessionStorage` under `interview_session`.
 - **Every termination path** converges on one `autoSubmit()` guarded by an in-flight ref, so overlapping triggers can't submit twice. Reasons are stable codes from [`lib/terminationReasons.js`](../src/lib/terminationReasons.js), never free text, since they drive both i18n lookup and UI copy.

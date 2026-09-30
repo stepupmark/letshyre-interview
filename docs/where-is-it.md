@@ -40,15 +40,16 @@ To change X, open Y. Paths are under `src/` unless they start with a dot or a re
 
 ## Session and endings
 
-| To change                                      | Open                                                                                            |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Starting, restoring and the timer              | `hooks/interview/useInterviewSession.js`                                                        |
-| Why a start failed and what the candidate sees | `lib/startFailure.js`, `components/interview/InterviewStartFailed.jsx`                          |
-| Rules card and camera check before start       | `components/interview/PreStart.jsx`, `hooks/interview/usePreStart.js`, `lib/cameraCheck.js`     |
-| Every ending (auto-submit, termination)        | `hooks/interview/useAutoSubmitFlow.js`, reasons in `lib/terminationReasons.js`                  |
-| Termination notice and its timing              | `components/interview/TerminationNotice.jsx`, `hooks/interview/useTerminationNotice.js`         |
-| Reference code and the help panel              | `lib/referenceCode.js`, `components/interview/GetHelp.jsx`, `hooks/interview/useSupportInfo.js` |
-| What gets written to the proctoring log        | `lib/violationLog.js`, batch sending in `useProctoringSystem.js`                                |
+| To change                                      | Open                                                                                                     |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Starting, restoring and the timer              | `hooks/interview/useInterviewSession.js`                                                                 |
+| Why a start failed and what the candidate sees | `lib/startFailure.js`, `components/interview/InterviewStartFailed.jsx`                                   |
+| Rules card and camera check before start       | `components/interview/PreStart.jsx`, `hooks/interview/usePreStart.js`, `lib/cameraCheck.js`              |
+| The limits the rules quote, and the app's copy | `config/interviewRules.js` (published as `/interview-rules.json` by `vite.config.js`), `lib/rulesAck.js` |
+| Every ending (auto-submit, termination)        | `hooks/interview/useAutoSubmitFlow.js`, reasons in `lib/terminationReasons.js`                           |
+| Termination notice and its timing              | `components/interview/TerminationNotice.jsx`, `hooks/interview/useTerminationNotice.js`                  |
+| The help panel                                 | `components/interview/GetHelp.jsx`, `hooks/interview/useSupportInfo.js`                                  |
+| What gets written to the proctoring log        | `lib/violationLog.js`, batch sending in `useProctoringSystem.js`                                         |
 
 ## Add a violation code end to end
 

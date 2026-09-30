@@ -4,7 +4,7 @@ import { MAX_VIOLATIONS } from "@/config/interview";
 import LanguageSelector from "@/components/LanguageSelector";
 import { GetHelp } from "./GetHelp";
 
-export default function Header({ attempted, total, violations = 0, sessionId }) {
+export default function Header({ attempted, total, violations = 0 }) {
   const { t } = useTranslation("interview");
 
   // Determine badge styling based on violations count
@@ -26,7 +26,7 @@ export default function Header({ attempted, total, violations = 0, sessionId }) 
         </p>
         <div className="flex gap-4">
           <LanguageSelector />
-          <GetHelp sessionId={sessionId} />
+          <GetHelp />
 
           <div
             role="status"

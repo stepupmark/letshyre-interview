@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "Antes de começar",
+      "intro": "Esta entrevista é supervisionada pela sua câmera e pela sua tela. Veja o que a supervisão observa.",
+      "strikesTitle": "Isto conta como infração",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "Sair da janela da entrevista, trocar de aba ou sair da tela cheia",
+        "people": "Outra pessoa à vista, ou ninguém à vista",
+        "devices": "Um celular ou outro dispositivo proibido à vista",
+        "apps": "Aplicativos, compartilhamento de tela ou telas extras que o aplicativo de desktop bloqueia"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "Isto só gera um aviso",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "Seu rosto sai do enquadramento por um instante",
+        "lighting": "Pouca luz ou rosto pouco visível",
+        "cameraPause": "Sua câmera parando por um momento"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "Os limites",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "Depois de {{max}} infrações, a entrevista termina e suas respostas são enviadas.",
+        "held": "Um dispositivo deixado à vista, ou a câmera deixada desligada, custa outra infração a cada {{seconds}} segundos.",
+        "face": "Se o seu rosto não corresponder à sua foto {{inARow}} vezes seguidas, ou {{total}} vezes no total, a entrevista termina.",
+        "network": "Se a sua internet cair {{max}} vezes, a entrevista é enviada. Quedas não são infrações."
       },
-      "acknowledge": "I understand"
+      "acknowledge": "Entendi"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "Verificação da câmera",
+      "description": "Vamos confirmar que a câmera vê você com clareza antes de a entrevista começar.",
+      "starting": "Iniciando a verificação da câmera…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "Só o seu rosto está à vista",
+        "centred": "Seu rosto está no centro do enquadramento",
+        "bright": "Seu rosto está bem iluminado"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "Tentativa {{attempt}} de {{max}}",
+      "passed": "Tudo pronto. Você pode começar a entrevista.",
+      "unavailable": "A verificação da câmera não pode ser feita neste dispositivo. Você ainda pode continuar.",
       "virtualTitle": "Só foi encontrada uma câmera virtual",
       "virtualBody": "A entrevista precisa da sua webcam real, não de uma câmera virtual como o OBS. Conecte ou ligue sua webcam integrada ou USB e tente de novo.",
       "tryAgain": "Tentar de novo",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "Ainda não passou? Você pode continuar mesmo assim. Isso será registrado para o avaliador.",
+      "start": "Começar entrevista",
+      "continueAnyway": "Continuar mesmo assim"
     }
   }
 }

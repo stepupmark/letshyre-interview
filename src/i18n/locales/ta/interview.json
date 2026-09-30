@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "தொடங்குவதற்கு முன்",
+      "intro": "இந்த நேர்காணல் உங்கள் கேமரா மற்றும் திரை மூலம் கண்காணிக்கப்படுகிறது. கண்காணிப்பு கவனிப்பவை இவை.",
+      "strikesTitle": "இவை ஸ்ட்ரைக்காகக் கணக்கிடப்படும்",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "நேர்காணல் சாளரத்தை விட்டு வெளியேறுதல், தாவலை மாற்றுதல் அல்லது முழுத்திரையிலிருந்து வெளியேறுதல்",
+        "people": "வேறொருவர் தெரிதல், அல்லது யாரும் தெரியாமல் இருத்தல்",
+        "devices": "தொலைபேசி அல்லது வேறு தடைசெய்யப்பட்ட சாதனம் தெரிதல்",
+        "apps": "டெஸ்க்டாப் செயலி தடுக்கும் செயலிகள், திரைப் பகிர்வு அல்லது கூடுதல் திரைகள்"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "இவற்றுக்கு எச்சரிக்கை மட்டுமே",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "உங்கள் முகம் சிறிது நேரம் சட்டகத்திற்கு வெளியே செல்லுதல்",
+        "lighting": "குறைந்த வெளிச்சம் அல்லது முகம் தெளிவாகத் தெரியாமை",
+        "cameraPause": "உங்கள் கேமரா ஒரு கணம் நின்றுபோதல்"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "வரம்புகள்",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "{{max}} ஸ்ட்ரைக்குகளுக்குப் பிறகு நேர்காணல் முடிந்து உங்கள் பதில்கள் சமர்ப்பிக்கப்படும்.",
+        "held": "ஒரு சாதனம் தெரியும்படி விடப்பட்டால் அல்லது கேமரா அணைக்கப்பட்டிருந்தால் ஒவ்வொரு {{seconds}} வினாடிக்கும் இன்னொரு ஸ்ட்ரைக் சேரும்.",
+        "face": "உங்கள் முகம் தொடர்ந்து {{inARow}} முறை, அல்லது மொத்தம் {{total}} முறை உங்கள் புகைப்படத்துடன் பொருந்தவில்லை என்றால் நேர்காணல் முடியும்.",
+        "network": "உங்கள் இணையம் {{max}} முறை துண்டிக்கப்பட்டால் நேர்காணல் சமர்ப்பிக்கப்படும். துண்டிப்புகள் ஸ்ட்ரைக்குகள் அல்ல."
       },
-      "acknowledge": "I understand"
+      "acknowledge": "புரிந்துகொண்டேன்"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "கேமரா சரிபார்ப்பு",
+      "description": "நேர்காணல் தொடங்கும் முன் கேமரா உங்களைத் தெளிவாகப் பார்க்கிறதா என உறுதிசெய்வோம்.",
+      "starting": "கேமரா சரிபார்ப்பு தொடங்குகிறது…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "உங்கள் முகம் மட்டுமே தெரிகிறது",
+        "centred": "உங்கள் முகம் சட்டகத்தின் நடுவில் உள்ளது",
+        "bright": "உங்கள் முகத்தில் போதுமான வெளிச்சம் உள்ளது"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "முயற்சி {{attempt}} / {{max}}",
+      "passed": "எல்லாம் தயார். நீங்கள் நேர்காணலைத் தொடங்கலாம்.",
+      "unavailable": "இந்தச் சாதனத்தில் கேமரா சரிபார்ப்பை இயக்க முடியாது. இருந்தாலும் தொடரலாம்.",
       "virtualTitle": "மெய்நிகர் கேமரா மட்டுமே கிடைத்தது",
       "virtualBody": "நேர்காணலுக்கு OBS போன்ற மெய்நிகர் கேமரா அல்ல, உங்கள் உண்மையான வெப்கேம் தேவை. உள்ளமைந்த அல்லது USB வெப்கேமை இணைக்கவும் அல்லது இயக்கவும், பிறகு மீண்டும் முயலவும்.",
       "tryAgain": "மீண்டும் முயலவும்",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "இன்னும் தேர்ச்சி பெறவில்லையா? இருந்தாலும் தொடரலாம். இது மதிப்பாய்வாளருக்காகப் பதிவுசெய்யப்படும்.",
+      "start": "நேர்காணலைத் தொடங்கு",
+      "continueAnyway": "இருந்தாலும் தொடர்"
     }
   }
 }

@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "Sebelum Anda mulai",
+      "intro": "Wawancara ini diawasi melalui kamera dan layar Anda. Inilah yang diperhatikan oleh pengawasan.",
+      "strikesTitle": "Ini dihitung sebagai pelanggaran",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "Meninggalkan jendela wawancara, berpindah tab, atau keluar dari layar penuh",
+        "people": "Ada orang lain yang terlihat, atau tidak ada siapa pun yang terlihat",
+        "devices": "Ponsel atau perangkat terlarang lain terlihat",
+        "apps": "Aplikasi, berbagi layar, atau layar tambahan yang diblokir aplikasi desktop"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "Ini hanya memberi peringatan",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "Wajah Anda sebentar keluar dari bingkai",
+        "lighting": "Pencahayaan buruk atau wajah Anda kurang jelas",
+        "cameraPause": "Kamera Anda berhenti sejenak"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "Batasnya",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "Setelah {{max}} pelanggaran, wawancara berakhir dan jawaban Anda dikirim.",
+        "held": "Perangkat yang dibiarkan terlihat, atau kamera yang dibiarkan mati, dihitung satu pelanggaran lagi setiap {{seconds}} detik.",
+        "face": "Jika wajah Anda tidak cocok dengan foto Anda {{inARow}} kali berturut-turut, atau {{total}} kali secara keseluruhan, wawancara berakhir.",
+        "network": "Jika internet Anda terputus {{max}} kali, wawancara dikirim. Putusnya koneksi bukan pelanggaran."
       },
-      "acknowledge": "I understand"
+      "acknowledge": "Saya mengerti"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "Pemeriksaan kamera",
+      "description": "Mari pastikan kamera bisa melihat Anda dengan jelas sebelum wawancara dimulai.",
+      "starting": "Memulai pemeriksaan kamera…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "Hanya wajah Anda yang terlihat",
+        "centred": "Wajah Anda di tengah bingkai",
+        "bright": "Wajah Anda cukup terang"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "Percobaan {{attempt}} dari {{max}}",
+      "passed": "Semua siap. Anda bisa memulai wawancara.",
+      "unavailable": "Pemeriksaan kamera tidak bisa berjalan di perangkat ini. Anda tetap bisa melanjutkan.",
       "virtualTitle": "Hanya kamera virtual yang ditemukan",
       "virtualBody": "Wawancara memerlukan webcam asli Anda, bukan kamera virtual seperti OBS. Hubungkan atau nyalakan webcam bawaan atau USB Anda, lalu coba lagi.",
       "tryAgain": "Coba lagi",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "Masih belum lolos? Anda tetap bisa melanjutkan. Ini akan dicatat untuk peninjau.",
+      "start": "Mulai wawancara",
+      "continueAnyway": "Tetap lanjutkan"
     }
   }
 }

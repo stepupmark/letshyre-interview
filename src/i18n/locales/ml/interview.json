@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "തുടങ്ങുന്നതിന് മുമ്പ്",
+      "intro": "ഈ അഭിമുഖം നിങ്ങളുടെ ക്യാമറയിലൂടെയും സ്ക്രീനിലൂടെയും നിരീക്ഷിക്കുന്നു. നിരീക്ഷണം ശ്രദ്ധിക്കുന്നത് ഇവയാണ്.",
+      "strikesTitle": "ഇവ സ്ട്രൈക്കായി കണക്കാക്കും",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "അഭിമുഖ വിൻഡോ വിടുക, ടാബ് മാറുക, അല്ലെങ്കിൽ ഫുൾസ്ക്രീനിൽ നിന്ന് പുറത്തുകടക്കുക",
+        "people": "മറ്റൊരാൾ കാണുക, അല്ലെങ്കിൽ ആരും കാണാതിരിക്കുക",
+        "devices": "ഫോണോ മറ്റ് നിരോധിത ഉപകരണമോ കാണുക",
+        "apps": "ഡെസ്ക്ടോപ്പ് ആപ്പ് തടയുന്ന ആപ്പുകൾ, സ്ക്രീൻ ഷെയറിംഗ് അല്ലെങ്കിൽ അധിക ഡിസ്പ്ലേകൾ"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "ഇവയ്ക്ക് മുന്നറിയിപ്പ് മാത്രം",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "നിങ്ങളുടെ മുഖം അൽപനേരം ഫ്രെയിമിന് പുറത്താകുക",
+        "lighting": "കുറഞ്ഞ വെളിച്ചം അല്ലെങ്കിൽ മുഖം വ്യക്തമല്ലാതിരിക്കുക",
+        "cameraPause": "ക്യാമറ ഒരു നിമിഷം നിൽക്കുക"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "പരിധികൾ",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "{{max}} സ്ട്രൈക്കുകൾക്ക് ശേഷം അഭിമുഖം അവസാനിക്കുകയും നിങ്ങളുടെ ഉത്തരങ്ങൾ സമർപ്പിക്കുകയും ചെയ്യും.",
+        "held": "ഒരു ഉപകരണം കാണുന്ന നിലയിൽ വെച്ചാലോ ക്യാമറ ഓഫാക്കി വെച്ചാലോ ഓരോ {{seconds}} സെക്കൻഡിലും ഒരു സ്ട്രൈക്ക് കൂടി ലഭിക്കും.",
+        "face": "നിങ്ങളുടെ മുഖം തുടർച്ചയായി {{inARow}} തവണ, അല്ലെങ്കിൽ ആകെ {{total}} തവണ ഫോട്ടോയുമായി പൊരുത്തപ്പെടുന്നില്ലെങ്കിൽ അഭിമുഖം അവസാനിക്കും.",
+        "network": "നിങ്ങളുടെ ഇന്റർനെറ്റ് {{max}} തവണ മുറിഞ്ഞാൽ അഭിമുഖം സമർപ്പിക്കും. കണക്ഷൻ മുറിയുന്നത് സ്ട്രൈക്കല്ല."
       },
-      "acknowledge": "I understand"
+      "acknowledge": "എനിക്ക് മനസ്സിലായി"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "ക്യാമറ പരിശോധന",
+      "description": "അഭിമുഖം തുടങ്ങുന്നതിന് മുമ്പ് ക്യാമറ നിങ്ങളെ വ്യക്തമായി കാണുന്നുണ്ടെന്ന് ഉറപ്പാക്കാം.",
+      "starting": "ക്യാമറ പരിശോധന ആരംഭിക്കുന്നു…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "നിങ്ങളുടെ മുഖം മാത്രമാണ് കാണുന്നത്",
+        "centred": "നിങ്ങളുടെ മുഖം ഫ്രെയിമിന്റെ മധ്യത്തിലാണ്",
+        "bright": "നിങ്ങളുടെ മുഖത്ത് നല്ല വെളിച്ചമുണ്ട്"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "ശ്രമം {{attempt}} / {{max}}",
+      "passed": "എല്ലാം തയ്യാർ. നിങ്ങൾക്ക് അഭിമുഖം തുടങ്ങാം.",
+      "unavailable": "ഈ ഉപകരണത്തിൽ ക്യാമറ പരിശോധന നടത്താനാകില്ല. നിങ്ങൾക്ക് എന്നിട്ടും തുടരാം.",
       "virtualTitle": "ഒരു വെർച്വൽ ക്യാമറ മാത്രമേ കണ്ടെത്തിയുള്ളൂ",
       "virtualBody": "അഭിമുഖത്തിന് OBS പോലുള്ള വെർച്വൽ ക്യാമറയല്ല, നിങ്ങളുടെ യഥാർത്ഥ വെബ്‌ക്യാം വേണം. ബിൽറ്റ്-ഇൻ അല്ലെങ്കിൽ USB വെബ്‌ക്യാം കണക്റ്റ് ചെയ്യുകയോ ഓണാക്കുകയോ ചെയ്ത ശേഷം വീണ്ടും ശ്രമിക്കുക.",
       "tryAgain": "വീണ്ടും ശ്രമിക്കുക",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "ഇപ്പോഴും പാസാകുന്നില്ലേ? നിങ്ങൾക്ക് എന്നിട്ടും തുടരാം. ഇത് പരിശോധകനായി രേഖപ്പെടുത്തും.",
+      "start": "അഭിമുഖം തുടങ്ങുക",
+      "continueAnyway": "എന്നിട്ടും തുടരുക"
     }
   }
 }

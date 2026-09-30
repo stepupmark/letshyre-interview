@@ -20,7 +20,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import QuestionContent from "./QuestionContent";
 import CodeBlock from "./CodeBlock";
-import { ReferenceCode } from "./ReferenceCode";
 import { WhatHappensNext } from "./WhatHappensNext";
 import { END_REASONS } from "@/lib/terminationReasons";
 
@@ -192,7 +191,7 @@ function CircularProgress({ value }) {
   );
 }
 
-export default function ScoreCard({ scorecard, endReason, sessionId }) {
+export default function ScoreCard({ scorecard, endReason }) {
   const { t } = useTranslation("interview");
   // ScoreCard mounting = the result screen is visible, so the score is on the
   // recording before it ends.
@@ -236,9 +235,8 @@ export default function ScoreCard({ scorecard, endReason, sessionId }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
         <WhatHappensNext variant={ending.next} />
-        <ReferenceCode sessionId={sessionId} className="shrink-0 sm:text-end" />
       </div>
 
       <div className="space-y-8">

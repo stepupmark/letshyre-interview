@@ -5,6 +5,9 @@ import { PreStart } from "./PreStart";
 import interviewEn from "@/i18n/locales/en/interview.json";
 import { subscribeToViolationLog } from "@/lib/violationLog";
 import { startLocalWatch } from "@hooks/proctoring/localWatch";
+import { loadFaceDetector } from "@/lib/localFaceDetector";
+import { RULES_ACK_KEY } from "@/lib/rulesAck";
+import { interviewRules } from "@/config/interviewRules";
 import {
   CAMERA_CHECK_HOLD_MS,
   FACE_MISMATCH_LIMIT,
@@ -15,7 +18,7 @@ import {
 } from "@/config/interview";
 
 vi.mock("@hooks/proctoring/localWatch", () => ({ startLocalWatch: vi.fn() }));
-vi.mock("@/lib/localFaceDetector", () => ({ loadFaceDetector: vi.fn() }));
+vi.mock("@/lib/localFaceDetector", () => ({ loadFaceDetector: vi.fn(() => Promise.resolve()) }));
 
 beforeAll(async () => {
   await i18next.use(initReactI18next).init({
@@ -110,5 +113,52 @@ describe("PreStart camera check", () => {
 
     expect(onReady).toHaveBeenCalledTimes(1);
     expect(log.at(-1)).toMatchObject({ outcome: "precheck_skipped", reason: "camera_error" });
+  });
+});
+
+describe("PreStart inside the desktop app", () => {
+  beforeEach(() => {
+    window.electronAPI = { onViolation: () => {} };
+  });
+  afterEach(() => {
+    delete window.electronAPI;
+    sessionStorage.clear();
+  });
+
+  it("starts straight away when the app showed these exact rules", () => {
+    const at = "2026-09-30T10:00:00.000Z";
+    sessionStorage.setItem(
+      RULES_ACK_KEY,
+      JSON.stringify({ ...interviewRules(import.meta.env), at }),
+    );
+    const onReady = vi.fn();
+    const { container } = render(<PreStart onReady={onReady} />);
+
+    expect(container).toBeEmptyDOMElement();
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(log).toEqual([
+      expect.objectContaining({
+        outcome: "rules_acknowledged",
+        source: "desktop",
+        acknowledged_at: at,
+      }),
+      expect.objectContaining({ outcome: "precheck_skipped", reason: "identity_verified_in_app" }),
+    ]);
+    expect(loadFaceDetector).toHaveBeenCalled();
+  });
+
+  it("shows the rules when the app's copy is out of date, then starts without the camera check", () => {
+    const stale = { ...interviewRules(import.meta.env), strikes: MAX_VIOLATIONS + 1 };
+    sessionStorage.setItem(RULES_ACK_KEY, JSON.stringify(stale));
+    const onReady = vi.fn();
+    render(<PreStart onReady={onReady} />);
+
+    expect(onReady).not.toHaveBeenCalled();
+    acknowledge();
+
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Camera check")).not.toBeInTheDocument();
+    expect(log.map((e) => e.outcome)).toEqual(["rules_acknowledged", "precheck_skipped"]);
+    expect(log[0].source).toBe("site");
   });
 });

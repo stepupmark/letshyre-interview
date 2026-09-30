@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { getTerminationCopy, TERMINATION_REASONS } from "@/lib/terminationReasons";
 import { violationTitle } from "@/lib/violationCopy";
 import { MAX_INTERNET_DISCONNECTS, MAX_VIOLATIONS } from "@/config/interview";
-import { ReferenceCode } from "./ReferenceCode";
 import { WhatHappensNext } from "./WhatHappensNext";
 
 // App names come from the desktop app as proper names, so only the list is localised.
@@ -24,7 +23,6 @@ export default function TerminationNotice({
   onAcknowledge,
   strikes = [],
   securityBlock,
-  sessionId,
 }) {
   const { t, i18n } = useTranslation("interview");
   const acknowledgeRef = useRef(null);
@@ -60,8 +58,8 @@ export default function TerminationNotice({
       aria-describedby="termination-description"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 select-none backdrop-blur-sm"
     >
-      <div className="max-h-full w-full max-w-[440px] overflow-y-auto rounded-2xl bg-[#f8f8f8] shadow-2xl">
-        <div className="p-5">
+      <div className="max-h-full w-full max-w-[600px] overflow-y-auto rounded-2xl bg-[#f8f8f8] shadow-2xl">
+        <div className="p-5 sm:p-7">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <span>{t("violationWarning.rec")}</span>
@@ -163,7 +161,6 @@ export default function TerminationNotice({
             variant={reason === TERMINATION_REASONS.TIME_EXPIRED ? "completed" : "ended"}
             className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3"
           />
-          <ReferenceCode sessionId={sessionId} className="mt-3" />
 
           <div className="mt-5 flex flex-col items-center gap-2">
             <Button

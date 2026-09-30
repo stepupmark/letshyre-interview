@@ -4,6 +4,7 @@ import { PreStartCameraCheck } from "./PreStartCameraCheck";
 
 export function PreStart({ onReady }) {
   const { step, limits, acknowledgeRules, finishCameraCheck } = usePreStart(onReady);
+  if (step === "done") return null;
 
   return (
     <main

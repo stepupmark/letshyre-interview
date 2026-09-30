@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "Voordat je begint",
+      "intro": "Dit gesprek wordt via je camera en scherm gecontroleerd. Hierop let de controle.",
+      "strikesTitle": "Dit telt als een overtreding",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "Het gespreksvenster verlaten, van tabblad wisselen of het volledige scherm verlaten",
+        "people": "Iemand anders in beeld, of niemand in beeld",
+        "devices": "Een telefoon of een ander verboden apparaat in beeld",
+        "apps": "Apps, scherm delen of extra beeldschermen die de desktop-app blokkeert"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "Hiervoor krijg je alleen een waarschuwing",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "Je gezicht gaat even uit beeld",
+        "lighting": "Slechte verlichting of je gezicht is slecht te zien",
+        "cameraPause": "Je camera hapert even"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "De limieten",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "Na {{max}} overtredingen stopt het gesprek en worden je antwoorden ingediend.",
+        "held": "Een apparaat dat in beeld blijft, of een camera die uit blijft, kost elke {{seconds}} seconden een extra overtreding.",
+        "face": "Als je gezicht {{inARow}} keer achter elkaar, of {{total}} keer in totaal, niet overeenkomt met je foto, stopt het gesprek.",
+        "network": "Als je internet {{max}} keer wegvalt, wordt het gesprek ingediend. Uitval is geen overtreding."
       },
-      "acknowledge": "I understand"
+      "acknowledge": "Ik begrijp het"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "Cameracheck",
+      "description": "We controleren of de camera je goed ziet voordat het gesprek begint.",
+      "starting": "Cameracheck starten…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "Alleen je gezicht is in beeld",
+        "centred": "Je gezicht staat in het midden van het beeld",
+        "bright": "Je gezicht is goed verlicht"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "Poging {{attempt}} van {{max}}",
+      "passed": "Alles klaar. Je kunt het gesprek starten.",
+      "unavailable": "De cameracheck kan op dit apparaat niet worden uitgevoerd. Je kunt toch doorgaan.",
       "virtualTitle": "Alleen een virtuele camera gevonden",
       "virtualBody": "Voor het gesprek is je echte webcam nodig, geen virtuele camera zoals OBS. Sluit je ingebouwde of USB-webcam aan of zet hem aan en probeer het opnieuw.",
       "tryAgain": "Opnieuw proberen",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "Lukt het nog steeds niet? Je kunt toch doorgaan. Dit wordt genoteerd voor de beoordelaar.",
+      "start": "Gesprek starten",
+      "continueAnyway": "Toch doorgaan"
     }
   }
 }

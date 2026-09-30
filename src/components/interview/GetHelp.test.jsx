@@ -21,15 +21,15 @@ afterEach(() => {
 const open = () => fireEvent.click(screen.getByRole("button", { name: "Get help" }));
 
 describe("GetHelp", () => {
-  it("opens in the page with answers and the reference code", () => {
-    render(<GetHelp sessionId="session-456" />);
+  it("opens in the page with answers and no reference code", () => {
+    render(<GetHelp />);
     open();
 
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveTextContent("Camera problems");
     expect(dialog).toHaveTextContent("Connection problems");
     expect(dialog).toHaveTextContent("Display problems");
-    expect(dialog).toHaveTextContent("LH-3KHH-QEY5");
+    expect(dialog).not.toHaveTextContent(/Reference code|LH-/);
     expect(dialog.querySelector("a")).toBeNull();
     expect(screen.queryByText("Contact support")).not.toBeInTheDocument();
   });
@@ -38,7 +38,7 @@ describe("GetHelp", () => {
     window.electronAPI = {
       getSupportContact: vi.fn().mockResolvedValue({ email: "help@example.com", url: "" }),
     };
-    render(<GetHelp sessionId="session-456" />);
+    render(<GetHelp />);
     open();
 
     expect(await screen.findByText("help@example.com")).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe("GetHelp", () => {
   });
 
   it("closes again", () => {
-    render(<GetHelp sessionId="s" />);
+    render(<GetHelp />);
     open();
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

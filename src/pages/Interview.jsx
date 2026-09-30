@@ -330,7 +330,6 @@ export function Interview() {
         onAcknowledge={acknowledgeTermination}
         strikes={strikes}
         securityBlock={securityBlock}
-        sessionId={session?.session_id}
       />
     );
   }
@@ -373,7 +372,6 @@ export function Interview() {
           attempted={session.current_index}
           total={session.total_questions}
           violations={session?.violations || 0}
-          sessionId={session.session_id}
         />
       )}
 
@@ -382,11 +380,7 @@ export function Interview() {
           {session?.scorecard ? (
             <ErrorBoundary>
               <Suspense fallback={null}>
-                <ScoreCard
-                  scorecard={session.scorecard}
-                  endReason={session.end_reason}
-                  sessionId={session.session_id}
-                />
+                <ScoreCard scorecard={session.scorecard} endReason={session.end_reason} />
               </Suspense>
             </ErrorBoundary>
           ) : (

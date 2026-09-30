@@ -1,10 +1,11 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import fs from "fs";
 import process from "process";
 import { AI_PREFIX, API_PREFIX, mockApiPlugin } from "./scripts/mockApi.js";
+import { interviewRules } from "./src/config/interviewRules.js";
 
 // The on-device watches load MediaPipe's WASM from our own origin: the desktop
 // app and the page's CSP allow no other. Copied from the installed package into
@@ -46,6 +47,25 @@ function copyMediapipeWasm() {
   };
 }
 
+// The desktop app reads this to show the same limits on its rules step.
+const RULES_FILE = "interview-rules.json";
+
+function publishInterviewRules(mode) {
+  const body = () => JSON.stringify(interviewRules(loadEnv(mode, process.cwd(), "VITE_")));
+  return {
+    name: "publish-interview-rules",
+    configureServer(server) {
+      server.middlewares.use(`/${RULES_FILE}`, (_req, res) => {
+        res.setHeader("Content-Type", "application/json");
+        res.end(body());
+      });
+    },
+    generateBundle() {
+      this.emitFile({ type: "asset", fileName: RULES_FILE, source: body() });
+    },
+  };
+}
+
 // `pnpm dev:mock`: the dev server answers for both backends itself.
 function mockBackend(command, mode) {
   if (command !== "serve" || mode !== "mock") return [];
@@ -55,7 +75,13 @@ function mockBackend(command, mode) {
 }
 
 export default defineConfig(({ command, mode }) => ({
-  plugins: [react(), tailwindcss(), copyMediapipeWasm(), ...mockBackend(command, mode)],
+  plugins: [
+    react(),
+    tailwindcss(),
+    copyMediapipeWasm(),
+    publishInterviewRules(mode),
+    ...mockBackend(command, mode),
+  ],
 
   define: {
     "import.meta.env.MEDIAPIPE_VERSION": JSON.stringify(MEDIAPIPE_VERSION),

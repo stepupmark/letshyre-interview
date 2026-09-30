@@ -194,20 +194,15 @@ describe("ScoreCard ending", () => {
 });
 
 describe("ScoreCard next steps", () => {
-  it("shows the reference code for the session", () => {
-    renderCard({ sessionId: "session-456" });
+  it("says what happens next, with no reference code", () => {
+    renderCard();
 
-    expect(screen.getByText("LH-3KHH-QEY5")).toBeInTheDocument();
     expect(screen.getByText("What happens next")).toBeInTheDocument();
+    expect(screen.queryByText(/Reference code|LH-/)).not.toBeInTheDocument();
   });
 
   it("explains a cut-short interview differently from a finished one", () => {
     renderCard({ endReason: "terminated" });
     expect(screen.getByText(/answers you gave so far/)).toBeInTheDocument();
-  });
-
-  it("has no code to show without a session", () => {
-    renderCard();
-    expect(screen.queryByText("Reference code")).not.toBeInTheDocument();
   });
 });

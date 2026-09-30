@@ -313,48 +313,48 @@
   },
   "preStart": {
     "rules": {
-      "title": "Before you begin",
-      "intro": "This interview is proctored through your camera and screen. Here is what the proctoring looks for.",
-      "strikesTitle": "These count as a strike",
+      "title": "شروع کرنے سے پہلے",
+      "intro": "اس انٹرویو کی نگرانی آپ کے کیمرے اور اسکرین کے ذریعے کی جاتی ہے۔ نگرانی ان باتوں پر نظر رکھتی ہے۔",
+      "strikesTitle": "یہ اسٹرائیک شمار ہوتی ہیں",
       "strikes": {
-        "window": "Leaving the interview window, switching tabs or exiting fullscreen",
-        "people": "Someone else in view, or nobody in view",
-        "devices": "A phone or another prohibited device in view",
-        "apps": "Apps, screen sharing or extra displays the desktop app blocks"
+        "window": "انٹرویو ونڈو چھوڑنا، ٹیب بدلنا یا فل اسکرین سے باہر نکلنا",
+        "people": "کیمرے میں کوئی اور نظر آنا، یا کوئی بھی نظر نہ آنا",
+        "devices": "کیمرے میں فون یا کوئی اور ممنوعہ ڈیوائس نظر آنا",
+        "apps": "ایسی ایپس، اسکرین شیئرنگ یا اضافی ڈسپلے جنہیں ڈیسک ٹاپ ایپ بلاک کرتی ہے"
       },
-      "warningsTitle": "These only give you a warning",
+      "warningsTitle": "ان پر صرف تنبیہ ملتی ہے",
       "warnings": {
-        "faceFrame": "Your face briefly leaving the frame",
-        "lighting": "Poor lighting or an unclear view of your face",
-        "cameraPause": "Your camera pausing for a moment"
+        "faceFrame": "آپ کا چہرہ تھوڑی دیر کے لیے فریم سے باہر جانا",
+        "lighting": "کم روشنی یا چہرہ صاف نظر نہ آنا",
+        "cameraPause": "کیمرے کا ایک لمحے کے لیے رک جانا"
       },
-      "limitsTitle": "The limits",
+      "limitsTitle": "حدیں",
       "limits": {
-        "strikes": "After {{max}} strikes the interview ends and your answers are submitted.",
-        "held": "A device left in view, or a camera left off, costs another strike every {{seconds}} seconds.",
-        "face": "If your face doesn't match your photo {{inARow}} times in a row, or {{total}} times in all, the interview ends.",
-        "network": "If your internet drops {{max}} times, the interview is submitted. Drops are not strikes."
+        "strikes": "{{max}} اسٹرائیکس کے بعد انٹرویو ختم ہو جاتا ہے اور آپ کے جوابات جمع ہو جاتے ہیں۔",
+        "held": "کیمرے میں کوئی ڈیوائس چھوڑنے یا کیمرا بند رکھنے پر ہر {{seconds}} سیکنڈ بعد ایک اور اسٹرائیک لگتی ہے۔",
+        "face": "اگر آپ کا چہرہ لگاتار {{inARow}} بار، یا کل {{total}} بار آپ کی تصویر سے میل نہ کھائے تو انٹرویو ختم ہو جاتا ہے۔",
+        "network": "اگر آپ کا انٹرنیٹ {{max}} بار منقطع ہو تو انٹرویو جمع ہو جاتا ہے۔ انٹرنیٹ کٹنا اسٹرائیک نہیں ہے۔"
       },
-      "acknowledge": "I understand"
+      "acknowledge": "میں سمجھ گیا/گئی"
     },
     "camera": {
-      "title": "Camera check",
-      "description": "Let's make sure the camera can see you clearly before the interview starts.",
-      "starting": "Starting the camera check…",
+      "title": "کیمرا چیک",
+      "description": "انٹرویو شروع ہونے سے پہلے دیکھ لیتے ہیں کہ کیمرا آپ کو صاف دیکھ رہا ہے۔",
+      "starting": "کیمرا چیک شروع ہو رہا ہے…",
       "checks": {
-        "oneFace": "Only your face is in view",
-        "centred": "Your face is in the middle of the frame",
-        "bright": "Your face is well lit"
+        "oneFace": "صرف آپ کا چہرہ نظر آ رہا ہے",
+        "centred": "آپ کا چہرہ فریم کے بیچ میں ہے",
+        "bright": "آپ کے چہرے پر اچھی روشنی ہے"
       },
-      "attempt": "Attempt {{attempt}} of {{max}}",
-      "passed": "All set. You can start the interview.",
-      "unavailable": "The camera check can't run on this device. You can still continue.",
+      "attempt": "کوشش {{attempt}} از {{max}}",
+      "passed": "سب تیار ہے۔ آپ انٹرویو شروع کر سکتے ہیں۔",
+      "unavailable": "اس ڈیوائس پر کیمرا چیک نہیں چل سکتا۔ آپ پھر بھی آگے بڑھ سکتے ہیں۔",
       "virtualTitle": "صرف ایک ورچوئل کیمرا ملا",
       "virtualBody": "انٹرویو کے لیے آپ کا اصل ویب کیم چاہیے، OBS جیسا ورچوئل کیمرا نہیں۔ اپنا بلٹ اِن یا USB ویب کیم لگائیں یا آن کریں، پھر دوبارہ کوشش کریں۔",
       "tryAgain": "دوبارہ کوشش کریں",
-      "skipHint": "Still not passing? You can continue anyway. This will be noted for the reviewer.",
-      "start": "Start interview",
-      "continueAnyway": "Continue anyway"
+      "skipHint": "ابھی بھی پاس نہیں ہو رہا؟ آپ پھر بھی آگے بڑھ سکتے ہیں۔ یہ جائزہ لینے والے کے لیے درج ہوگا۔",
+      "start": "انٹرویو شروع کریں",
+      "continueAnyway": "پھر بھی آگے بڑھیں"
     }
   }
 }
