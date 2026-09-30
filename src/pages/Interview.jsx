@@ -194,9 +194,7 @@ export function Interview() {
         toast.error(t("inInterview.virtualCamera", { ns: "interview" }), { duration: Infinity });
       } else if (status === "engine-error") {
         recordViolationEvent({ source: "camera", type: "CAMERA_ERROR", outcome: "failed" });
-        toast.error(
-          "Camera unavailable. Check permissions/hardware — proctoring needs your camera.",
-        );
+        toast.error(t("inInterview.toasts.cameraUnavailable", { ns: "interview" }));
       }
     },
     [t],
@@ -279,11 +277,11 @@ export function Interview() {
 
   useEffect(() => {
     if (!isProctoringDegraded && !isVerificationUnavailable) return;
-    toast.warning("Proctoring checks are temporarily unavailable.", {
+    toast.warning(t("inInterview.toasts.proctoringUnavailable", { ns: "interview" }), {
       id: "proctoring-unavailable",
-      description: "Your session is still being recorded. Stay in front of the camera.",
+      description: t("inInterview.toasts.proctoringUnavailableHint", { ns: "interview" }),
     });
-  }, [isProctoringDegraded, isVerificationUnavailable]);
+  }, [isProctoringDegraded, isVerificationUnavailable, t]);
 
   useElectronViolation({
     onHardBlock: handleElectronHardBlock,

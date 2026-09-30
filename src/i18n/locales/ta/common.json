@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "உதவி பெறுக",
+      "title": "உதவி தேவையா?",
+      "description": "பொதுவான பிரச்சினைகளுக்கு விரைவான தீர்வுகள். இது திறந்திருக்கும்போதும் உங்கள் நேர்காணல் தொடரும்.",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "கேமரா பிரச்சினைகள்",
+        "body": "லென்ஸை எதுவும் மறைக்கவில்லை என்பதையும் வேறு எந்தச் செயலியும் கேமராவைப் பயன்படுத்தவில்லை என்பதையும் சரிபார்க்கவும். வெளிச்சத்தை நோக்கி அமர்ந்து முகத்தைச் சட்டகத்தின் நடுவில் வைக்கவும்."
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "இணைப்புப் பிரச்சினைகள்",
+        "body": "இணையம் துண்டிக்கப்பட்டால் இந்தத் திரையிலேயே இருங்கள், சாளரத்தை மூட வேண்டாம். ஒவ்வொரு துண்டிப்பும் கணக்கிடப்படும், எனவே முடிந்தால் ரூட்டருக்கு அருகில் செல்லுங்கள் அல்லது நிலையான நெட்வொர்க்குக்கு மாறுங்கள்."
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "திரைப் பிரச்சினைகள்",
+        "body": "நேர்காணலை ஒரே திரையில் முழுத்திரையில் வைத்திருங்கள். கூடுதல் மானிட்டர்களைத் துண்டித்து, திரைப் பகிர்வு அல்லது பதிவுச் செயலிகளை மூடுங்கள்; அவை ஸ்ட்ரைக்குகளாகக் கணக்கிடப்படும்."
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
-      "website": "Website",
-      "close": "Close"
+      "contactTitle": "ஆதரவைத் தொடர்புகொள்க",
+      "email": "மின்னஞ்சல்",
+      "website": "இணையதளம்",
+      "close": "மூடு"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "அடுத்து என்ன",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "உங்கள் பதில்களும் கண்காணிப்புப் பதிவும் பணியமர்த்தல் குழுவுக்குச் செல்லும்.",
+        "contact": "பணியமர்த்தல் குழு உங்கள் நேர்காணலை மதிப்பாய்வு செய்து அடுத்த படிகள் குறித்து உங்களைத் தொடர்புகொள்ளும்."
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "இதுவரை நீங்கள் அளித்த பதில்கள் சமர்ப்பிக்கப்பட்டன.",
+        "review": "பணியமர்த்தல் குழு பதிவையும் நடந்ததையும் மதிப்பாய்வு செய்து, பிறகு அடுத்த படிகள் குறித்து உங்களைத் தொடர்புகொள்ளும்."
       }
     }
   }

@@ -268,47 +268,59 @@
   },
   "inInterview": {
     "timer": {
-      "label": "Time remaining",
-      "warning": "{{minutes}} min left in your interview.",
-      "warningHint": "Start wrapping up your current answer."
+      "label": "ബാക്കിയുള്ള സമയം",
+      "warning": "നിങ്ങളുടെ അഭിമുഖത്തിൽ {{minutes}} മിനിറ്റ് ബാക്കി.",
+      "warningHint": "ഇപ്പോഴത്തെ ഉത്തരം അവസാനിപ്പിക്കാൻ തുടങ്ങുക."
     },
     "virtualCamera": "നിങ്ങളുടെ ക്യാമറ വെബ്‌ക്യാമിന് പകരം ഒരു വെർച്വൽ ക്യാമറയാണ് കാണിക്കുന്നത്. നിങ്ങളുടെ യഥാർത്ഥ വെബ്‌ക്യാം കണക്റ്റ് ചെയ്യുക.",
     "offline": {
-      "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
+      "message": "നിങ്ങൾ ഓഫ്‌ലൈനാണ്. നിങ്ങളുടെ ഉത്തരം ഈ ഉപകരണത്തിൽ സേവ് ചെയ്തിട്ടുണ്ട്. വിച്ഛേദം {{disconnects}} / {{max}}."
     },
     "held": {
-      "restrikeIn": "Counts as another violation in {{time}}",
-      "restrikeNow": "Counts as another violation at the next check",
-      "restrikePending": "This will count as another violation if it stays."
+      "restrikeIn": "{{time}} കഴിഞ്ഞാൽ മറ്റൊരു ലംഘനമായി കണക്കാക്കും",
+      "restrikeNow": "അടുത്ത പരിശോധനയിൽ മറ്റൊരു ലംഘനമായി കണക്കാക്കും",
+      "restrikePending": "ഇത് തുടർന്നാൽ മറ്റൊരു ലംഘനമായി കണക്കാക്കും."
     },
     "fix": {
-      "tabSwitch": "Stay on this tab until you submit your last answer.",
-      "fullscreenExit": "Press the button below to go back to fullscreen, and stay there.",
-      "windowResize": "Keep the window maximized until the interview ends.",
-      "windowFocus": "Close other windows and click only inside the interview.",
-      "noFace": "Sit facing the camera with your whole face in the frame.",
-      "multipleFaces": "Ask anyone else to leave the room, then carry on.",
-      "prohibitedObject": "Move the {{object}} out of the room or well out of the camera's view.",
-      "multipleDevices": "Move your {{object}} out of the room or well out of the camera's view.",
-      "cellPhone": "Switch your phone off and put it out of reach and out of view.",
-      "lookingAway": "Look at the screen while you answer.",
-      "cameraOff": "Turn your camera back on and make sure nothing is covering it.",
-      "faceMismatch": "Face the camera in good light, with nobody else in view.",
+      "tabSwitch": "അവസാന ഉത്തരം സമർപ്പിക്കുന്നതുവരെ ഈ ടാബിൽ തന്നെ തുടരുക.",
+      "fullscreenExit": "ഫുൾസ്ക്രീനിലേക്ക് മടങ്ങാൻ താഴെയുള്ള ബട്ടൺ അമർത്തി അവിടെ തുടരുക.",
+      "windowResize": "അഭിമുഖം കഴിയുന്നതുവരെ വിൻഡോ മാക്സിമൈസ് ചെയ്ത് വയ്ക്കുക.",
+      "windowFocus": "മറ്റ് വിൻഡോകൾ അടച്ച് അഭിമുഖത്തിനുള്ളിൽ മാത്രം ക്ലിക്ക് ചെയ്യുക.",
+      "noFace": "മുഖം മുഴുവൻ ഫ്രെയിമിൽ വരുന്ന വിധം ക്യാമറയ്ക്ക് അഭിമുഖമായി ഇരിക്കുക.",
+      "multipleFaces": "മറ്റുള്ളവരോട് മുറിയിൽ നിന്ന് പുറത്തുപോകാൻ പറയുക, പിന്നെ തുടരുക.",
+      "prohibitedObject": "{{object}} മുറിയിൽ നിന്ന് മാറ്റുകയോ ക്യാമറയുടെ കാഴ്ചയിൽ നിന്ന് വളരെ അകലെ വയ്ക്കുകയോ ചെയ്യുക.",
+      "multipleDevices": "നിങ്ങളുടെ {{object}} മുറിയിൽ നിന്ന് മാറ്റുകയോ ക്യാമറയുടെ കാഴ്ചയിൽ നിന്ന് വളരെ അകലെ വയ്ക്കുകയോ ചെയ്യുക.",
+      "cellPhone": "ഫോൺ ഓഫാക്കി കയ്യെത്താത്തിടത്തും കാഴ്ചയിൽ പെടാത്തിടത്തും വയ്ക്കുക.",
+      "lookingAway": "ഉത്തരം പറയുമ്പോൾ സ്ക്രീനിലേക്ക് നോക്കുക.",
+      "cameraOff": "ക്യാമറ വീണ്ടും ഓണാക്കി, അതിനെ ഒന്നും മൂടിയിട്ടില്ലെന്ന് ഉറപ്പാക്കുക.",
+      "faceMismatch": "നല്ല വെളിച്ചത്തിൽ, മറ്റാരും കാഴ്ചയിൽ ഇല്ലാതെ ക്യാമറയ്ക്ക് അഭിമുഖമായിരിക്കുക.",
       "electron": {
-        "externalDisplay": "Unplug every extra monitor, TV or projector now.",
-        "mirroredDisplay": "Turn off screen mirroring and unplug the extra display.",
-        "screenSharing": "Stop sharing your screen and close the sharing app.",
-        "blockedApp": "Close the app and keep it closed until the interview ends.",
-        "aiTool": "Quit the AI assistant and keep it closed.",
-        "overlay": "Close the app that is drawing over the interview.",
-        "renamedApp": "Quit the app and don't open it again during the interview.",
-        "remoteSession": "End the remote session and use this computer directly.",
-        "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "externalDisplay": "എല്ലാ അധിക മോണിറ്ററുകളും ടിവിയും പ്രൊജക്ടറും ഇപ്പോൾ തന്നെ വിച്ഛേദിക്കുക.",
+        "mirroredDisplay": "സ്ക്രീൻ മിററിംഗ് ഓഫാക്കി അധിക ഡിസ്പ്ലേ വിച്ഛേദിക്കുക.",
+        "screenSharing": "സ്ക്രീൻ ഷെയർ ചെയ്യുന്നത് നിർത്തി ഷെയറിംഗ് ആപ്പ് അടയ്ക്കുക.",
+        "blockedApp": "ആപ്പ് അടച്ച് അഭിമുഖം കഴിയുന്നതുവരെ അടച്ചുതന്നെ വയ്ക്കുക.",
+        "aiTool": "AI അസിസ്റ്റന്റ് അടച്ച് അടച്ചുതന്നെ വയ്ക്കുക.",
+        "overlay": "അഭിമുഖത്തിന് മുകളിൽ എന്തെങ്കിലും കാണിക്കുന്ന ആപ്പ് അടയ്ക്കുക.",
+        "renamedApp": "ആപ്പ് അടയ്ക്കുക, അഭിമുഖത്തിനിടെ വീണ്ടും തുറക്കരുത്.",
+        "remoteSession": "റിമോട്ട് സെഷൻ അവസാനിപ്പിച്ച് ഈ കമ്പ്യൂട്ടർ നേരിട്ട് ഉപയോഗിക്കുക.",
+        "virtualMachine": "വെർച്വൽ മെഷീനിൽ അല്ല, സാധാരണ കമ്പ്യൂട്ടറിൽ അഭിമുഖത്തിൽ പങ്കെടുക്കുക.",
         "virtualCamera": "വെർച്വൽ ക്യാമറ ആപ്പ് ഓഫാക്കുകയോ അൺഇൻസ്റ്റാൾ ചെയ്യുകയോ ചെയ്യുക, അങ്ങനെ നിങ്ങളുടെ യഥാർത്ഥ വെബ്‌ക്യാം മാത്രം ഉപയോഗിക്കപ്പെടും.",
-        "securityMonitor": "Don't close or change the desktop app's security tools.",
-        "windowAction": "Keep the interview window open and on screen.",
-        "generic": "Close anything you opened besides the interview."
+        "securityMonitor": "ഡെസ്ക്ടോപ്പ് ആപ്പിന്റെ സുരക്ഷാ ഉപകരണങ്ങൾ അടയ്ക്കുകയോ മാറ്റുകയോ ചെയ്യരുത്.",
+        "windowAction": "അഭിമുഖ വിൻഡോ തുറന്നും സ്ക്രീനിലും വയ്ക്കുക.",
+        "generic": "അഭിമുഖം ഒഴികെ നിങ്ങൾ തുറന്നതെല്ലാം അടയ്ക്കുക."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "നിങ്ങളുടെ ക്യാമറ ലഭ്യമല്ല. അത് കണക്റ്റ് ചെയ്തിട്ടുണ്ടോ, അനുമതിയുണ്ടോ എന്ന് പരിശോധിക്കുക; നിരീക്ഷണത്തിന് ഇത് ആവശ്യമാണ്.",
+      "proctoringUnavailable": "നിരീക്ഷണ പരിശോധനകൾ താൽക്കാലികമായി ലഭ്യമല്ല.",
+      "proctoringUnavailableHint": "നിങ്ങളുടെ സെഷൻ ഇപ്പോഴും റെക്കോർഡ് ചെയ്യുന്നു. ക്യാമറയ്ക്ക് മുന്നിൽ തുടരുക.",
+      "recordingFailed": "സ്ക്രീൻ റെക്കോർഡിംഗ് പരാജയപ്പെട്ടു. അഭിമുഖം അതില്ലാതെ തുടരും.",
+      "offline": "ഇന്റർനെറ്റ് വിച്ഛേദിക്കപ്പെട്ടു ({{count}} / {{max}})",
+      "offlineHint": "നിങ്ങളുടെ കണക്ഷൻ {{max}} തവണ മുറിഞ്ഞാൽ അഭിമുഖം സ്വയമേവ സമർപ്പിക്കപ്പെടും.",
+      "online": "ഇന്റർനെറ്റ് വീണ്ടും കണക്റ്റ് ചെയ്തു. നിങ്ങൾക്ക് അഭിമുഖം തുടരാം.",
+      "fullscreenFailed": "ഫുൾസ്ക്രീനിലേക്ക് മാറാനായില്ല. വീണ്ടും ശ്രമിക്കുക.",
+      "rightClick": "അഭിമുഖത്തിനിടെ റൈറ്റ്-ക്ലിക്ക് പ്രവർത്തനരഹിതമാണ്.",
+      "clipboard": "അഭിമുഖത്തിനിടെ കോപ്പി, കട്ട്, പേസ്റ്റ് പ്രവർത്തനരഹിതമാണ്."
     }
   },
   "preStart": {

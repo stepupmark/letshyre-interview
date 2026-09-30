@@ -268,47 +268,59 @@
   },
   "inInterview": {
     "timer": {
-      "label": "Time remaining",
-      "warning": "{{minutes}} min left in your interview.",
-      "warningHint": "Start wrapping up your current answer."
+      "label": "మిగిలిన సమయం",
+      "warning": "మీ ఇంటర్వ్యూలో {{minutes}} నిమిషాలు మిగిలి ఉన్నాయి.",
+      "warningHint": "ప్రస్తుత సమాధానాన్ని ముగించడం ప్రారంభించండి."
     },
     "virtualCamera": "మీ కెమెరా వెబ్‌క్యామ్‌కు బదులుగా వర్చువల్ కెమెరాను చూపిస్తోంది. మీ అసలు వెబ్‌క్యామ్‌ను కనెక్ట్ చేయండి.",
     "offline": {
-      "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
+      "message": "మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. మీ సమాధానం ఈ పరికరంలో సేవ్ చేయబడింది. డిస్‌కనెక్ట్ {{disconnects}} / {{max}}."
     },
     "held": {
-      "restrikeIn": "Counts as another violation in {{time}}",
-      "restrikeNow": "Counts as another violation at the next check",
-      "restrikePending": "This will count as another violation if it stays."
+      "restrikeIn": "{{time}} లో మరో ఉల్లంఘనగా లెక్కించబడుతుంది",
+      "restrikeNow": "తర్వాతి తనిఖీలో మరో ఉల్లంఘనగా లెక్కించబడుతుంది",
+      "restrikePending": "ఇది అలాగే ఉంటే మరో ఉల్లంఘనగా లెక్కించబడుతుంది."
     },
     "fix": {
-      "tabSwitch": "Stay on this tab until you submit your last answer.",
-      "fullscreenExit": "Press the button below to go back to fullscreen, and stay there.",
-      "windowResize": "Keep the window maximized until the interview ends.",
-      "windowFocus": "Close other windows and click only inside the interview.",
-      "noFace": "Sit facing the camera with your whole face in the frame.",
-      "multipleFaces": "Ask anyone else to leave the room, then carry on.",
-      "prohibitedObject": "Move the {{object}} out of the room or well out of the camera's view.",
-      "multipleDevices": "Move your {{object}} out of the room or well out of the camera's view.",
-      "cellPhone": "Switch your phone off and put it out of reach and out of view.",
-      "lookingAway": "Look at the screen while you answer.",
-      "cameraOff": "Turn your camera back on and make sure nothing is covering it.",
-      "faceMismatch": "Face the camera in good light, with nobody else in view.",
+      "tabSwitch": "చివరి సమాధానం సమర్పించే వరకు ఈ ట్యాబ్‌లోనే ఉండండి.",
+      "fullscreenExit": "పూర్తి స్క్రీన్‌కు తిరిగి వెళ్లడానికి కింది బటన్ నొక్కి, అక్కడే ఉండండి.",
+      "windowResize": "ఇంటర్వ్యూ ముగిసే వరకు విండోను మాగ్జిమైజ్ చేసి ఉంచండి.",
+      "windowFocus": "ఇతర విండోలను మూసివేసి, ఇంటర్వ్యూ లోపల మాత్రమే క్లిక్ చేయండి.",
+      "noFace": "మీ ముఖం మొత్తం ఫ్రేమ్‌లో ఉండేలా కెమెరా వైపు ముఖం పెట్టి కూర్చోండి.",
+      "multipleFaces": "మిగతా వారందరినీ గది నుంచి బయటకు వెళ్లమని చెప్పి, తర్వాత కొనసాగించండి.",
+      "prohibitedObject": "{{object}}ను గది నుంచి తీసేయండి లేదా కెమెరా దృష్టికి చాలా దూరంగా ఉంచండి.",
+      "multipleDevices": "మీ {{object}}ను గది నుంచి తీసేయండి లేదా కెమెరా దృష్టికి చాలా దూరంగా ఉంచండి.",
+      "cellPhone": "మీ ఫోన్‌ను ఆఫ్ చేసి, చేతికి అందకుండా, కనిపించకుండా ఉంచండి.",
+      "lookingAway": "సమాధానం ఇస్తున్నప్పుడు స్క్రీన్ వైపు చూడండి.",
+      "cameraOff": "కెమెరాను మళ్లీ ఆన్ చేసి, దాన్ని ఏదీ కప్పి లేదని చూసుకోండి.",
+      "faceMismatch": "మంచి వెలుతురులో, మరెవరూ కనిపించకుండా కెమెరా వైపు ముఖం పెట్టండి.",
       "electron": {
-        "externalDisplay": "Unplug every extra monitor, TV or projector now.",
-        "mirroredDisplay": "Turn off screen mirroring and unplug the extra display.",
-        "screenSharing": "Stop sharing your screen and close the sharing app.",
-        "blockedApp": "Close the app and keep it closed until the interview ends.",
-        "aiTool": "Quit the AI assistant and keep it closed.",
-        "overlay": "Close the app that is drawing over the interview.",
-        "renamedApp": "Quit the app and don't open it again during the interview.",
-        "remoteSession": "End the remote session and use this computer directly.",
-        "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "externalDisplay": "ఇప్పుడే అన్ని అదనపు మానిటర్లు, టీవీ లేదా ప్రొజెక్టర్‌ను తీసేయండి.",
+        "mirroredDisplay": "స్క్రీన్ మిర్రరింగ్ ఆఫ్ చేసి, అదనపు డిస్‌ప్లేను తీసేయండి.",
+        "screenSharing": "స్క్రీన్ షేరింగ్ ఆపి, షేరింగ్ యాప్‌ను మూసివేయండి.",
+        "blockedApp": "యాప్‌ను మూసివేసి, ఇంటర్వ్యూ ముగిసే వరకు మూసే ఉంచండి.",
+        "aiTool": "AI అసిస్టెంట్‌ను మూసివేసి, మూసే ఉంచండి.",
+        "overlay": "ఇంటర్వ్యూపై ఏదైనా చూపిస్తున్న యాప్‌ను మూసివేయండి.",
+        "renamedApp": "యాప్‌ను మూసివేయండి, ఇంటర్వ్యూ సమయంలో మళ్లీ తెరవకండి.",
+        "remoteSession": "రిమోట్ సెషన్ ముగించి, ఈ కంప్యూటర్‌ను నేరుగా ఉపయోగించండి.",
+        "virtualMachine": "వర్చువల్ మెషిన్‌లో కాకుండా సాధారణ కంప్యూటర్‌లో ఇంటర్వ్యూ ఇవ్వండి.",
         "virtualCamera": "వర్చువల్ కెమెరా యాప్‌ను ఆపండి లేదా అన్‌ఇన్‌స్టాల్ చేయండి, అప్పుడు మీ అసలు వెబ్‌క్యామ్ మాత్రమే ఉపయోగించబడుతుంది.",
-        "securityMonitor": "Don't close or change the desktop app's security tools.",
-        "windowAction": "Keep the interview window open and on screen.",
-        "generic": "Close anything you opened besides the interview."
+        "securityMonitor": "డెస్క్‌టాప్ యాప్ భద్రతా సాధనాలను మూసివేయకండి లేదా మార్చకండి.",
+        "windowAction": "ఇంటర్వ్యూ విండోను తెరిచి, స్క్రీన్‌పై ఉంచండి.",
+        "generic": "ఇంటర్వ్యూ కాకుండా మీరు తెరిచిన ప్రతిదాన్నీ మూసివేయండి."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "మీ కెమెరా అందుబాటులో లేదు. అది కనెక్ట్ అయి ఉందా, అనుమతి ఉందా చూడండి; పర్యవేక్షణకు ఇది అవసరం.",
+      "proctoringUnavailable": "పర్యవేక్షణ తనిఖీలు తాత్కాలికంగా అందుబాటులో లేవు.",
+      "proctoringUnavailableHint": "మీ సెషన్ ఇంకా రికార్డ్ అవుతోంది. కెమెరా ముందే ఉండండి.",
+      "recordingFailed": "స్క్రీన్ రికార్డింగ్ విఫలమైంది. ఇంటర్వ్యూ అది లేకుండానే కొనసాగుతుంది.",
+      "offline": "ఇంటర్నెట్ డిస్‌కనెక్ట్ అయింది ({{count}} / {{max}})",
+      "offlineHint": "మీ కనెక్షన్ {{max}} సార్లు తెగితే ఇంటర్వ్యూ ఆటోమేటిక్‌గా సమర్పించబడుతుంది.",
+      "online": "ఇంటర్నెట్ మళ్లీ కనెక్ట్ అయింది. మీరు ఇంటర్వ్యూ కొనసాగించవచ్చు.",
+      "fullscreenFailed": "పూర్తి స్క్రీన్‌కు మారలేకపోయాం. మళ్లీ ప్రయత్నించండి.",
+      "rightClick": "ఇంటర్వ్యూ సమయంలో రైట్-క్లిక్ నిలిపివేయబడింది.",
+      "clipboard": "ఇంటర్వ్యూ సమయంలో కాపీ, కట్, పేస్ట్ నిలిపివేయబడ్డాయి."
     }
   },
   "preStart": {

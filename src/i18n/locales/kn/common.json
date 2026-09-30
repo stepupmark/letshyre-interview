@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "ಸಹಾಯ ಪಡೆಯಿರಿ",
+      "title": "ಸಹಾಯ ಬೇಕೇ?",
+      "description": "ಸಾಮಾನ್ಯ ಸಮಸ್ಯೆಗಳಿಗೆ ತ್ವರಿತ ಪರಿಹಾರಗಳು. ಇದು ತೆರೆದಿರುವಾಗಲೂ ನಿಮ್ಮ ಸಂದರ್ಶನ ಮುಂದುವರಿಯುತ್ತದೆ.",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "ಕ್ಯಾಮೆರಾ ಸಮಸ್ಯೆಗಳು",
+        "body": "ಲೆನ್ಸ್ ಮೇಲೆ ಏನೂ ಇಲ್ಲ ಮತ್ತು ಬೇರೆ ಯಾವುದೇ ಆ್ಯಪ್ ಕ್ಯಾಮೆರಾ ಬಳಸುತ್ತಿಲ್ಲ ಎಂದು ಪರಿಶೀಲಿಸಿ. ಬೆಳಕಿನ ಕಡೆಗೆ ಮುಖ ಮಾಡಿ, ಮುಖವನ್ನು ಫ್ರೇಮ್‌ನ ಮಧ್ಯದಲ್ಲಿ ಇರಿಸಿ."
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "ಸಂಪರ್ಕ ಸಮಸ್ಯೆಗಳು",
+        "body": "ಇಂಟರ್ನೆಟ್ ಕಡಿತಗೊಂಡರೆ ಈ ಪರದೆಯಲ್ಲೇ ಇರಿ ಮತ್ತು ವಿಂಡೋ ಮುಚ್ಚಬೇಡಿ. ಪ್ರತಿ ಕಡಿತವೂ ಎಣಿಕೆಯಾಗುತ್ತದೆ, ಆದ್ದರಿಂದ ಸಾಧ್ಯವಾದರೆ ರೂಟರ್ ಹತ್ತಿರ ಹೋಗಿ ಅಥವಾ ಹೆಚ್ಚು ಸ್ಥಿರ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಬದಲಿಸಿ."
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "ಡಿಸ್‌ಪ್ಲೇ ಸಮಸ್ಯೆಗಳು",
+        "body": "ಸಂದರ್ಶನವನ್ನು ಒಂದೇ ಪರದೆಯಲ್ಲಿ ಪೂರ್ಣಪರದೆಯಲ್ಲಿ ಇರಿಸಿ. ಹೆಚ್ಚುವರಿ ಮಾನಿಟರ್‌ಗಳನ್ನು ತೆಗೆಯಿರಿ ಮತ್ತು ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ಅಥವಾ ರೆಕಾರ್ಡಿಂಗ್ ಆ್ಯಪ್‌ಗಳನ್ನು ಮುಚ್ಚಿ, ಏಕೆಂದರೆ ಇವು ಸ್ಟ್ರೈಕ್‌ಗಳಾಗಿ ಎಣಿಕೆಯಾಗುತ್ತವೆ."
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
-      "website": "Website",
-      "close": "Close"
+      "contactTitle": "ಸಪೋರ್ಟ್ ಸಂಪರ್ಕಿಸಿ",
+      "email": "ಇಮೇಲ್",
+      "website": "ವೆಬ್‌ಸೈಟ್",
+      "close": "ಮುಚ್ಚಿ"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "ಮುಂದೆ ಏನಾಗುತ್ತದೆ",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "ನಿಮ್ಮ ಉತ್ತರಗಳು ಮತ್ತು ಮೇಲ್ವಿಚಾರಣೆ ದಾಖಲೆ ನೇಮಕಾತಿ ತಂಡಕ್ಕೆ ಹೋಗುತ್ತವೆ.",
+        "contact": "ನೇಮಕಾತಿ ತಂಡ ನಿಮ್ಮ ಸಂದರ್ಶನವನ್ನು ಪರಿಶೀಲಿಸಿ ಮುಂದಿನ ಹಂತಗಳ ಬಗ್ಗೆ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತದೆ."
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "ಇಲ್ಲಿಯವರೆಗೆ ನೀವು ನೀಡಿದ ಉತ್ತರಗಳನ್ನು ಸಲ್ಲಿಸಲಾಗಿದೆ.",
+        "review": "ನೇಮಕಾತಿ ತಂಡ ರೆಕಾರ್ಡಿಂಗ್ ಮತ್ತು ನಡೆದದ್ದನ್ನು ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮುಂದಿನ ಹಂತಗಳ ಬಗ್ಗೆ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತದೆ."
       }
     }
   }

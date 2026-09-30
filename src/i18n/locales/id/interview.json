@@ -309,6 +309,18 @@
         "windowAction": "Biarkan jendela wawancara tetap terbuka dan tampil di layar.",
         "generic": "Tutup semua yang Anda buka selain wawancara."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "Kamera Anda tidak tersedia. Pastikan kamera terhubung dan diizinkan; pengawasan memerlukannya.",
+      "proctoringUnavailable": "Pemeriksaan pengawasan untuk sementara tidak tersedia.",
+      "proctoringUnavailableHint": "Sesi Anda masih direkam. Tetap di depan kamera.",
+      "recordingFailed": "Perekaman layar gagal. Wawancara berlanjut tanpanya.",
+      "offline": "Internet terputus ({{count}} dari {{max}})",
+      "offlineHint": "Wawancara Anda dikirim otomatis jika koneksi terputus {{max}} kali.",
+      "online": "Internet tersambung kembali. Anda bisa melanjutkan wawancara.",
+      "fullscreenFailed": "Tidak bisa beralih ke layar penuh. Coba lagi.",
+      "rightClick": "Klik kanan dinonaktifkan selama wawancara.",
+      "clipboard": "Menyalin, memotong, dan menempel dinonaktifkan selama wawancara."
     }
   },
   "preStart": {

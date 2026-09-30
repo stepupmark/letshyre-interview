@@ -1,6 +1,7 @@
 // hooks/electron/useElectronScreenRecording.js
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import i18next from "i18next";
 import { logger } from "@/lib/logger";
 import {
   markRecordingError,
@@ -65,7 +66,7 @@ export function useElectronScreenRecording({
         outcome: "error",
         error,
       });
-      toast.error("Screen recording failed. The session will continue without recording.");
+      toast.error(i18next.t("interview:inInterview.toasts.recordingFailed"));
     });
 
     // No explicit cleanup needed — the preload bridge uses removeAllListeners

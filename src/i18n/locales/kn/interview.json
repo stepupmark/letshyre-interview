@@ -268,47 +268,59 @@
   },
   "inInterview": {
     "timer": {
-      "label": "Time remaining",
-      "warning": "{{minutes}} min left in your interview.",
-      "warningHint": "Start wrapping up your current answer."
+      "label": "ಉಳಿದ ಸಮಯ",
+      "warning": "ನಿಮ್ಮ ಸಂದರ್ಶನದಲ್ಲಿ {{minutes}} ನಿಮಿಷ ಉಳಿದಿದೆ.",
+      "warningHint": "ಈಗಿನ ಉತ್ತರವನ್ನು ಮುಗಿಸಲು ಪ್ರಾರಂಭಿಸಿ."
     },
     "virtualCamera": "ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ವೆಬ್‌ಕ್ಯಾಮ್ ಬದಲು ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾವನ್ನು ತೋರಿಸುತ್ತಿದೆ. ನಿಮ್ಮ ನಿಜವಾದ ವೆಬ್‌ಕ್ಯಾಮ್ ಅನ್ನು ಸಂಪರ್ಕಿಸಿ.",
     "offline": {
-      "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
+      "message": "ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ. ನಿಮ್ಮ ಉತ್ತರ ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ. ಕಡಿತ {{disconnects}} / {{max}}."
     },
     "held": {
-      "restrikeIn": "Counts as another violation in {{time}}",
-      "restrikeNow": "Counts as another violation at the next check",
-      "restrikePending": "This will count as another violation if it stays."
+      "restrikeIn": "{{time}} ನಲ್ಲಿ ಇನ್ನೊಂದು ಉಲ್ಲಂಘನೆ ಎಂದು ಎಣಿಕೆಯಾಗುತ್ತದೆ",
+      "restrikeNow": "ಮುಂದಿನ ಪರಿಶೀಲನೆಯಲ್ಲಿ ಇನ್ನೊಂದು ಉಲ್ಲಂಘನೆ ಎಂದು ಎಣಿಕೆಯಾಗುತ್ತದೆ",
+      "restrikePending": "ಇದು ಹಾಗೆಯೇ ಇದ್ದರೆ ಇನ್ನೊಂದು ಉಲ್ಲಂಘನೆ ಎಂದು ಎಣಿಕೆಯಾಗುತ್ತದೆ."
     },
     "fix": {
-      "tabSwitch": "Stay on this tab until you submit your last answer.",
-      "fullscreenExit": "Press the button below to go back to fullscreen, and stay there.",
-      "windowResize": "Keep the window maximized until the interview ends.",
-      "windowFocus": "Close other windows and click only inside the interview.",
-      "noFace": "Sit facing the camera with your whole face in the frame.",
-      "multipleFaces": "Ask anyone else to leave the room, then carry on.",
-      "prohibitedObject": "Move the {{object}} out of the room or well out of the camera's view.",
-      "multipleDevices": "Move your {{object}} out of the room or well out of the camera's view.",
-      "cellPhone": "Switch your phone off and put it out of reach and out of view.",
-      "lookingAway": "Look at the screen while you answer.",
-      "cameraOff": "Turn your camera back on and make sure nothing is covering it.",
-      "faceMismatch": "Face the camera in good light, with nobody else in view.",
+      "tabSwitch": "ಕೊನೆಯ ಉತ್ತರ ಸಲ್ಲಿಸುವವರೆಗೆ ಈ ಟ್ಯಾಬ್‌ನಲ್ಲೇ ಇರಿ.",
+      "fullscreenExit": "ಪೂರ್ಣಪರದೆಗೆ ಮರಳಲು ಕೆಳಗಿನ ಬಟನ್ ಒತ್ತಿ, ಅಲ್ಲೇ ಇರಿ.",
+      "windowResize": "ಸಂದರ್ಶನ ಮುಗಿಯುವವರೆಗೆ ವಿಂಡೋವನ್ನು ಗರಿಷ್ಠಗೊಳಿಸಿಯೇ ಇರಿಸಿ.",
+      "windowFocus": "ಬೇರೆ ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ, ಸಂದರ್ಶನದೊಳಗೆ ಮಾತ್ರ ಕ್ಲಿಕ್ ಮಾಡಿ.",
+      "noFace": "ಇಡೀ ಮುಖ ಫ್ರೇಮ್‌ನಲ್ಲಿರುವಂತೆ ಕ್ಯಾಮೆರಾಕ್ಕೆ ಮುಖ ಮಾಡಿ ಕುಳಿತುಕೊಳ್ಳಿ.",
+      "multipleFaces": "ಬೇರೆ ಎಲ್ಲರನ್ನೂ ಕೋಣೆಯಿಂದ ಹೊರಗೆ ಹೋಗಲು ಹೇಳಿ, ನಂತರ ಮುಂದುವರಿಸಿ.",
+      "prohibitedObject": "{{object}} ಅನ್ನು ಕೋಣೆಯಿಂದ ಹೊರಗೆ ಅಥವಾ ಕ್ಯಾಮೆರಾದ ನೋಟದಿಂದ ಸಾಕಷ್ಟು ದೂರ ಇರಿಸಿ.",
+      "multipleDevices": "ನಿಮ್ಮ {{object}} ಅನ್ನು ಕೋಣೆಯಿಂದ ಹೊರಗೆ ಅಥವಾ ಕ್ಯಾಮೆರಾದ ನೋಟದಿಂದ ಸಾಕಷ್ಟು ದೂರ ಇರಿಸಿ.",
+      "cellPhone": "ನಿಮ್ಮ ಫೋನ್ ಆಫ್ ಮಾಡಿ, ಕೈಗೆ ಸಿಗದಂತೆ ಮತ್ತು ಕಾಣದಂತೆ ಇರಿಸಿ.",
+      "lookingAway": "ಉತ್ತರಿಸುವಾಗ ಪರದೆಯನ್ನು ನೋಡಿ.",
+      "cameraOff": "ನಿಮ್ಮ ಕ್ಯಾಮೆರಾವನ್ನು ಮತ್ತೆ ಆನ್ ಮಾಡಿ ಮತ್ತು ಅದರ ಮೇಲೆ ಏನೂ ಮುಚ್ಚಿಲ್ಲ ಎಂದು ಖಚಿತಪಡಿಸಿ.",
+      "faceMismatch": "ಉತ್ತಮ ಬೆಳಕಿನಲ್ಲಿ, ಬೇರೆ ಯಾರೂ ಕಾಣದಂತೆ ಕ್ಯಾಮೆರಾಕ್ಕೆ ಮುಖ ಮಾಡಿ.",
       "electron": {
-        "externalDisplay": "Unplug every extra monitor, TV or projector now.",
-        "mirroredDisplay": "Turn off screen mirroring and unplug the extra display.",
-        "screenSharing": "Stop sharing your screen and close the sharing app.",
-        "blockedApp": "Close the app and keep it closed until the interview ends.",
-        "aiTool": "Quit the AI assistant and keep it closed.",
-        "overlay": "Close the app that is drawing over the interview.",
-        "renamedApp": "Quit the app and don't open it again during the interview.",
-        "remoteSession": "End the remote session and use this computer directly.",
-        "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "externalDisplay": "ಈಗಲೇ ಎಲ್ಲಾ ಹೆಚ್ಚುವರಿ ಮಾನಿಟರ್, ಟಿವಿ ಅಥವಾ ಪ್ರೊಜೆಕ್ಟರ್ ತೆಗೆಯಿರಿ.",
+        "mirroredDisplay": "ಸ್ಕ್ರೀನ್ ಮಿರರಿಂಗ್ ಆಫ್ ಮಾಡಿ ಮತ್ತು ಹೆಚ್ಚುವರಿ ಡಿಸ್‌ಪ್ಲೇ ತೆಗೆಯಿರಿ.",
+        "screenSharing": "ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ನಿಲ್ಲಿಸಿ ಮತ್ತು ಹಂಚಿಕೆ ಆ್ಯಪ್ ಮುಚ್ಚಿ.",
+        "blockedApp": "ಆ್ಯಪ್ ಮುಚ್ಚಿ ಮತ್ತು ಸಂದರ್ಶನ ಮುಗಿಯುವವರೆಗೆ ಮುಚ್ಚಿಯೇ ಇರಿಸಿ.",
+        "aiTool": "AI ಸಹಾಯಕವನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಮುಚ್ಚಿಯೇ ಇರಿಸಿ.",
+        "overlay": "ಸಂದರ್ಶನದ ಮೇಲೆ ಏನನ್ನಾದರೂ ತೋರಿಸುತ್ತಿರುವ ಆ್ಯಪ್ ಮುಚ್ಚಿ.",
+        "renamedApp": "ಆ್ಯಪ್ ಮುಚ್ಚಿ ಮತ್ತು ಸಂದರ್ಶನದ ಸಮಯದಲ್ಲಿ ಮತ್ತೆ ತೆರೆಯಬೇಡಿ.",
+        "remoteSession": "ರಿಮೋಟ್ ಸೆಷನ್ ಕೊನೆಗೊಳಿಸಿ ಮತ್ತು ಈ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ನೇರವಾಗಿ ಬಳಸಿ.",
+        "virtualMachine": "ವರ್ಚುವಲ್ ಮೆಷಿನ್‌ನಲ್ಲಿ ಅಲ್ಲ, ಸಾಮಾನ್ಯ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಸಂದರ್ಶನ ನೀಡಿ.",
         "virtualCamera": "ವರ್ಚುವಲ್ ಕ್ಯಾಮೆರಾ ಆ್ಯಪ್ ಅನ್ನು ಆಫ್ ಮಾಡಿ ಅಥವಾ ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ, ಆಗ ನಿಮ್ಮ ನಿಜವಾದ ವೆಬ್‌ಕ್ಯಾಮ್ ಮಾತ್ರ ಬಳಕೆಯಾಗುತ್ತದೆ.",
-        "securityMonitor": "Don't close or change the desktop app's security tools.",
-        "windowAction": "Keep the interview window open and on screen.",
-        "generic": "Close anything you opened besides the interview."
+        "securityMonitor": "ಡೆಸ್ಕ್‌ಟಾಪ್ ಆ್ಯಪ್‌ನ ಭದ್ರತಾ ಉಪಕರಣಗಳನ್ನು ಮುಚ್ಚಬೇಡಿ ಅಥವಾ ಬದಲಾಯಿಸಬೇಡಿ.",
+        "windowAction": "ಸಂದರ್ಶನ ವಿಂಡೋವನ್ನು ತೆರೆದಿಟ್ಟು ಪರದೆಯ ಮೇಲೆ ಇರಿಸಿ.",
+        "generic": "ಸಂದರ್ಶನವನ್ನು ಹೊರತುಪಡಿಸಿ ನೀವು ತೆರೆದ ಎಲ್ಲವನ್ನೂ ಮುಚ್ಚಿ."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "ನಿಮ್ಮ ಕ್ಯಾಮೆರಾ ಲಭ್ಯವಿಲ್ಲ. ಅದು ಸಂಪರ್ಕಗೊಂಡಿದೆಯೇ ಮತ್ತು ಅನುಮತಿಸಲಾಗಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ; ಮೇಲ್ವಿಚಾರಣೆಗೆ ಇದು ಬೇಕು.",
+      "proctoringUnavailable": "ಮೇಲ್ವಿಚಾರಣೆ ಪರಿಶೀಲನೆಗಳು ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಭ್ಯವಿಲ್ಲ.",
+      "proctoringUnavailableHint": "ನಿಮ್ಮ ಸೆಷನ್ ಇನ್ನೂ ರೆಕಾರ್ಡ್ ಆಗುತ್ತಿದೆ. ಕ್ಯಾಮೆರಾದ ಮುಂದೆ ಇರಿ.",
+      "recordingFailed": "ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ವಿಫಲವಾಯಿತು. ಸಂದರ್ಶನ ಅದಿಲ್ಲದೆ ಮುಂದುವರಿಯುತ್ತದೆ.",
+      "offline": "ಇಂಟರ್ನೆಟ್ ಕಡಿತಗೊಂಡಿದೆ ({{count}} / {{max}})",
+      "offlineHint": "ನಿಮ್ಮ ಸಂಪರ್ಕ {{max}} ಬಾರಿ ಕಡಿತಗೊಂಡರೆ ಸಂದರ್ಶನ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಲ್ಲಿಕೆಯಾಗುತ್ತದೆ.",
+      "online": "ಇಂಟರ್ನೆಟ್ ಮರುಸಂಪರ್ಕಗೊಂಡಿದೆ. ನೀವು ಸಂದರ್ಶನವನ್ನು ಮುಂದುವರಿಸಬಹುದು.",
+      "fullscreenFailed": "ಪೂರ್ಣಪರದೆಗೆ ಬದಲಾಯಿಸಲು ಆಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      "rightClick": "ಸಂದರ್ಶನದ ಸಮಯದಲ್ಲಿ ರೈಟ್-ಕ್ಲಿಕ್ ನಿಷ್ಕ್ರಿಯವಾಗಿದೆ.",
+      "clipboard": "ಸಂದರ್ಶನದ ಸಮಯದಲ್ಲಿ ಕಾಪಿ, ಕಟ್ ಮತ್ತು ಪೇಸ್ಟ್ ನಿಷ್ಕ್ರಿಯವಾಗಿವೆ."
     }
   },
   "preStart": {

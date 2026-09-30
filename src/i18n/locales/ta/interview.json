@@ -268,47 +268,59 @@
   },
   "inInterview": {
     "timer": {
-      "label": "Time remaining",
-      "warning": "{{minutes}} min left in your interview.",
-      "warningHint": "Start wrapping up your current answer."
+      "label": "மீதமுள்ள நேரம்",
+      "warning": "உங்கள் நேர்காணலில் {{minutes}} நிமிடம் மீதமுள்ளது.",
+      "warningHint": "தற்போதைய பதிலை முடிக்கத் தொடங்குங்கள்."
     },
     "virtualCamera": "உங்கள் கேமரா வெப்கேமுக்குப் பதிலாக ஒரு மெய்நிகர் கேமராவைக் காட்டுகிறது. உங்கள் உண்மையான வெப்கேமை இணைக்கவும்.",
     "offline": {
-      "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
+      "message": "நீங்கள் ஆஃப்லைனில் உள்ளீர்கள். உங்கள் பதில் இந்தச் சாதனத்தில் சேமிக்கப்பட்டுள்ளது. துண்டிப்பு {{disconnects}} / {{max}}."
     },
     "held": {
-      "restrikeIn": "Counts as another violation in {{time}}",
-      "restrikeNow": "Counts as another violation at the next check",
-      "restrikePending": "This will count as another violation if it stays."
+      "restrikeIn": "{{time}} இல் இன்னொரு மீறலாகக் கணக்கிடப்படும்",
+      "restrikeNow": "அடுத்த சரிபார்ப்பில் இன்னொரு மீறலாகக் கணக்கிடப்படும்",
+      "restrikePending": "இது தொடர்ந்தால் இன்னொரு மீறலாகக் கணக்கிடப்படும்."
     },
     "fix": {
-      "tabSwitch": "Stay on this tab until you submit your last answer.",
-      "fullscreenExit": "Press the button below to go back to fullscreen, and stay there.",
-      "windowResize": "Keep the window maximized until the interview ends.",
-      "windowFocus": "Close other windows and click only inside the interview.",
-      "noFace": "Sit facing the camera with your whole face in the frame.",
-      "multipleFaces": "Ask anyone else to leave the room, then carry on.",
-      "prohibitedObject": "Move the {{object}} out of the room or well out of the camera's view.",
-      "multipleDevices": "Move your {{object}} out of the room or well out of the camera's view.",
-      "cellPhone": "Switch your phone off and put it out of reach and out of view.",
-      "lookingAway": "Look at the screen while you answer.",
-      "cameraOff": "Turn your camera back on and make sure nothing is covering it.",
-      "faceMismatch": "Face the camera in good light, with nobody else in view.",
+      "tabSwitch": "கடைசி பதிலைச் சமர்ப்பிக்கும் வரை இந்தத் தாவலிலேயே இருங்கள்.",
+      "fullscreenExit": "முழுத்திரைக்குத் திரும்ப கீழே உள்ள பொத்தானை அழுத்தி, அங்கேயே இருங்கள்.",
+      "windowResize": "நேர்காணல் முடியும் வரை சாளரத்தை பெரிதாக்கியே வைத்திருங்கள்.",
+      "windowFocus": "மற்ற சாளரங்களை மூடி, நேர்காணலுக்குள் மட்டும் கிளிக் செய்யுங்கள்.",
+      "noFace": "முகம் முழுவதும் சட்டகத்தில் இருக்கும்படி கேமராவை நோக்கி அமருங்கள்.",
+      "multipleFaces": "மற்ற அனைவரையும் அறையை விட்டு வெளியேறச் சொல்லுங்கள், பிறகு தொடருங்கள்.",
+      "prohibitedObject": "{{object}}ஐ அறையிலிருந்து அகற்றுங்கள் அல்லது கேமராவின் பார்வைக்கு வெகு தொலைவில் வையுங்கள்.",
+      "multipleDevices": "உங்கள் {{object}}ஐ அறையிலிருந்து அகற்றுங்கள் அல்லது கேமராவின் பார்வைக்கு வெகு தொலைவில் வையுங்கள்.",
+      "cellPhone": "உங்கள் தொலைபேசியை அணைத்து, கைக்கு எட்டாத, பார்வைக்குத் தெரியாத இடத்தில் வையுங்கள்.",
+      "lookingAway": "பதிலளிக்கும்போது திரையைப் பாருங்கள்.",
+      "cameraOff": "கேமராவை மீண்டும் இயக்கி, எதுவும் அதை மறைக்கவில்லை என உறுதிசெய்யுங்கள்.",
+      "faceMismatch": "நல்ல வெளிச்சத்தில், வேறு யாரும் தெரியாமல் கேமராவை நோக்கி இருங்கள்.",
       "electron": {
-        "externalDisplay": "Unplug every extra monitor, TV or projector now.",
-        "mirroredDisplay": "Turn off screen mirroring and unplug the extra display.",
-        "screenSharing": "Stop sharing your screen and close the sharing app.",
-        "blockedApp": "Close the app and keep it closed until the interview ends.",
-        "aiTool": "Quit the AI assistant and keep it closed.",
-        "overlay": "Close the app that is drawing over the interview.",
-        "renamedApp": "Quit the app and don't open it again during the interview.",
-        "remoteSession": "End the remote session and use this computer directly.",
-        "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "externalDisplay": "இப்போதே எல்லா கூடுதல் மானிட்டர், டிவி அல்லது புரொஜெக்டரைத் துண்டியுங்கள்.",
+        "mirroredDisplay": "திரை மிரரிங்கை அணைத்து, கூடுதல் திரையைத் துண்டியுங்கள்.",
+        "screenSharing": "திரைப் பகிர்வை நிறுத்தி, பகிர்வுச் செயலியை மூடுங்கள்.",
+        "blockedApp": "செயலியை மூடி, நேர்காணல் முடியும் வரை மூடியே வையுங்கள்.",
+        "aiTool": "AI உதவியாளரை மூடி, மூடியே வையுங்கள்.",
+        "overlay": "நேர்காணலின் மேல் எதையாவது காட்டும் செயலியை மூடுங்கள்.",
+        "renamedApp": "செயலியை மூடுங்கள், நேர்காணலின்போது மீண்டும் திறக்க வேண்டாம்.",
+        "remoteSession": "தொலைநிலை அமர்வை முடித்து, இந்தக் கணினியை நேரடியாகப் பயன்படுத்துங்கள்.",
+        "virtualMachine": "மெய்நிகர் கணினியில் அல்ல, வழக்கமான கணினியில் நேர்காணலில் கலந்துகொள்ளுங்கள்.",
         "virtualCamera": "மெய்நிகர் கேமரா ஆப்பை அணைக்கவும் அல்லது நீக்கவும், அப்போது உங்கள் உண்மையான வெப்கேம் மட்டுமே பயன்படும்.",
-        "securityMonitor": "Don't close or change the desktop app's security tools.",
-        "windowAction": "Keep the interview window open and on screen.",
-        "generic": "Close anything you opened besides the interview."
+        "securityMonitor": "டெஸ்க்டாப் செயலியின் பாதுகாப்புக் கருவிகளை மூடவோ மாற்றவோ வேண்டாம்.",
+        "windowAction": "நேர்காணல் சாளரத்தைத் திறந்தும் திரையிலும் வைத்திருங்கள்.",
+        "generic": "நேர்காணலைத் தவிர நீங்கள் திறந்த அனைத்தையும் மூடுங்கள்."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "உங்கள் கேமரா கிடைக்கவில்லை. அது இணைக்கப்பட்டு அனுமதிக்கப்பட்டுள்ளதா எனச் சரிபார்க்கவும்; கண்காணிப்புக்கு அது தேவை.",
+      "proctoringUnavailable": "கண்காணிப்புச் சரிபார்ப்புகள் தற்காலிகமாகக் கிடைக்கவில்லை.",
+      "proctoringUnavailableHint": "உங்கள் அமர்வு இன்னும் பதிவாகிறது. கேமராவின் முன் இருங்கள்.",
+      "recordingFailed": "திரைப் பதிவு தோல்வியடைந்தது. நேர்காணல் அது இல்லாமல் தொடரும்.",
+      "offline": "இணையம் துண்டிக்கப்பட்டது ({{count}} / {{max}})",
+      "offlineHint": "உங்கள் இணைப்பு {{max}} முறை துண்டிக்கப்பட்டால் நேர்காணல் தானாகச் சமர்ப்பிக்கப்படும்.",
+      "online": "இணையம் மீண்டும் இணைந்தது. நேர்காணலைத் தொடரலாம்.",
+      "fullscreenFailed": "முழுத்திரைக்கு மாற முடியவில்லை. மீண்டும் முயலவும்.",
+      "rightClick": "நேர்காணலின்போது வலது கிளிக் முடக்கப்பட்டுள்ளது.",
+      "clipboard": "நேர்காணலின்போது நகலெடுத்தல், வெட்டுதல், ஒட்டுதல் முடக்கப்பட்டுள்ளன."
     }
   },
   "preStart": {

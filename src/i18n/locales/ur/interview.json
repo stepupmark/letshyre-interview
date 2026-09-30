@@ -268,47 +268,59 @@
   },
   "inInterview": {
     "timer": {
-      "label": "Time remaining",
-      "warning": "{{minutes}} min left in your interview.",
-      "warningHint": "Start wrapping up your current answer."
+      "label": "باقی وقت",
+      "warning": "آپ کے انٹرویو میں {{minutes}} منٹ باقی ہیں۔",
+      "warningHint": "اپنا موجودہ جواب سمیٹنا شروع کریں۔"
     },
     "virtualCamera": "آپ کا کیمرا ویب کیم کے بجائے ایک ورچوئل کیمرا دکھا رہا ہے۔ اپنا اصل ویب کیم لگائیں۔",
     "offline": {
-      "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
+      "message": "آپ آف لائن ہیں۔ آپ کا جواب اس ڈیوائس پر محفوظ ہے۔ رابطہ منقطع {{disconnects}} از {{max}}۔"
     },
     "held": {
-      "restrikeIn": "Counts as another violation in {{time}}",
-      "restrikeNow": "Counts as another violation at the next check",
-      "restrikePending": "This will count as another violation if it stays."
+      "restrikeIn": "{{time}} میں ایک اور خلاف ورزی شمار ہوگی",
+      "restrikeNow": "اگلی جانچ پر ایک اور خلاف ورزی شمار ہوگی",
+      "restrikePending": "اگر یہ رہا تو ایک اور خلاف ورزی شمار ہوگی۔"
     },
     "fix": {
-      "tabSwitch": "Stay on this tab until you submit your last answer.",
-      "fullscreenExit": "Press the button below to go back to fullscreen, and stay there.",
-      "windowResize": "Keep the window maximized until the interview ends.",
-      "windowFocus": "Close other windows and click only inside the interview.",
-      "noFace": "Sit facing the camera with your whole face in the frame.",
-      "multipleFaces": "Ask anyone else to leave the room, then carry on.",
-      "prohibitedObject": "Move the {{object}} out of the room or well out of the camera's view.",
-      "multipleDevices": "Move your {{object}} out of the room or well out of the camera's view.",
-      "cellPhone": "Switch your phone off and put it out of reach and out of view.",
-      "lookingAway": "Look at the screen while you answer.",
-      "cameraOff": "Turn your camera back on and make sure nothing is covering it.",
-      "faceMismatch": "Face the camera in good light, with nobody else in view.",
+      "tabSwitch": "آخری جواب جمع کرنے تک اسی ٹیب پر رہیں۔",
+      "fullscreenExit": "فل اسکرین پر واپس جانے کے لیے نیچے دیا گیا بٹن دبائیں اور وہیں رہیں۔",
+      "windowResize": "انٹرویو ختم ہونے تک ونڈو کو میکسیمائز رکھیں۔",
+      "windowFocus": "دوسری ونڈوز بند کریں اور صرف انٹرویو کے اندر کلک کریں۔",
+      "noFace": "پورا چہرہ فریم میں رکھتے ہوئے کیمرے کی طرف رخ کر کے بیٹھیں۔",
+      "multipleFaces": "باقی سب کو کمرے سے جانے کو کہیں، پھر جاری رکھیں۔",
+      "prohibitedObject": "{{object}} کو کمرے سے باہر یا کیمرے کے منظر سے کافی دور کر دیں۔",
+      "multipleDevices": "اپنا {{object}} کمرے سے باہر یا کیمرے کے منظر سے کافی دور کر دیں۔",
+      "cellPhone": "اپنا فون بند کریں اور اسے پہنچ اور نظر سے دور رکھیں۔",
+      "lookingAway": "جواب دیتے وقت اسکرین کی طرف دیکھیں۔",
+      "cameraOff": "کیمرا دوبارہ آن کریں اور یقینی بنائیں کہ کوئی چیز اسے ڈھانپ نہ رہی ہو۔",
+      "faceMismatch": "اچھی روشنی میں، کسی اور کو نظر میں لائے بغیر کیمرے کی طرف رخ کریں۔",
       "electron": {
-        "externalDisplay": "Unplug every extra monitor, TV or projector now.",
-        "mirroredDisplay": "Turn off screen mirroring and unplug the extra display.",
-        "screenSharing": "Stop sharing your screen and close the sharing app.",
-        "blockedApp": "Close the app and keep it closed until the interview ends.",
-        "aiTool": "Quit the AI assistant and keep it closed.",
-        "overlay": "Close the app that is drawing over the interview.",
-        "renamedApp": "Quit the app and don't open it again during the interview.",
-        "remoteSession": "End the remote session and use this computer directly.",
-        "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "externalDisplay": "ابھی تمام اضافی مانیٹر، ٹی وی یا پروجیکٹر ہٹا دیں۔",
+        "mirroredDisplay": "اسکرین مررنگ بند کریں اور اضافی ڈسپلے ہٹا دیں۔",
+        "screenSharing": "اسکرین شیئر کرنا بند کریں اور شیئرنگ ایپ بند کریں۔",
+        "blockedApp": "ایپ بند کریں اور انٹرویو ختم ہونے تک بند رکھیں۔",
+        "aiTool": "اے آئی اسسٹنٹ بند کریں اور بند رکھیں۔",
+        "overlay": "وہ ایپ بند کریں جو انٹرویو کے اوپر کچھ دکھا رہی ہے۔",
+        "renamedApp": "ایپ بند کریں اور انٹرویو کے دوران دوبارہ نہ کھولیں۔",
+        "remoteSession": "ریموٹ سیشن ختم کریں اور یہ کمپیوٹر براہِ راست استعمال کریں۔",
+        "virtualMachine": "ورچوئل مشین پر نہیں، عام کمپیوٹر پر انٹرویو دیں۔",
         "virtualCamera": "ورچوئل کیمرا ایپ بند کریں یا اَن انسٹال کریں تاکہ صرف آپ کا اصل ویب کیم استعمال ہو۔",
-        "securityMonitor": "Don't close or change the desktop app's security tools.",
-        "windowAction": "Keep the interview window open and on screen.",
-        "generic": "Close anything you opened besides the interview."
+        "securityMonitor": "ڈیسک ٹاپ ایپ کے سیکیورٹی ٹولز بند یا تبدیل نہ کریں۔",
+        "windowAction": "انٹرویو ونڈو کھلی اور اسکرین پر رکھیں۔",
+        "generic": "انٹرویو کے علاوہ جو کچھ آپ نے کھولا ہے سب بند کریں۔"
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "آپ کا کیمرا دستیاب نہیں ہے۔ دیکھیں کہ یہ جڑا ہوا ہے اور اس کی اجازت ہے؛ نگرانی کے لیے یہ ضروری ہے۔",
+      "proctoringUnavailable": "نگرانی کے چیکس عارضی طور پر دستیاب نہیں ہیں۔",
+      "proctoringUnavailableHint": "آپ کا سیشن اب بھی ریکارڈ ہو رہا ہے۔ کیمرے کے سامنے رہیں۔",
+      "recordingFailed": "اسکرین ریکارڈنگ ناکام ہو گئی۔ انٹرویو اس کے بغیر جاری رہے گا۔",
+      "offline": "انٹرنیٹ منقطع ہو گیا ({{count}} از {{max}})",
+      "offlineHint": "اگر آپ کا کنکشن {{max}} بار منقطع ہوا تو انٹرویو خود بخود جمع ہو جائے گا۔",
+      "online": "انٹرنیٹ دوبارہ جڑ گیا۔ آپ انٹرویو جاری رکھ سکتے ہیں۔",
+      "fullscreenFailed": "فل اسکرین پر نہیں جا سکے۔ دوبارہ کوشش کریں۔",
+      "rightClick": "انٹرویو کے دوران رائٹ کلک بند ہے۔",
+      "clipboard": "انٹرویو کے دوران کاپی، کٹ اور پیسٹ بند ہیں۔"
     }
   },
   "preStart": {

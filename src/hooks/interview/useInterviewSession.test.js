@@ -1,9 +1,15 @@
 import { StrictMode } from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
+import i18next from "i18next";
+import interviewEn from "@/i18n/locales/en/interview.json";
 import { useInterviewSession } from "./useInterviewSession";
 import { MAX_INTERNET_DISCONNECTS, SESSION_STATUS } from "@/config/interview";
 import { subscribeToViolationLog } from "@/lib/violationLog";
+
+beforeAll(() =>
+  i18next.init({ lng: "en", resources: { en: { interview: interviewEn } }, ns: ["interview"] }),
+);
 
 const startMutateAsync = vi.fn();
 const submitMutateAsync = vi.fn();
@@ -163,7 +169,7 @@ describe("useInterviewSession", () => {
 
     await waitFor(() => expect(result.current.session.internet_disconnect_count).toBe(1));
     expect(toast.error).toHaveBeenCalledTimes(1);
-    expect(toast.error.mock.calls[0][0]).toContain("Strike 1 of 3");
+    expect(toast.error.mock.calls[0][0]).toBe("Internet disconnected (1 of 3)");
 
     act(() => {
       window.dispatchEvent(new Event("offline"));
@@ -171,7 +177,7 @@ describe("useInterviewSession", () => {
 
     await waitFor(() => expect(result.current.session.internet_disconnect_count).toBe(2));
     expect(toast.error).toHaveBeenCalledTimes(2);
-    expect(toast.error.mock.calls[1][0]).toContain("Strike 2 of 3");
+    expect(toast.error.mock.calls[1][0]).toBe("Internet disconnected (2 of 3)");
   });
 });
 

@@ -309,6 +309,18 @@
         "windowAction": "Mantén la ventana de la entrevista abierta y en pantalla.",
         "generic": "Cierra todo lo que hayas abierto además de la entrevista."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "Tu cámara no está disponible. Comprueba que esté conectada y permitida; la supervisión la necesita.",
+      "proctoringUnavailable": "Las comprobaciones de supervisión no están disponibles temporalmente.",
+      "proctoringUnavailableHint": "Tu sesión se sigue grabando. Quédate frente a la cámara.",
+      "recordingFailed": "La grabación de pantalla falló. La entrevista continúa sin ella.",
+      "offline": "Internet desconectado ({{count}} de {{max}})",
+      "offlineHint": "Tu entrevista se envía automáticamente si tu conexión se corta {{max}} veces.",
+      "online": "Internet reconectado. Puedes seguir con tu entrevista.",
+      "fullscreenFailed": "No se pudo pasar a pantalla completa. Inténtalo de nuevo.",
+      "rightClick": "El clic derecho está desactivado durante la entrevista.",
+      "clipboard": "Copiar, cortar y pegar están desactivados durante la entrevista."
     }
   },
   "preStart": {

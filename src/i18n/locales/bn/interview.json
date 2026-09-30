@@ -268,47 +268,59 @@
   },
   "inInterview": {
     "timer": {
-      "label": "Time remaining",
-      "warning": "{{minutes}} min left in your interview.",
-      "warningHint": "Start wrapping up your current answer."
+      "label": "বাকি সময়",
+      "warning": "আপনার ইন্টারভিউয়ের আর {{minutes}} মিনিট বাকি।",
+      "warningHint": "বর্তমান উত্তরটি গুছিয়ে শেষ করা শুরু করুন।"
     },
     "virtualCamera": "আপনার ক্যামেরায় ওয়েবক্যামের বদলে একটি ভার্চুয়াল ক্যামেরা দেখাচ্ছে। আপনার আসল ওয়েবক্যাম যুক্ত করুন।",
     "offline": {
-      "message": "You're offline. Your answer is saved on this device. Disconnect {{disconnects}} of {{max}}."
+      "message": "আপনি অফলাইনে আছেন। আপনার উত্তর এই ডিভাইসে সংরক্ষিত আছে। বিচ্ছিন্নতা {{disconnects}} / {{max}}।"
     },
     "held": {
-      "restrikeIn": "Counts as another violation in {{time}}",
-      "restrikeNow": "Counts as another violation at the next check",
-      "restrikePending": "This will count as another violation if it stays."
+      "restrikeIn": "{{time}} পরে আরেকটি লঙ্ঘন হিসেবে গণ্য হবে",
+      "restrikeNow": "পরের পরীক্ষায় আরেকটি লঙ্ঘন হিসেবে গণ্য হবে",
+      "restrikePending": "এটি থেকে গেলে আরেকটি লঙ্ঘন হিসেবে গণ্য হবে।"
     },
     "fix": {
-      "tabSwitch": "Stay on this tab until you submit your last answer.",
-      "fullscreenExit": "Press the button below to go back to fullscreen, and stay there.",
-      "windowResize": "Keep the window maximized until the interview ends.",
-      "windowFocus": "Close other windows and click only inside the interview.",
-      "noFace": "Sit facing the camera with your whole face in the frame.",
-      "multipleFaces": "Ask anyone else to leave the room, then carry on.",
-      "prohibitedObject": "Move the {{object}} out of the room or well out of the camera's view.",
-      "multipleDevices": "Move your {{object}} out of the room or well out of the camera's view.",
-      "cellPhone": "Switch your phone off and put it out of reach and out of view.",
-      "lookingAway": "Look at the screen while you answer.",
-      "cameraOff": "Turn your camera back on and make sure nothing is covering it.",
-      "faceMismatch": "Face the camera in good light, with nobody else in view.",
+      "tabSwitch": "শেষ উত্তর জমা না দেওয়া পর্যন্ত এই ট্যাবেই থাকুন।",
+      "fullscreenExit": "ফুলস্ক্রিনে ফিরতে নিচের বোতাম চাপুন এবং সেখানেই থাকুন।",
+      "windowResize": "ইন্টারভিউ শেষ না হওয়া পর্যন্ত উইন্ডো ম্যাক্সিমাইজ রাখুন।",
+      "windowFocus": "অন্য উইন্ডোগুলো বন্ধ করুন এবং শুধু ইন্টারভিউয়ের ভেতরে ক্লিক করুন।",
+      "noFace": "পুরো মুখ ফ্রেমে রেখে ক্যামেরার দিকে মুখ করে বসুন।",
+      "multipleFaces": "অন্য সবাইকে ঘর থেকে বেরিয়ে যেতে বলুন, তারপর চালিয়ে যান।",
+      "prohibitedObject": "{{object}} ঘর থেকে সরিয়ে দিন বা ক্যামেরার দৃষ্টির অনেক বাইরে রাখুন।",
+      "multipleDevices": "আপনার {{object}} ঘর থেকে সরিয়ে দিন বা ক্যামেরার দৃষ্টির অনেক বাইরে রাখুন।",
+      "cellPhone": "ফোন বন্ধ করে নাগালের ও দৃষ্টির বাইরে রাখুন।",
+      "lookingAway": "উত্তর দেওয়ার সময় স্ক্রিনের দিকে তাকান।",
+      "cameraOff": "ক্যামেরা আবার চালু করুন এবং দেখুন কিছু যেন সেটি ঢেকে না রাখে।",
+      "faceMismatch": "ভালো আলোয়, আশেপাশে আর কেউ না রেখে ক্যামেরার দিকে মুখ করুন।",
       "electron": {
-        "externalDisplay": "Unplug every extra monitor, TV or projector now.",
-        "mirroredDisplay": "Turn off screen mirroring and unplug the extra display.",
-        "screenSharing": "Stop sharing your screen and close the sharing app.",
-        "blockedApp": "Close the app and keep it closed until the interview ends.",
-        "aiTool": "Quit the AI assistant and keep it closed.",
-        "overlay": "Close the app that is drawing over the interview.",
-        "renamedApp": "Quit the app and don't open it again during the interview.",
-        "remoteSession": "End the remote session and use this computer directly.",
-        "virtualMachine": "Take the interview on a regular computer, not a virtual machine.",
+        "externalDisplay": "এখনই সব অতিরিক্ত মনিটর, টিভি বা প্রজেক্টর খুলে দিন।",
+        "mirroredDisplay": "স্ক্রিন মিররিং বন্ধ করুন এবং অতিরিক্ত ডিসপ্লে খুলে দিন।",
+        "screenSharing": "স্ক্রিন শেয়ার করা বন্ধ করুন এবং শেয়ারিং অ্যাপ বন্ধ করুন।",
+        "blockedApp": "অ্যাপটি বন্ধ করুন এবং ইন্টারভিউ শেষ না হওয়া পর্যন্ত বন্ধ রাখুন।",
+        "aiTool": "এআই সহকারী বন্ধ করুন এবং বন্ধ রাখুন।",
+        "overlay": "যে অ্যাপ ইন্টারভিউয়ের ওপরে কিছু দেখাচ্ছে সেটি বন্ধ করুন।",
+        "renamedApp": "অ্যাপটি বন্ধ করুন এবং ইন্টারভিউ চলাকালীন আবার খুলবেন না।",
+        "remoteSession": "রিমোট সেশন শেষ করুন এবং সরাসরি এই কম্পিউটার ব্যবহার করুন।",
+        "virtualMachine": "ভার্চুয়াল মেশিনে নয়, সাধারণ কম্পিউটারে ইন্টারভিউ দিন।",
         "virtualCamera": "ভার্চুয়াল ক্যামেরা অ্যাপটি বন্ধ বা আনইনস্টল করুন, যাতে শুধু আপনার আসল ওয়েবক্যাম ব্যবহার হয়।",
-        "securityMonitor": "Don't close or change the desktop app's security tools.",
-        "windowAction": "Keep the interview window open and on screen.",
-        "generic": "Close anything you opened besides the interview."
+        "securityMonitor": "ডেস্কটপ অ্যাপের নিরাপত্তা টুল বন্ধ বা পরিবর্তন করবেন না।",
+        "windowAction": "ইন্টারভিউ উইন্ডো খোলা ও স্ক্রিনে রাখুন।",
+        "generic": "ইন্টারভিউ ছাড়া অন্য যা খুলেছেন সব বন্ধ করুন।"
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "আপনার ক্যামেরা পাওয়া যাচ্ছে না। এটি যুক্ত ও অনুমোদিত কি না দেখুন; পর্যবেক্ষণের জন্য এটি দরকার।",
+      "proctoringUnavailable": "পর্যবেক্ষণ পরীক্ষা সাময়িকভাবে বন্ধ আছে।",
+      "proctoringUnavailableHint": "আপনার সেশন এখনও রেকর্ড হচ্ছে। ক্যামেরার সামনে থাকুন।",
+      "recordingFailed": "স্ক্রিন রেকর্ডিং ব্যর্থ হয়েছে। ইন্টারভিউ এটি ছাড়াই চলবে।",
+      "offline": "ইন্টারনেট বিচ্ছিন্ন ({{count}} / {{max}})",
+      "offlineHint": "আপনার সংযোগ {{max}} বার বিচ্ছিন্ন হলে ইন্টারভিউ স্বয়ংক্রিয়ভাবে জমা হবে।",
+      "online": "ইন্টারনেট আবার সংযুক্ত হয়েছে। আপনি ইন্টারভিউ চালিয়ে যেতে পারেন।",
+      "fullscreenFailed": "ফুলস্ক্রিনে যাওয়া যায়নি। আবার চেষ্টা করুন।",
+      "rightClick": "ইন্টারভিউ চলাকালীন রাইট-ক্লিক বন্ধ।",
+      "clipboard": "ইন্টারভিউ চলাকালীন কপি, কাট ও পেস্ট বন্ধ।"
     }
   },
   "preStart": {

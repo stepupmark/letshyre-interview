@@ -309,6 +309,18 @@
         "windowAction": "Lassen Sie das Interviewfenster geöffnet und auf dem Bildschirm.",
         "generic": "Schließen Sie alles, was Sie außer dem Interview geöffnet haben."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "Deine Kamera ist nicht verfügbar. Prüfe, ob sie angeschlossen und erlaubt ist; die Aufsicht braucht sie.",
+      "proctoringUnavailable": "Die Aufsichtsprüfungen sind vorübergehend nicht verfügbar.",
+      "proctoringUnavailableHint": "Deine Sitzung wird weiter aufgezeichnet. Bleib vor der Kamera.",
+      "recordingFailed": "Die Bildschirmaufnahme ist fehlgeschlagen. Das Interview läuft ohne sie weiter.",
+      "offline": "Internetverbindung getrennt ({{count}} von {{max}})",
+      "offlineHint": "Dein Interview wird automatisch abgegeben, wenn deine Verbindung {{max}}-mal abbricht.",
+      "online": "Internet wieder verbunden. Du kannst mit deinem Interview weitermachen.",
+      "fullscreenFailed": "Vollbild konnte nicht aktiviert werden. Versuch es noch einmal.",
+      "rightClick": "Rechtsklick ist während des Interviews deaktiviert.",
+      "clipboard": "Kopieren, Ausschneiden und Einfügen sind während des Interviews deaktiviert."
     }
   },
   "preStart": {

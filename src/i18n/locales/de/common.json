@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "Hilfe",
+      "title": "Brauchst du Hilfe?",
+      "description": "Schnelle Lösungen für häufige Probleme. Dein Interview läuft weiter, während dies geöffnet ist.",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "Probleme mit der Kamera",
+        "body": "Prüfe, dass nichts die Linse verdeckt und keine andere App die Kamera nutzt. Setz dich mit dem Gesicht zum Licht und halte dein Gesicht in der Bildmitte."
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "Verbindungsprobleme",
+        "body": "Wenn dein Internet abbricht, bleib auf diesem Bildschirm und schließ das Fenster nicht. Jeder Abbruch wird gezählt, also geh näher an deinen Router oder wechsle wenn möglich in ein stabileres Netz."
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "Probleme mit dem Bildschirm",
+        "body": "Lass das Interview im Vollbild auf einem einzigen Bildschirm. Trenne zusätzliche Monitore und schließ Apps zur Bildschirmfreigabe oder -aufnahme, denn sie zählen als Verstöße."
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
+      "contactTitle": "Support kontaktieren",
+      "email": "E-Mail",
       "website": "Website",
-      "close": "Close"
+      "close": "Schließen"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "Wie es weitergeht",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "Deine Antworten und das Aufsichtsprotokoll gehen an das Recruiting-Team.",
+        "contact": "Das Recruiting-Team prüft dein Interview und meldet sich wegen der nächsten Schritte bei dir."
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "Die Antworten, die du bisher gegeben hast, wurden abgegeben.",
+        "review": "Das Recruiting-Team prüft die Aufnahme und was passiert ist und meldet sich dann wegen der nächsten Schritte bei dir."
       }
     }
   }

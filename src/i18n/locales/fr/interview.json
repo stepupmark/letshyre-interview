@@ -309,6 +309,18 @@
         "windowAction": "Gardez la fenêtre de l'entretien ouverte et à l'écran.",
         "generic": "Fermez tout ce que vous avez ouvert en dehors de l'entretien."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "Votre caméra n'est pas disponible. Vérifiez qu'elle est branchée et autorisée ; la surveillance en a besoin.",
+      "proctoringUnavailable": "Les vérifications de surveillance sont temporairement indisponibles.",
+      "proctoringUnavailableHint": "Votre session est toujours enregistrée. Restez face à la caméra.",
+      "recordingFailed": "L'enregistrement de l'écran a échoué. L'entretien continue sans lui.",
+      "offline": "Internet déconnecté ({{count}} sur {{max}})",
+      "offlineHint": "Votre entretien est envoyé automatiquement si votre connexion coupe {{max}} fois.",
+      "online": "Internet reconnecté. Vous pouvez poursuivre votre entretien.",
+      "fullscreenFailed": "Impossible de passer en plein écran. Réessayez.",
+      "rightClick": "Le clic droit est désactivé pendant l'entretien.",
+      "clipboard": "Copier, couper et coller sont désactivés pendant l'entretien."
     }
   },
   "preStart": {

@@ -309,6 +309,18 @@
         "windowAction": "Tieni la finestra del colloquio aperta e sullo schermo.",
         "generic": "Chiudi tutto ciò che hai aperto oltre al colloquio."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "La tua videocamera non è disponibile. Controlla che sia collegata e consentita; la sorveglianza ne ha bisogno.",
+      "proctoringUnavailable": "I controlli di sorveglianza sono temporaneamente non disponibili.",
+      "proctoringUnavailableHint": "La sessione viene ancora registrata. Resta davanti alla videocamera.",
+      "recordingFailed": "La registrazione dello schermo non è riuscita. Il colloquio continua senza.",
+      "offline": "Internet disconnesso ({{count}} di {{max}})",
+      "offlineHint": "Il colloquio viene inviato automaticamente se la connessione cade {{max}} volte.",
+      "online": "Internet di nuovo connesso. Puoi continuare il colloquio.",
+      "fullscreenFailed": "Impossibile passare a schermo intero. Riprova.",
+      "rightClick": "Il clic destro è disattivato durante il colloquio.",
+      "clipboard": "Copiare, tagliare e incollare sono disattivati durante il colloquio."
     }
   },
   "preStart": {

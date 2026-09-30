@@ -309,6 +309,18 @@
         "windowAction": "Houd het interviewvenster open en op het scherm.",
         "generic": "Sluit alles wat je naast het interview hebt geopend."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "Je camera is niet beschikbaar. Controleer of hij aangesloten en toegestaan is; de controle heeft hem nodig.",
+      "proctoringUnavailable": "De controles zijn tijdelijk niet beschikbaar.",
+      "proctoringUnavailableHint": "Je sessie wordt nog steeds opgenomen. Blijf voor de camera.",
+      "recordingFailed": "De schermopname is mislukt. Het gesprek gaat zonder verder.",
+      "offline": "Internetverbinding verbroken ({{count}} van {{max}})",
+      "offlineHint": "Je gesprek wordt automatisch ingediend als je verbinding {{max}} keer wegvalt.",
+      "online": "Internet weer verbonden. Je kunt verder met je gesprek.",
+      "fullscreenFailed": "Kon niet naar volledig scherm gaan. Probeer het opnieuw.",
+      "rightClick": "Rechtsklikken is uitgeschakeld tijdens het gesprek.",
+      "clipboard": "Kopiëren, knippen en plakken zijn uitgeschakeld tijdens het gesprek."
     }
   },
   "preStart": {

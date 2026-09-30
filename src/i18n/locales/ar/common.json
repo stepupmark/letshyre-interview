@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "الحصول على مساعدة",
+      "title": "تحتاج إلى مساعدة؟",
+      "description": "حلول سريعة للمشكلات الشائعة. تستمر مقابلتك أثناء فتح هذه النافذة.",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "مشكلات الكاميرا",
+        "body": "تأكد من أن لا شيء يغطي العدسة وأن لا تطبيق آخر يستخدم الكاميرا. واجه مصدر ضوء وأبقِ وجهك في منتصف الإطار."
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "مشكلات الاتصال",
+        "body": "إذا انقطع الإنترنت، ابقَ على هذه الشاشة ولا تغلق النافذة. يُحتسب كل انقطاع، لذا اقترب من جهاز التوجيه أو انتقل إلى شبكة أكثر ثباتًا إن أمكن."
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "مشكلات الشاشة",
+        "body": "أبقِ المقابلة في وضع ملء الشاشة على شاشة واحدة. افصل الشاشات الإضافية وأغلق تطبيقات مشاركة الشاشة أو التسجيل، فهي تُحتسب مخالفات."
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
-      "website": "Website",
-      "close": "Close"
+      "contactTitle": "التواصل مع الدعم",
+      "email": "البريد الإلكتروني",
+      "website": "الموقع الإلكتروني",
+      "close": "إغلاق"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "ماذا يحدث بعد ذلك",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "تُرسل إجاباتك وسجل المراقبة إلى فريق التوظيف.",
+        "contact": "يراجع فريق التوظيف مقابلتك وسيتواصل معك بشأن الخطوات التالية."
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "تم إرسال الإجابات التي قدمتها حتى الآن.",
+        "review": "يراجع فريق التوظيف التسجيل وما حدث، ثم يتواصل معك بشأن الخطوات التالية."
       }
     }
   }

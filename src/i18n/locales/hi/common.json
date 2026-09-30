@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "मदद लें",
+      "title": "मदद चाहिए?",
+      "description": "आम समस्याओं के तुरंत हल। यह खुला रहने पर भी आपका इंटरव्यू चलता रहता है।",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "कैमरे की समस्याएँ",
+        "body": "देखें कि लेंस पर कुछ न हो और कोई दूसरा ऐप कैमरा इस्तेमाल न कर रहा हो। रोशनी की ओर मुँह करें और चेहरा फ़्रेम के बीच में रखें।"
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "कनेक्शन की समस्याएँ",
+        "body": "अगर इंटरनेट कट जाए, तो इसी स्क्रीन पर रहें और विंडो बंद न करें। हर बार कटना गिना जाता है, इसलिए हो सके तो राउटर के पास जाएँ या ज़्यादा स्थिर नेटवर्क पर जाएँ।"
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "डिस्प्ले की समस्याएँ",
+        "body": "इंटरव्यू को एक ही स्क्रीन पर फ़ुलस्क्रीन में रखें। अतिरिक्त मॉनिटर हटा दें और स्क्रीन शेयरिंग या रिकॉर्डिंग ऐप बंद करें, क्योंकि इन्हें स्ट्राइक गिना जाता है।"
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
-      "website": "Website",
-      "close": "Close"
+      "contactTitle": "सपोर्ट से संपर्क करें",
+      "email": "ईमेल",
+      "website": "वेबसाइट",
+      "close": "बंद करें"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "आगे क्या होगा",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "आपके जवाब और निगरानी का रिकॉर्ड हायरिंग टीम को जाता है।",
+        "contact": "हायरिंग टीम आपके इंटरव्यू की समीक्षा करेगी और अगले कदमों के बारे में आपसे संपर्क करेगी।"
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "अब तक दिए गए आपके जवाब जमा हो गए हैं।",
+        "review": "हायरिंग टीम रिकॉर्डिंग और जो हुआ उसकी समीक्षा करती है, फिर अगले कदमों के बारे में आपसे संपर्क करती है।"
       }
     }
   }

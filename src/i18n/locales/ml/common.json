@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "സഹായം നേടുക",
+      "title": "സഹായം വേണോ?",
+      "description": "സാധാരണ പ്രശ്നങ്ങൾക്ക് പെട്ടെന്നുള്ള പരിഹാരങ്ങൾ. ഇത് തുറന്നിരിക്കുമ്പോഴും നിങ്ങളുടെ അഭിമുഖം തുടരും.",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "ക്യാമറ പ്രശ്നങ്ങൾ",
+        "body": "ലെൻസിൽ ഒന്നും മൂടിയിട്ടില്ലെന്നും മറ്റൊരു ആപ്പും ക്യാമറ ഉപയോഗിക്കുന്നില്ലെന്നും ഉറപ്പാക്കുക. വെളിച്ചത്തിന് അഭിമുഖമായി ഇരുന്ന് മുഖം ഫ്രെയിമിന്റെ മധ്യത്തിൽ വയ്ക്കുക."
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "കണക്ഷൻ പ്രശ്നങ്ങൾ",
+        "body": "ഇന്റർനെറ്റ് മുറിഞ്ഞാൽ ഈ സ്ക്രീനിൽ തന്നെ തുടരുക, വിൻഡോ അടയ്ക്കരുത്. ഓരോ മുറിയലും കണക്കാക്കും, അതിനാൽ കഴിയുമെങ്കിൽ റൂട്ടറിനടുത്തേക്ക് നീങ്ങുക അല്ലെങ്കിൽ കൂടുതൽ സ്ഥിരതയുള്ള നെറ്റ്‌വർക്കിലേക്ക് മാറുക."
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "ഡിസ്പ്ലേ പ്രശ്നങ്ങൾ",
+        "body": "അഭിമുഖം ഒരൊറ്റ സ്ക്രീനിൽ ഫുൾസ്ക്രീനിൽ വയ്ക്കുക. അധിക മോണിറ്ററുകൾ വിച്ഛേദിക്കുകയും സ്ക്രീൻ ഷെയറിംഗ് അല്ലെങ്കിൽ റെക്കോർഡിംഗ് ആപ്പുകൾ അടയ്ക്കുകയും ചെയ്യുക, കാരണം ഇവ സ്ട്രൈക്കുകളായി കണക്കാക്കും."
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
-      "website": "Website",
-      "close": "Close"
+      "contactTitle": "സപ്പോർട്ടുമായി ബന്ധപ്പെടുക",
+      "email": "ഇമെയിൽ",
+      "website": "വെബ്സൈറ്റ്",
+      "close": "അടയ്ക്കുക"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "ഇനി എന്ത്",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "നിങ്ങളുടെ ഉത്തരങ്ങളും നിരീക്ഷണ രേഖയും നിയമന ടീമിന് ലഭിക്കും.",
+        "contact": "നിയമന ടീം നിങ്ങളുടെ അഭിമുഖം അവലോകനം ചെയ്ത് അടുത്ത ഘട്ടങ്ങളെക്കുറിച്ച് നിങ്ങളെ ബന്ധപ്പെടും."
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "ഇതുവരെ നൽകിയ നിങ്ങളുടെ ഉത്തരങ്ങൾ സമർപ്പിച്ചു.",
+        "review": "നിയമന ടീം റെക്കോർഡിംഗും സംഭവിച്ചതും അവലോകനം ചെയ്ത് അടുത്ത ഘട്ടങ്ങളെക്കുറിച്ച് നിങ്ങളെ ബന്ധപ്പെടും."
       }
     }
   }

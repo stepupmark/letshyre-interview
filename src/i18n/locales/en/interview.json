@@ -309,6 +309,18 @@
         "windowAction": "Keep the interview window open and on screen.",
         "generic": "Close anything you opened besides the interview."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "Your camera isn't available. Check it's connected and allowed; proctoring needs it.",
+      "proctoringUnavailable": "Proctoring checks are temporarily unavailable.",
+      "proctoringUnavailableHint": "Your session is still being recorded. Stay in front of the camera.",
+      "recordingFailed": "Screen recording failed. The interview continues without it.",
+      "offline": "Internet disconnected ({{count}} of {{max}})",
+      "offlineHint": "Your interview is submitted automatically if your connection drops {{max}} times.",
+      "online": "Internet reconnected. You can carry on with your interview.",
+      "fullscreenFailed": "Couldn't switch to fullscreen. Try again.",
+      "rightClick": "Right-click is disabled during the interview.",
+      "clipboard": "Copying, cutting and pasting are disabled during the interview."
     }
   },
   "preStart": {

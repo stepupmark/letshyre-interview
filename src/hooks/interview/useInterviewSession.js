@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import i18next from "i18next";
 import { useStartInterviewMutation } from "@mutations/useStartInterviewMutation";
 import { useSubmitAnswerMutation } from "@mutations/useSubmitAnswerMutation";
 import { useAutoSubmitFlow } from "./useAutoSubmitFlow";
@@ -351,8 +352,9 @@ export function useInterviewSession({ holdStart = false } = {}) {
         limit: MAX_INTERNET_DISCONNECTS,
       });
 
-      toast.error(`Internet disconnected! (Strike ${count} of ${MAX_INTERNET_DISCONNECTS})`, {
-        description: `Your interview will be automatically submitted if your connection drops ${MAX_INTERNET_DISCONNECTS} times.`,
+      const limits = { count, max: MAX_INTERNET_DISCONNECTS };
+      toast.error(i18next.t("interview:inInterview.toasts.offline", limits), {
+        description: i18next.t("interview:inInterview.toasts.offlineHint", limits),
         duration: 7000,
       });
 
@@ -371,7 +373,7 @@ export function useInterviewSession({ holdStart = false } = {}) {
         ...(offlineAtRef.current ? { offline_ms: Date.now() - offlineAtRef.current } : {}),
       });
       offlineAtRef.current = null;
-      toast.success("Internet reconnected! You can safely proceed with your interview.");
+      toast.success(i18next.t("interview:inInterview.toasts.online"));
     };
 
     window.addEventListener("offline", handleOffline);

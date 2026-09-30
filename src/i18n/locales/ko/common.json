@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "도움말",
+      "title": "도움이 필요하신가요?",
+      "description": "자주 발생하는 문제의 빠른 해결 방법입니다. 이 창이 열려 있어도 면접은 계속 진행됩니다.",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "카메라 문제",
+        "body": "렌즈를 가리는 것이 없고 다른 앱이 카메라를 사용하고 있지 않은지 확인하세요. 조명을 마주하고 얼굴을 화면 가운데에 두세요."
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "연결 문제",
+        "body": "인터넷이 끊겨도 이 화면에 머무르고 창을 닫지 마세요. 끊길 때마다 횟수가 기록되니 가능하면 공유기 가까이 가거나 더 안정적인 네트워크로 바꾸세요."
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "화면 문제",
+        "body": "면접은 하나의 화면에서 전체 화면으로 유지하세요. 추가 모니터를 분리하고 화면 공유나 녹화 앱을 닫으세요. 이런 것들은 스트라이크로 계산됩니다."
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
-      "website": "Website",
-      "close": "Close"
+      "contactTitle": "지원팀 문의",
+      "email": "이메일",
+      "website": "웹사이트",
+      "close": "닫기"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "다음 단계",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "답변과 감독 기록은 채용팀에 전달됩니다.",
+        "contact": "채용팀이 면접을 검토한 뒤 다음 단계에 대해 연락드립니다."
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "지금까지 한 답변이 제출되었습니다.",
+        "review": "채용팀이 녹화와 발생한 상황을 검토한 뒤 다음 단계에 대해 연락드립니다."
       }
     }
   }

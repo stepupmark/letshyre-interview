@@ -309,6 +309,18 @@
         "windowAction": "면접 창을 열어 두고 화면에 표시되게 하세요.",
         "generic": "면접 외에 연 것은 모두 닫으세요."
       }
+    },
+    "toasts": {
+      "cameraUnavailable": "카메라를 사용할 수 없습니다. 연결되어 있고 허용되어 있는지 확인하세요. 감독에 필요합니다.",
+      "proctoringUnavailable": "감독 검사를 일시적으로 사용할 수 없습니다.",
+      "proctoringUnavailableHint": "세션은 계속 녹화되고 있습니다. 카메라 앞에 있어 주세요.",
+      "recordingFailed": "화면 녹화에 실패했습니다. 면접은 녹화 없이 계속됩니다.",
+      "offline": "인터넷 연결 끊김 ({{max}}회 중 {{count}}회)",
+      "offlineHint": "연결이 {{max}}회 끊기면 면접이 자동으로 제출됩니다.",
+      "online": "인터넷이 다시 연결되었습니다. 면접을 계속할 수 있습니다.",
+      "fullscreenFailed": "전체 화면으로 전환하지 못했습니다. 다시 시도하세요.",
+      "rightClick": "면접 중에는 마우스 오른쪽 클릭을 사용할 수 없습니다.",
+      "clipboard": "면접 중에는 복사, 잘라내기, 붙여넣기를 사용할 수 없습니다."
     }
   },
   "preStart": {

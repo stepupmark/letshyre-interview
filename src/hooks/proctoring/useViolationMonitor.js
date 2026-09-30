@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 import { HELD_RESTRIKE_SECONDS, MAX_VIOLATIONS } from "@/config/interview";
 import { createStrikePolicy } from "@/lib/strikePolicy";
@@ -448,8 +449,8 @@ export function useViolationMonitor({
     if (document.fullscreenElement) return;
     // Optional-chained because a browser that blocks or lacks the API would
     // otherwise throw here and take dismissWarning down with it.
-    document.documentElement.requestFullscreen?.()?.catch((err) => {
-      toast.error(`Error attempting to enable fullscreen: ${err.message}`);
+    document.documentElement.requestFullscreen?.()?.catch(() => {
+      toast.error(i18next.t("interview:inInterview.toasts.fullscreenFailed"));
     });
   }, []);
 
@@ -650,13 +651,13 @@ export function useViolationMonitor({
     const handleContextMenu = (e) => {
       e.preventDefault();
       logBlocked("right_click");
-      toast.warning("Right-click is disabled during the interview.");
+      toast.warning(i18next.t("interview:inInterview.toasts.rightClick"));
     };
 
     const handleCopyPaste = (e) => {
       e.preventDefault();
       logBlocked(e.type);
-      toast.warning("Copying, pasting, or cutting is disabled during the interview.");
+      toast.warning(i18next.t("interview:inInterview.toasts.clipboard"));
     };
 
     document.addEventListener("contextmenu", handleContextMenu);

@@ -34,35 +34,35 @@
   },
   "support": {
     "help": {
-      "button": "Get help",
-      "title": "Need help?",
-      "description": "Quick fixes for common problems. Your interview keeps running while this is open.",
+      "button": "సహాయం పొందండి",
+      "title": "సహాయం కావాలా?",
+      "description": "సాధారణ సమస్యలకు త్వరిత పరిష్కారాలు. ఇది తెరిచి ఉన్నప్పుడు కూడా మీ ఇంటర్వ్యూ కొనసాగుతుంది.",
       "camera": {
-        "title": "Camera problems",
-        "body": "Check that nothing covers the lens and no other app is using the camera. Face a light and keep your face in the middle of the frame."
+        "title": "కెమెరా సమస్యలు",
+        "body": "లెన్స్‌ను ఏదీ కప్పి లేదని, మరే యాప్ కెమెరాను ఉపయోగించడం లేదని చూసుకోండి. వెలుతురు వైపు ముఖం పెట్టి, ముఖాన్ని ఫ్రేమ్ మధ్యలో ఉంచండి."
       },
       "network": {
-        "title": "Connection problems",
-        "body": "If your internet drops, stay on this screen and don't close the window. Each drop is counted, so move closer to your router or switch to a steadier network if you can."
+        "title": "కనెక్షన్ సమస్యలు",
+        "body": "ఇంటర్నెట్ తెగితే ఈ స్క్రీన్‌లోనే ఉండండి, విండో మూసివేయకండి. ప్రతి తెగడం లెక్కించబడుతుంది, కాబట్టి వీలైతే రౌటర్‌కు దగ్గరగా వెళ్లండి లేదా మరింత స్థిరమైన నెట్‌వర్క్‌కు మారండి."
       },
       "display": {
-        "title": "Display problems",
-        "body": "Keep the interview in fullscreen on a single screen. Disconnect extra monitors and close screen-sharing or recording apps, as these count as strikes."
+        "title": "డిస్‌ప్లే సమస్యలు",
+        "body": "ఇంటర్వ్యూను ఒకే స్క్రీన్‌పై పూర్తి స్క్రీన్‌లో ఉంచండి. అదనపు మానిటర్లను తీసేసి, స్క్రీన్ షేరింగ్ లేదా రికార్డింగ్ యాప్‌లను మూసివేయండి, ఎందుకంటే ఇవి స్ట్రైక్‌లుగా లెక్కించబడతాయి."
       },
-      "contactTitle": "Contact support",
-      "email": "Email",
-      "website": "Website",
-      "close": "Close"
+      "contactTitle": "సపోర్ట్‌ను సంప్రదించండి",
+      "email": "ఇమెయిల్",
+      "website": "వెబ్‌సైట్",
+      "close": "మూసివేయండి"
     },
     "whatNext": {
-      "title": "What happens next",
+      "title": "తర్వాత ఏమిటి",
       "completed": {
-        "review": "Your answers and the proctoring record go to the hiring team.",
-        "contact": "The hiring team reviews your interview and will contact you about next steps."
+        "review": "మీ సమాధానాలు మరియు పర్యవేక్షణ రికార్డు నియామక బృందానికి వెళ్తాయి.",
+        "contact": "నియామక బృందం మీ ఇంటర్వ్యూను సమీక్షించి తదుపరి దశల గురించి మిమ్మల్ని సంప్రదిస్తుంది."
       },
       "ended": {
-        "submitted": "The answers you gave so far have been submitted.",
-        "review": "The hiring team reviews the recording and what happened, then contacts you about next steps."
+        "submitted": "ఇప్పటివరకు మీరు ఇచ్చిన సమాధానాలు సమర్పించబడ్డాయి.",
+        "review": "నియామక బృందం రికార్డింగ్‌ను, జరిగినదాన్ని సమీక్షించి, తర్వాత తదుపరి దశల గురించి మిమ్మల్ని సంప్రదిస్తుంది."
       }
     }
   }
