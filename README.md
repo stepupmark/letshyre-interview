@@ -4,6 +4,40 @@ The interview site candidates take their LetsHyre interview on. It runs in a bro
 
 React 19 + Vite 8, react-query, i18next, Tailwind 4, Vitest.
 
+## Architecture
+
+```
+┌──────────────── Interview SPA (browser or the desktop app's locked window) ────────────────┐
+│ pages → components (render) → hooks (state, effects) → services (network)                  │
+│ proctoring: camera → on-device watch (MediaPipe) → AI detection → strike policy → end       │
+│ desktop bridge: window.electronAPI — violations, recording, completion (no-op in a browser) │
+└──────────┬──────────────────────────────┬──────────────────────────────┬────────────────────┘
+           ▼                              ▼                              ▼
+   Main API (Django)             AI detection service            LetsHyre desktop app
+   VITE_API_BASE_URL             VITE_AI_DETECTION_URL           violations in, completion out,
+   bearer token, 401 refresh     frames, face verify, no token   rules + language handed over
+```
+
+**Candidate path:** tokenized link (`/?ac=…&rc=…`) or the desktop app → `EntryPoint` stores the tokens → `/interview`. Before the clock starts, a browser shows the rules and a camera check. The desktop app has already done both in its own setup steps, so the interview starts straight away. During the interview, every ending (time up, strike limit, face mismatch, network drops, a desktop hard block) goes through one `autoSubmit()` and a termination notice.
+
+**Language** comes from the desktop app (`?lang=`, then `sessionStorage.locale`), else English; there is no picker in the page. **Interview rules** live in `src/config/interviewRules.js` and are published at build time as `/interview-rules.json` for the app to show.
+
+```
+src/pages/         one per route: EntryPoint, Interview, error pages
+src/router/        routes, token gate, desktop version gate
+src/components/    interview UI, question types, shadcn/Radix primitives
+src/hooks/         interview/ (session, pre-start, auto-submit) · proctoring/ · electron/
+src/lib/           strike policy, violation copy, desktop bridge, camera, on-device CV
+src/services/      axios clients and API calls; src/mutations/ wraps them for react-query
+src/config/        env-backed tunables and the interview rules
+src/contract/      copy of the desktop app's interview contract, with its test
+src/i18n/          i18next setup, 19 locales × 4 namespaces
+src/dev/           fake desktop app and proctoring-log timeline (dev only)
+scripts/           mock backend and shadow-rule report
+```
+
+Full detail, including the session state machine and API surface: [docs/architecture.md](docs/architecture.md). Proctoring: [docs/proctoring.md](docs/proctoring.md).
+
 ## Run
 
 Needs Node 22, pnpm 10, a reachable main API and AI detection service, and a camera.

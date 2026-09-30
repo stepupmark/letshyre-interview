@@ -67,7 +67,9 @@ All tunables resolve through [`src/config/interview.js`](../src/config/interview
 src/
 ├── main.jsx                    # Mounts <App>, QueryClient, i18n
 ├── App.jsx                     # <AppRouter> + <Toaster>
-├── config/interview.js         # Env-backed tunables (the only reader of import.meta.env for them)
+├── config/
+│   ├── interview.js            # Env-backed tunables (the only reader of import.meta.env for them)
+│   └── interviewRules.js       # The proctoring rules, published as /interview-rules.json
 ├── contract/                   # Copy of the desktop app's interview-contract.json + its test
 ├── router/
 │   ├── AppRouter.jsx           # createBrowserRouter from routeConfig
@@ -85,7 +87,7 @@ src/
 │   ├── ui/                     # shadcn/Radix primitives
 │   └── ErrorBoundary.jsx       # Subtree boundary (crash in one panel ≠ dead page)
 ├── hooks/
-│   ├── interview/              # useInterviewSession · useAutoSubmitFlow · useTerminationNotice
+│   ├── interview/              # useInterviewSession · usePreStart · useAutoSubmitFlow · useTerminationNotice
 │   ├── proctoring/             # useProctoringSystem · useViolationMonitor · useFaceMatchMonitoring ·
 │   │                           # useLocalFaceWatch · useLocalObjectWatch · useCameraIntegrity · localWatch
 │   ├── electron/               # useElectronViolation · useInterviewComplete · useElectronScreenRecording
@@ -100,11 +102,14 @@ src/
 │                               # (language is set by the desktop app via ?lang=; no in-page picker)
 ├── lib/
 │   ├── strikePolicy · violationStabilizer · incidentTracker · baselineTracker   # strike decisions
-│   ├── electronViolations · desktopExit · desktopVersion · electronRecording     # desktop app
+│   ├── electronViolations · desktopExit · desktopVersion · electronRecording · rulesAck # desktop app
+│   ├── cameraSource · cameraCheck                                                # camera
 │   ├── terminationReasons · violationCopy · violationLog · startFailure          # endings and copy
 │   ├── localFaceDetector · localObjectDetector · objectDetector.worker · mediapipe # on-device CV
-│   └── videoCapture · answerDraft · codeEditing · logger · utils
+│   └── videoCapture · answerDraft · codeEditing · correlation · logger · utils
+├── dev/                        # Fake desktop app, proctoring-log timeline (dev builds only)
 └── test/setup.js
+scripts/                        # mockApi.js (pnpm dev:mock) · shadow-report.js (pnpm shadow:report)
 ```
 
 There is no `queries/` folder: the site only has mutations. Plain reads live in `services/`.
