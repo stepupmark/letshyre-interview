@@ -9,7 +9,7 @@ import { compareVoice } from "@/services/interview.api";
  */
 export function useVoiceCompare(onSuccess, onError) {
   const mutation = useMutation({
-    mutationFn: ({ audioBlob, enrollmentId, threshold = 0.5 }) => {
+    mutationFn: ({ audioBlob, enrollmentId }) => {
       const formData = new FormData();
 
       let ext = "webm";
@@ -19,7 +19,6 @@ export function useVoiceCompare(onSuccess, onError) {
       if (audioBlob.type?.includes("mpeg") || audioBlob.type?.includes("mp3")) ext = "mp3";
 
       formData.append("live_voice", audioBlob, `live_voice.${ext}`);
-      formData.append("threshold", String(threshold));
 
       if (enrollmentId) {
         formData.append("enrollment_id", enrollmentId);
