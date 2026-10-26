@@ -344,8 +344,11 @@ triggers submit once:
 1. The session is frozen straight away (status `expired`): the timer, the camera loop and
    the watches stop, and nothing queued can land any more.
 2. How it ended is logged with the full strike list.
-3. `auto_submit/force` is called with any draft answer. The backend can still mark the
-   interview terminated.
+3. `auto_submit/force` is called with any draft answer and the `reason` (a backend that
+   doesn't read it yet ignores it). The backend can still mark the interview terminated.
+   In the desktop app the page first calls `submitPending`, and `submitSettled` once it
+   succeeds: the app sends its held copy only if the window closes, or the app restarts,
+   before that.
 4. The termination notice explains why and holds for `VITE_AI_TERMINATION_NOTICE_SECONDS`
    while the submission runs underneath. The candidate can acknowledge it sooner, never
    later.
@@ -381,7 +384,19 @@ batch. Matches are logged once a minute; mismatches always.
   after a reload can be told apart. `logger.error` output starts with the same
   `[run … session …]` tag.
 - The batch is sent **once**, after the submission has answered, so it holds how the
-  interview ended (or 30s after the interview stopped, if it never does). A failed send
-  retries when the connection comes back.
-- On unload it is sent with `fetch(keepalive)` — not `sendBeacon`, which can't carry the
-  `Authorization` header — trimming the oldest records to stay under the 60KB keepalive cap.
+  interview ended (or 15s after the interview stopped, if it never does). The backend keeps
+  one batch per interview.
+- Inside the desktop app (contract v5) the batch is handed to the app with
+  `submitProctoringLog` instead of posted: the app keeps it on disk and delivers it from the
+  main process, retrying across a closed window and a relaunch. Elsewhere the page posts it
+  (`lib/proctoringLogDelivery.js`).
+- A failed send retries after 5s, 15s, 45s, 2min and 5min, and when the connection comes
+  back. A 4xx other than 401/408/429 is not retried.
+- Until it is delivered the log is kept in IndexedDB (`lib/proctoringLogStore.js`), saved
+  every 10s and when the interview stops. After a reload the session's kept records carry on
+  in the new page's batch. A later visit sends a log an earlier page never delivered: one
+  that ended, or that nobody has written to for 10 minutes.
+- On unload an unsent batch is handed to the desktop app, or in a browser sent with
+  `fetch(keepalive)` — not `sendBeacon`, which can't carry the `Authorization` header —
+  trimming the oldest records to stay under the 60KB keepalive cap. The kept copy is then
+  marked so a later visit doesn't send it again.

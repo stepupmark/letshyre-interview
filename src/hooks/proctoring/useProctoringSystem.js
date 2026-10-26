@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
+import { detectFrame } from "@/services/proctoring.api";
+import { deliverLog, DELIVERY, isRefused, resendKeptLogs } from "@/lib/proctoringLogDelivery";
+import { deleteLog, loadLogs, saveLog } from "@/lib/proctoringLogStore";
 import { captureSample, isVideoReady } from "@/lib/videoCapture";
 import { violationCopy } from "@/lib/violationCopy";
 import { createViolationStabilizer } from "@/lib/violationStabilizer";
@@ -40,7 +42,15 @@ const UNOBSERVED_AFTER_MS = 2 * DETECT_INTERVAL_MS;
 
 // The backend keeps one log batch per interview, so it is sent once the ending
 // has settled, or this long after the interview stopped if it never does.
-export const LOG_SEND_FALLBACK_MS = 30_000;
+export const LOG_SEND_FALLBACK_MS = 15_000;
+
+// The unsent log is kept in IndexedDB this often, so a crash or closed window
+// loses at most this much of it.
+export const LOG_PERSIST_INTERVAL_MS = 10_000;
+
+// A failed send is tried again after each of these, and whenever the
+// connection comes back.
+export const LOG_RETRY_DELAYS_MS = [5_000, 15_000, 45_000, 120_000, 300_000];
 
 // The next frame is timed from when this one was captured, so a slow answer
 // doesn't stretch the interval; this is the least gap left between two.
@@ -1254,7 +1264,9 @@ export function useProctoringSystem(
   }
 
   const flushRetryCountRef = useRef(0);
-  const MAX_FLUSH_RETRIES = 3;
+  const flushRetryTimerRef = useRef(null);
+  const persistedLengthRef = useRef(-1);
+  const seededSessionRef = useRef(null);
 
   function buildFlushPayload() {
     const { interviewId: iid, sessionId: sid, proctoringToken: token } = sessionRef.current;
@@ -1274,6 +1286,35 @@ export function useProctoringSystem(
     };
   }
 
+  // Kept until delivered, so a crash, reload or closed window doesn't lose it.
+  function persistLog(extra = {}) {
+    const { interviewId: iid, sessionId: sid, proctoringToken: token } = sessionRef.current;
+    if (!iid || !sid || hasFlushedRef.current || queueRef.current.length === 0) return;
+    persistedLengthRef.current = queueRef.current.length;
+    void saveLog({
+      session_id: sid,
+      interview_id: iid,
+      run_id: RUN_ID,
+      proctoring_token: token,
+      records: [...queueRef.current],
+      ended: !isActiveRef.current,
+      ...extra,
+    });
+  }
+
+  function scheduleFlushRetry() {
+    clearTimeout(flushRetryTimerRef.current);
+    const delay = LOG_RETRY_DELAYS_MS[flushRetryCountRef.current - 1];
+    if (delay === undefined) {
+      logger.warn("[Proctoring] ⛔ Log retries used up. It is kept and sent on a later visit.");
+      return;
+    }
+    logger.log(
+      `[Proctoring] 🔄 Retrying the log in ${delay / 1000}s (attempt ${flushRetryCountRef.current}/${LOG_RETRY_DELAYS_MS.length}).`,
+    );
+    flushRetryTimerRef.current = setTimeout(() => flushQueue(), delay);
+  }
+
   async function flushQueue() {
     if (hasFlushedRef.current || flushInFlightRef.current) return;
     if (queueRef.current.length === 0) {
@@ -1287,28 +1328,31 @@ export function useProctoringSystem(
     }
 
     // Only guards against a concurrent flush. hasFlushedRef is set on a
-    // CONFIRMED delivery, so an exhausted retry budget still leaves the unload
-    // path free to make a final attempt.
+    // CONFIRMED delivery, or a hand-over to the desktop app, which then owns it.
     flushInFlightRef.current = true;
+    clearTimeout(flushRetryTimerRef.current);
 
     try {
       logger.log(`[Proctoring] 🚀 Flushing ${queueRef.current.length} detection results…`);
-      await submitProctoringLogs(payload);
+      const how = await deliverLog(payload);
       queueRef.current = [];
       flushRetryCountRef.current = 0;
       hasFlushedRef.current = true;
-      logger.log("[Proctoring] ✅ Batch proctoring logs submitted successfully.");
+      void deleteLog(payload.session_id);
+      logger.log(
+        how === DELIVERY.HANDED_OVER
+          ? "[Proctoring] ✅ Batch proctoring logs handed to the desktop app to deliver."
+          : "[Proctoring] ✅ Batch proctoring logs submitted successfully.",
+      );
     } catch (err) {
-      logger.error("[Proctoring] ❌ Batch submission failed:", err?.response?.status, err?.message);
+      const status = err?.response?.status;
+      logger.error("[Proctoring] ❌ Batch submission failed:", status, err?.message);
       flushRetryCountRef.current += 1;
-      if (flushRetryCountRef.current < MAX_FLUSH_RETRIES) {
-        logger.log(
-          `[Proctoring] 🔄 Will retry flush when online (attempt ${flushRetryCountRef.current}/${MAX_FLUSH_RETRIES}).`,
-        );
+      persistLog({ ended: true });
+      if (isRefused(status)) {
+        logger.warn("[Proctoring] ⛔ The backend refused the log; not retrying.");
       } else {
-        logger.warn(
-          "[Proctoring] ⛔ Max flush retries reached. Logs will be retried on page unload.",
-        );
+        scheduleFlushRetry();
       }
     } finally {
       flushInFlightRef.current = false;
@@ -1395,19 +1439,56 @@ export function useProctoringSystem(
   // Sampling stops the instant the interview does; the log waits until the
   // submission has answered so the one batch holds how it ended.
   const hasRunRef = useRef(false);
+  const logReadyRef = useRef(logReady);
+  useEffect(() => {
+    logReadyRef.current = logReady;
+  }, [logReady]);
   useEffect(() => {
     if (isActive) {
       hasRunRef.current = true;
       return;
     }
     if (!hasRunRef.current) return;
+    persistLog({ ended: true });
     if (logReady) {
       flushQueue();
       return;
     }
     const timer = setTimeout(() => flushQueue(), LOG_SEND_FALLBACK_MS);
     return () => clearTimeout(timer);
-  }, [isActive, logReady]);
+  }, [isActive, logReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isActive) return;
+    const timer = setInterval(() => {
+      if (queueRef.current.length !== persistedLengthRef.current) persistLog();
+    }, LOG_PERSIST_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [isActive]);
+
+  // Once the session is known: a log this session kept before a reload carries
+  // on in this page's queue, and logs earlier pages never delivered go out.
+  useEffect(() => {
+    if (!sessionId || seededSessionRef.current === String(sessionId)) return;
+    seededSessionRef.current = String(sessionId);
+
+    (async () => {
+      const kept = (await loadLogs()).find((entry) => entry.session_id === String(sessionId));
+      if (kept?.records?.length && !hasFlushedRef.current) {
+        queueRef.current = [...kept.records, ...queueRef.current];
+        logger.log(
+          `[Proctoring] ♻️ Restored ${kept.records.length} log records kept before a reload.`,
+        );
+        // It ended before the reload, so this page never runs it: send from
+        // here once the resumed submission answers.
+        if (kept.ended && !isActiveRef.current) {
+          hasRunRef.current = true;
+          if (logReadyRef.current) flushQueue();
+        }
+      }
+      await resendKeptLogs(sessionId);
+    })().catch((err) => logger.warn("[Proctoring] kept logs not processed:", err?.message));
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Only a send that already failed is retried. Retrying mid-interview sent a
   // partial batch, and the real one after it was then never sent.
@@ -1420,8 +1501,11 @@ export function useProctoringSystem(
     };
 
     window.addEventListener("online", handleOnlineFlush);
-    return () => window.removeEventListener("online", handleOnlineFlush);
-  }, []);
+    return () => {
+      window.removeEventListener("online", handleOnlineFlush);
+      clearTimeout(flushRetryTimerRef.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const onUnload = () => {
@@ -1430,6 +1514,17 @@ export function useProctoringSystem(
       const payload = buildFlushPayload();
       if (!payload) return;
 
+      // Marked so a later visit doesn't send the kept copy as well.
+      persistLog({ sent_at_unload: true });
+
+      const handOver = window.electronAPI?.submitProctoringLog;
+      if (typeof handOver === "function") {
+        // The app keeps it on disk and delivers it after the window is gone.
+        Promise.resolve(handOver(payload, sessionStorage.getItem("ac") ?? undefined)).catch(
+          () => {},
+        );
+        return;
+      }
       const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
       sendUnloadFlush(`${baseUrl}/user/v1/candidate/interview/proctoring/log/`, payload);
       // Deliberately NOT marking flushed: an unload send cannot be confirmed,

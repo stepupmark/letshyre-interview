@@ -72,18 +72,33 @@ export function useAutoSubmitFlow({ session, setSession, timeLeft, violationsAll
         });
       }
 
+      // `reason` says how it ended even if the proctoring log arrives late; a
+      // backend that doesn't read it yet just ignores it.
       const requestData = {
         interview_id: session.interview_id,
         session_id: session.session_id,
+        reason: reason || "automated",
       };
       const draft = readDraft(draftKeyFor(session));
       if (draft.trim()) requestData.answer = draft;
+
+      // The desktop app keeps a copy and sends it only if this page dies first.
+      window.electronAPI?.submitPending?.(
+        {
+          interviewId: String(session.interview_id),
+          sessionId: String(session.session_id),
+          reason: requestData.reason,
+          ...(requestData.answer ? { answer: requestData.answer } : {}),
+        },
+        sessionStorage.getItem("ac") ?? undefined,
+      );
 
       const response = await autoSubmitMutation.mutateAsync(requestData);
 
       if (!response?.success || !response?.data) {
         throw new Error("Invalid auto submit response");
       }
+      window.electronAPI?.submitSettled?.(String(session.session_id));
 
       const aiData = response.data.ai;
       const scorecard = aiData?.scorecard || response.data.scorecard || null;
