@@ -157,7 +157,11 @@ describe("useAutoSubmitFlow submission", () => {
     setup({ session: activeSession(), timeLeft: 0 });
 
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
-    expect(mutateAsync).toHaveBeenCalledWith({ interview_id: "i1", session_id: "s1" });
+    expect(mutateAsync).toHaveBeenCalledWith({
+      interview_id: "i1",
+      session_id: "s1",
+      reason: TERMINATION_REASONS.TIME_EXPIRED,
+    });
   });
 
   it("sends the unsubmitted answer of the current question", async () => {
@@ -168,6 +172,7 @@ describe("useAutoSubmitFlow submission", () => {
     expect(mutateAsync).toHaveBeenCalledWith({
       interview_id: "i1",
       session_id: "s1",
+      reason: TERMINATION_REASONS.TIME_EXPIRED,
       answer: "def solve(): pass",
     });
     await waitFor(() => expect(sessionStorage.getItem("answer_draft:i1:10")).toBeNull());
@@ -313,5 +318,60 @@ describe("useAutoSubmitFlow log", () => {
 
     expect(ended.filter((event) => event.outcome === "expired")).toHaveLength(1);
     expect(ended.at(-1).outcome).toBe("submitted");
+  });
+});
+
+describe("useAutoSubmitFlow desktop app hand-off", () => {
+  let submitPending;
+  let submitSettled;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mutateAsync.mockResolvedValue(SUCCESS_RESPONSE);
+    submitPending = vi.fn();
+    submitSettled = vi.fn();
+    window.electronAPI = { submitPending, submitSettled };
+    sessionStorage.setItem("ac", "site-token");
+  });
+
+  afterEach(() => {
+    delete window.electronAPI;
+    sessionStorage.clear();
+  });
+
+  it("gives the app a copy before sending, and settles it on success", async () => {
+    sessionStorage.setItem("answer_draft:i1:2", "half an answer");
+    const { result } = setup({ session: activeSession({ current_index: 2 }), timeLeft: 0 });
+
+    await waitFor(() => expect(result.current.autoSubmitSuccess).toBe(true));
+
+    expect(submitPending).toHaveBeenCalledWith(
+      {
+        interviewId: "i1",
+        sessionId: "s1",
+        reason: TERMINATION_REASONS.TIME_EXPIRED,
+        answer: "half an answer",
+      },
+      "site-token",
+    );
+    expect(submitPending.mock.invocationCallOrder[0]).toBeLessThan(
+      mutateAsync.mock.invocationCallOrder[0],
+    );
+    expect(submitSettled).toHaveBeenCalledWith("s1");
+  });
+
+  it("leaves the app's copy held when the submission fails", async () => {
+    mutateAsync.mockRejectedValue(new Error("Network Error"));
+    const { result } = setup({ session: activeSession(), timeLeft: 0 });
+
+    await waitFor(() => expect(result.current.autoSubmitError).toBe("Network Error"));
+    expect(submitPending).toHaveBeenCalledTimes(1);
+    expect(submitSettled).not.toHaveBeenCalled();
+  });
+
+  it("works without the desktop app", async () => {
+    delete window.electronAPI;
+    const { result } = setup({ session: activeSession(), timeLeft: 0 });
+    await waitFor(() => expect(result.current.autoSubmitSuccess).toBe(true));
   });
 });

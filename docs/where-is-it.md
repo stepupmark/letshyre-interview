@@ -50,6 +50,7 @@ To change X, open Y. Paths are under `src/` unless they start with a dot or a re
 | Termination notice and its timing              | `components/interview/TerminationNotice.jsx`, `hooks/interview/useTerminationNotice.js`                  |
 | The help panel                                 | `components/interview/GetHelp.jsx`, `hooks/interview/useSupportInfo.js`                                  |
 | What gets written to the proctoring log        | `lib/violationLog.js`, batch sending in `useProctoringSystem.js`                                         |
+| Keeping and delivering the log                 | `lib/proctoringLogStore.js` (IndexedDB), `lib/proctoringLogDelivery.js` (desktop hand-over or POST)      |
 
 ## Add a violation code end to end
 

@@ -2,11 +2,23 @@ import { act, renderHook } from "@testing-library/react";
 import { detectFrame, submitProctoringLogs } from "@/services/proctoring.api";
 import { checkSummary, resetViolationSummary, subscribeToViolationLog } from "@/lib/violationLog";
 import { RUN_ID } from "@/lib/correlation";
-import { LOG_SEND_FALLBACK_MS, useProctoringSystem } from "./useProctoringSystem";
+import { loadLogs, saveLog } from "@/lib/proctoringLogStore";
+import {
+  LOG_PERSIST_INTERVAL_MS,
+  LOG_RETRY_DELAYS_MS,
+  LOG_SEND_FALLBACK_MS,
+  useProctoringSystem,
+} from "./useProctoringSystem";
 
 vi.mock("@/services/proctoring.api", () => ({
   detectFrame: vi.fn(),
   submitProctoringLogs: vi.fn(),
+}));
+
+vi.mock("@/lib/proctoringLogStore", () => ({
+  saveLog: vi.fn(async () => true),
+  loadLogs: vi.fn(async () => []),
+  deleteLog: vi.fn(async () => {}),
 }));
 
 const camera = vi.hoisted(() => ({ ready: true }));
@@ -790,6 +802,100 @@ describe("sending the log", () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(submitProctoringLogs).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries a failed send on its own, without waiting for the connection event", async () => {
+    submitProctoringLogs.mockRejectedValueOnce(new Error("Network Error"));
+    const { rerender } = render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+    rerender({ isActive: false, logReady: true });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(LOG_RETRY_DELAYS_MS[0]);
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(2);
+
+    await vi.advanceTimersByTimeAsync(LOG_RETRY_DELAYS_MS.at(-1));
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry a log the backend refused", async () => {
+    submitProctoringLogs.mockRejectedValueOnce(
+      Object.assign(new Error("Payload Too Large"), { response: { status: 413 } }),
+    );
+    const { rerender } = render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+    rerender({ isActive: false, logReady: true });
+    await vi.advanceTimersByTimeAsync(LOG_RETRY_DELAYS_MS[0] * 2);
+
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(1);
+  });
+
+  it("hands the log to the desktop app instead of posting it", async () => {
+    const submitProctoringLog = vi.fn().mockResolvedValue({ ok: true });
+    window.electronAPI = { submitProctoringLog };
+    try {
+      const { rerender } = render({ isActive: true, logReady: false });
+      await vi.advanceTimersByTimeAsync(5_000);
+      rerender({ isActive: false, logReady: true });
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(submitProctoringLog).toHaveBeenCalledTimes(1);
+      expect(submitProctoringLog.mock.calls[0][0].session_id).toBe("s1");
+      expect(submitProctoringLog.mock.calls[0][0].payload.records.length).toBeGreaterThan(0);
+      expect(submitProctoringLogs).not.toHaveBeenCalled();
+    } finally {
+      delete window.electronAPI;
+    }
+  });
+
+  it("keeps the log while the interview runs, and marks it ended when it stops", async () => {
+    saveLog.mockClear();
+    const { rerender } = render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(LOG_PERSIST_INTERVAL_MS);
+
+    const kept = saveLog.mock.calls.at(-1)[0];
+    expect(kept).toMatchObject({ session_id: "s1", interview_id: "i1", ended: false });
+    expect(kept.records.length).toBeGreaterThan(0);
+
+    rerender({ isActive: false, logReady: false });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(saveLog.mock.calls.at(-1)[0].ended).toBe(true);
+  });
+
+  it("carries on with the records this session kept before a reload", async () => {
+    const before = {
+      source: "cv_detect",
+      event_type: "frame",
+      payload: { marker: "before-reload" },
+    };
+    loadLogs.mockResolvedValueOnce([
+      { session_id: "s1", interview_id: "i1", records: [before], ended: false },
+    ]);
+    const { rerender } = render({ isActive: true, logReady: false });
+    await vi.advanceTimersByTimeAsync(5_000);
+    rerender({ isActive: false, logReady: true });
+    await vi.advanceTimersByTimeAsync(0);
+
+    const records = submitProctoringLogs.mock.calls[0][0].payload.records;
+    expect(records[0]).toEqual(before);
+    expect(records.length).toBeGreaterThan(1);
+  });
+
+  it("sends the log of an interview that ended before the reload", async () => {
+    const before = { source: "cv_detect", event_type: "frame", payload: { marker: "ended" } };
+    loadLogs.mockResolvedValueOnce([
+      { session_id: "s1", interview_id: "i1", records: [before], ended: true },
+    ]);
+    const { rerender } = render({ isActive: false, logReady: false });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(submitProctoringLogs).not.toHaveBeenCalled();
+
+    rerender({ isActive: false, logReady: true });
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(submitProctoringLogs).toHaveBeenCalledTimes(1);
+    expect(submitProctoringLogs.mock.calls[0][0].payload.records).toEqual([before]);
   });
 });
 
